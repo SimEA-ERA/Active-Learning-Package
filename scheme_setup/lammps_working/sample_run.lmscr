@@ -1,0 +1,35 @@
+# Initialization
+print "Starting lammps"
+print "--------------------"
+print ""
+units		real       # units real --> fs,A,atm
+boundary	p p p   # boundary conditions pp: periodic, s:non periodic 
+atom_style	full       # atom style --> check docs
+#creating atoms in a lattice
+#Adding the potntial and creating bonds
+read_data structure.dat #extra/bond/types 1 extra/bond/per/atom 2  extra/angle/per/atom 1 extra/angle/types 1 #add append offset 2 1 1 1 1 shift 5 5 5 # extra/atom/types 1
+include potential.inc
+#fix Agf Ag  rigid/small molecule
+
+timestep  0.1
+variable e equal 1000
+thermo_style custom step time etotal pe ke  press temp density
+thermo_modify lost error
+thermo $e
+
+dump nvt_dump all custom $e samples.lammpstrj id type x y z vx vy vz  fx fy fz
+dump_modify nvt_dump sort id
+
+#minimize 1.0e-4 1.0e-6 100 1000
+
+
+
+
+velocity all create 1 4238 rot yes dist gaussian
+#fix 1  all langevin  300.0 300 100 48291
+fix 1 all temp/berendsen 1.0 500.0 $(100.0*dt)
+fix 2 all nve
+include  rigid_fixes.inc
+
+run 1000000
+print "Done simulation"
