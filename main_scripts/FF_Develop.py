@@ -244,13 +244,11 @@ class al_help():
         al_help.make_interactions(data,setup)
         
         
-        train_indexes,test_indexes,valid_indexes = Data_Manager(data,setup).train_test_valid_split()
+        train_indexes, dev_indexes = Data_Manager(data,setup).train_development_split()
         
         setup.optimize = False
 
-        optimizer = Interfacial_FF_Optimizer(data,train_indexes,
-                                                    test_indexes,valid_indexes,
-                                                   setup)
+        optimizer = Interfacial_FF_Optimizer(data,train_indexes, dev_indexes, setup)
         #print('dataevaluations')
         #results
         optimizer.optimize_params()
@@ -715,13 +713,11 @@ class al_help():
         
         al_help.make_interactions(data,setup)
         dataMan = Data_Manager(data,setup)
-        train_indexes,test_indexes,valid_indexes = dataMan.train_test_valid_split()
+        train_indexes, dev_indexes = dataMan.train_development_split()
         
         al_help.set_L_toRhoMax(dataMan, setup)
                
-        optimizer = Interfacial_FF_Optimizer(data,train_indexes,
-                                                    test_indexes,valid_indexes,
-                                                   setup)
+        optimizer = Interfacial_FF_Optimizer(data,train_indexes, dev_indexes,setup)
          
         optimizer.optimize_params()
         
@@ -736,28 +732,25 @@ class al_help():
         cols = ['sys_name']
         #df = cols + ['relMAE','relMSE','relBIAS','MAE','MSE']
         if setup.costf not in funs: funs.append(setup.costf)
-        testvalid_indexes = np.unique(np.concatenate((test_indexes,valid_indexes)))
+        
 
         train_eval = Interfacial_Evaluator(data.loc[train_indexes],setup,prefix='train')
-        testvalid_eval = Interfacial_Evaluator(data.loc[testvalid_indexes],setup,prefix='testvalid')
+        dev_eval = Interfacial_Evaluator(data.loc[dev_indexes],setup,prefix='development')
         
         train_eval.plot_predict_vs_target(path = setup.runpath,title='train dataset',
                                           fname='train.png',size=2.35,compare='sys_name')
         
-        testvalid_eval.plot_predict_vs_target(path = setup.runpath,title='test/valid dataset',
-                                          fname='testvalid.png',size=2.35,compare='sys_name')
+        dev_eval.plot_predict_vs_target(path = setup.runpath,title='development dataset',
+                                          fname='development.png',size=2.35,compare='sys_name')
         
         
         #trev = train_eval.make_evaluation_table(funs,cols,save_csv='train.csv')
-        tv = testvalid_eval.make_evaluation_table(funs,cols,save_csv='testvalid.csv')
+        tv = dev_eval.make_evaluation_table(funs,cols,save_csv='development.csv')
         errors = {'mae': tv.loc['TOTAL','MAE'],
                   'mse': tv.loc['TOTAL','MSE']
                   }
         errors[setup.costf.lower()] = tv.loc['TOTAL',setup.costf]
-        
-        
-        
-        
+
         train_eval.plot_eners(subsample=1,path=setup.runpath,fname='eners.png')
         
     
@@ -2108,6 +2101,7 @@ class Setup_Interfacial_Optimization():
         'seed':1291412,
         'train_perc':0.8,
         'validation_set':'colname1:colv1 , colv2, colv3 & colname2: colv1 , colv2',
+        'development_set':'colname1:colv1 , colv2, colv3 & colname2: colv1 , colv2',
         'regularization_method': 'ridge',
         'increased_stochasticity':0.0,
         'reg_par': 0.0,
@@ -3771,18 +3765,19 @@ class Data_Manager():
         indexes = np.random.choice(data.index,size=size,replace=False)
         return data.loc[indexes]
     
-    def train_test_valid_split(self):
+    def train_development_split(self):
         
         data = self.data
-        if len(data) < 200:
+        
+        if len(data) < 20:
             i = data.index
-            return i,i,i
+            return i,i
         train_perc = self.setup.train_perc
         seed = self.setup.seed
         sampling_method = self.setup.sampling_method
         
-        def get_valid():
-            vinfo = self.setup.validation_set
+        def get_data_via_column():
+            vinfo = self.setup.devolopment_set
             
             ndata = len(data)
             f = np.ones(ndata,dtype=bool)
@@ -3803,37 +3798,22 @@ class Data_Manager():
             train_data = self.sample_randomly(train_perc, data, seed)
             train_indexes = train_data.index
             
-            valid_test_data = data.loc[data.index.difference(train_indexes)]
+            dev_data = data.loc[data.index.difference(train_indexes)]
             
-            ftest = np.random.choice([True,False],len(valid_test_data))
-            
-            test_data = valid_test_data[ftest]
-            
-            valid_data = valid_test_data[np.logical_not(ftest)]
         
         elif sampling_method=='column':
             
-            f = get_valid()
+            f = get_data_via_column()
             
-            valid_data = data[f]
-            train_test_data = data[np.logical_not(f)]
-            train_data = self.sample_randomly(train_perc, train_test_data, seed)
-            train_indexes = train_data.index
-            test_data = train_test_data.loc[ train_test_data.index.difference(train_indexes) ]
-        elif sampling_method =='valid':
-            f = get_valid()
-            valid_data = data[f]
-            train_data = self.sample_randomly(train_perc, data, seed)
-            train_indexes = train_data.index
-            test_data = data.loc[ data.index.difference(train_indexes) ]
+            dev_data = data[f]
         else:
             raise Exception(NotImplementedError('"{}" is not a choice'.format(sampling_method) ))
-        test_indexes = test_data.index
-        valid_indexes = valid_data.index
+        
         self.train_indexes = train_indexes
-        self.test_indexes = test_indexes
-        self.valid_indexes = valid_indexes
-        return train_indexes,test_indexes,valid_indexes
+        dev_indexes = dev_data.index
+        self.dev_indexes = dev_indexes
+        
+        return train_indexes, dev_indexes
     
     def bootstrap_samples(self,nsamples,perc=0.3,seed=None,
                           sampling_method='random',nbins=100,bin_pop=1):
@@ -3961,21 +3941,21 @@ class Data_Manager():
 
     
 class Optimizer():
-    def __init__(self,data, train_indexes,test_indexes,valid_indexes,setup):
+    def __init__(self,data, train_indexes,dev_indexes,setup):
         if isinstance(data,pd.DataFrame):
             self.data = data
         else:
             raise Exception('data are not pandas dataframe')
         '''
-        for t in [train_indexes,test_indexes,valid_indexes]:
+        for t in [train_indexes,dev_indexes,valid_indexes]:
             if not isinstance(t,type(data.index)):
                 s = '{} is not pandas dataframe index'.format(t)
                 logger.error(s)
                 raise Exception(s)
         '''
         self.train_indexes = train_indexes
-        self.test_indexes = test_indexes
-        self.valid_indexes = valid_indexes
+        self.dev_indexes = dev_indexes
+        
         if isinstance(setup,Setup_Interfacial_Optimization):
             self.setup = setup
         else:
@@ -3988,30 +3968,26 @@ class Optimizer():
     def data_train(self):
         return self.data.loc[self.train_indexes]
     @property
-    def data_test(self):
-        return self.data.loc[self.test_indexes]
-    @property
-    def data_valid(self):
-        return self.data.loc[self.valid_indexes]
+    def data_dev(self):
+        return self.data.loc[self.dev_indexes]
+
 
         
     
 class Interfacial_FF_Optimizer(Optimizer):
-    def __init__(self,data,train_indexes,test_indexes,valid_indexes,setup):
-        super().__init__(data,train_indexes,test_indexes,valid_indexes,setup)
+    def __init__(self,data, train_indexes, dev_indexes, setup):
+        super().__init__(data, train_indexes, dev_indexes, setup)
         
         return
     def get_indexes(self,dataset):
         if dataset=='train':
             return self.train_indexes
-        elif dataset=='test':
-            return self.test_indexes
-        elif dataset =='valid':
-            return self.valid_indexes
+        elif dataset=='dev':
+            return self.dev_indexes
         elif dataset =='all':
             return self.data.index
         else:
-            raise Exception('available options are {"train", "test", "valid", "all"}')
+            raise Exception('available options are {"train", "dev",  "all"}')
     
     
     def get_nessesary_info(self,models,dataset):
@@ -4264,14 +4240,12 @@ class Interfacial_FF_Optimizer(Optimizer):
     def get_Energy(self,dataset):
         if dataset =='train':
             E =  np.array(self.data_train['Energy'])
-        elif dataset =='test':
-            E =  np.array(self.data_test['Energy'])
-        elif dataset =='valid':
-            E =  np.array(self.data_valid['Energy'])
+        elif dataset =='dev':
+            E =  np.array(self.data_dev['Energy'])
         elif dataset == 'all':
             E =  np.array(self.data['Energy'])
         else:
-            s = "'dataset' only takes the values ['train','test','valid','all']"
+            s = "'dataset' only takes the values ['train','dev','all']"
             logger.error(s)
             raise Exception(s)
         return E
@@ -4279,14 +4253,12 @@ class Interfacial_FF_Optimizer(Optimizer):
     def get_dataDict(self,dataset):
         if dataset =='train':
             data_dict = self.data_train['values'].to_dict()
-        elif dataset =='test':
-            data_dict = self.data_test['values'].to_dict()
-        elif dataset =='valid':
-            data_dict = self.data_valid['values'].to_dict()
+        elif dataset =='dev':
+            data_dict = self.data_dev['values'].to_dict()
         elif dataset == 'all':
             data_dict = self.data['values'].to_dict()
         else:
-            s = "'dataset' only takes the values ['train','test','valid','all']"
+            s = "'dataset' only takes the values ['train','dev'','all']"
             logger.error(s)
             raise Exception(s)
         return data_dict
@@ -4298,7 +4270,7 @@ class Interfacial_FF_Optimizer(Optimizer):
             self.total = None
             self.train = None
             self.dev = None
-            self.test = None
+            
             return
         def __repr__(self):
             x = 'Cost : value \n--------------------\n'
@@ -4493,7 +4465,7 @@ class Interfacial_FF_Optimizer(Optimizer):
 
                         self.optimize_params('init')
                         time_only_min += self.minimization_time
-                        cost = 0.5*(self.current_costs.dev+self.current_costs.test)
+                        cost = self.current_costs.dev
 
                         self.set_models('opt','init')
                         #
@@ -4503,7 +4475,7 @@ class Interfacial_FF_Optimizer(Optimizer):
                             self.set_models('opt','best_opt')
                             self.best_costs = copy.deepcopy(self.current_costs)
 
-                        print('epoch = {:d}, i = {:d},  test cost = {:.4e} train cost = {:.4e} '.format(self.epoch,itera,  cost, self.current_costs.train))
+                        print('epoch = {:d}, i = {:d},  development cost = {:.4e} train cost = {:.4e} '.format(self.epoch,itera,  cost, self.current_costs.train))
                         sys.stdout.flush()
                         total_fev += self.res.nfev
                         itera+=1
@@ -4577,16 +4549,15 @@ class Interfacial_FF_Optimizer(Optimizer):
         costs.cost = res.fun - costs.reg
         costs.total = res.fun
         
-        test_eval = Interfacial_Evaluator(self.data_test,self.setup,prefix='test')
-        valid_eval = Interfacial_Evaluator(self.data_valid,self.setup,prefix='valid')
+        dev_eval = Interfacial_Evaluator(self.data_dev,self.setup,prefix='development')
+        
         train_eval = Interfacial_Evaluator(self.data_train,self.setup,prefix='train')
          
-        test_tab = test_eval.make_evaluation_table([self.setup.costf],['sys_name'])
-        valid_tab = valid_eval.make_evaluation_table([self.setup.costf],['sys_name'])
+        dev_tab = dev_eval.make_evaluation_table([self.setup.costf],['sys_name'])
+        
         train_tab = train_eval.make_evaluation_table([self.setup.costf],['sys_name'])
         
-        costs.dev = test_tab.loc['TOTAL',self.setup.costf]
-        costs.test = valid_tab.loc['TOTAL',self.setup.costf]
+        costs.dev = dev_tab.loc['TOTAL',self.setup.costf]
         costs.train = train_tab.loc['TOTAL',self.setup.costf]
         
         self.current_costs = costs

@@ -33,13 +33,12 @@ for n in range(num+1):
     
     path_xyz ='{:s}/D{:d}'.format(path,n)
     df = al.data_from_directory(path_xyz)
-
     #al.make_absolute_Energy_to_interaction(df, setup)
     data = data.append(df , ignore_index=True)
     #ff.Data_Manager.distribution(data['Energy'],'distr/data{:d}.png'.format(n))
 
 #ff.GeneralFunctions.make_dir('distr')
-data = al.data_from_directory(path_xyz)
+
 al.make_absolute_Energy_to_interaction(data,setup)
 #ff.Data_Manager.distribution(data['Energy'],'distr/data{:d}.png'.format(n))
 # 3 end - data are read in the dataframe "data"
