@@ -1,0 +1,21 @@
+#!/bin/sh
+#SBATCH --job-name=Ag4Au4
+#SBATCH -A p148
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=32
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=192000   #Total memory in 1 node =40*4800
+#SBATCH --time=23:59:00
+#***************************
+
+module load Gaussian/16.C.01-AVX2
+source $g16root/g16/bsd/g16.profile
+GAUSS_SCRDIR="/nvme/h/sbhowmick/scratch"
+export g16root GAUSS_SCRDIR
+module load OpenMPI
+
+for file_name in *.com; do
+g16 $file_name
+done
+rm fort.7
+
