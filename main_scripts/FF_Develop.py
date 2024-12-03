@@ -682,9 +682,9 @@ class al_help():
             if 'LD' not in k:
                 continue
             ty=model.type
-            rho_max = dm.get_distribution(ty,'rhos{:d}'.format(model.num)).max()
+            rho_max = dm.get_distribution(ty,'rhos').max()
             kp='L'
-            #dm.plot_distribution(ty,'rhos{:d}'.format(i))      
+               
             if model.pinfo[kp].opt == False:
                 continue
             else:
@@ -2127,8 +2127,8 @@ class Setup_Interfacial_Optimization():
         'nAN':2,
         'LD_model':'polynomial',
         'LD_types' : [''],
-        'rho_r0' : [1.1],
-        'rho_rc': [6.0],
+        'rho_r0' : 1.1,
+        'rho_rc': 6.0,
         'distance_map':"dict()",
         'reference_energy':"dict()",
         'struct_types':"[('type1'),('type2','type3')]",
@@ -2353,7 +2353,7 @@ class Setup_Interfacial_Optimization():
                 self.feature = 'vdw'
                 self.lammps_class = 'pair'
             elif 'LD' == self.category:
-                self.feature =  'rhos'+str(self.num)
+                self.feature =  'rhos'
                 self.lammps_class = 'pair'
             elif 'BO' == self.category:
                 self.feature = 'connectivity'
@@ -2659,8 +2659,8 @@ class Setup_Interfacial_Optimization():
                 continue
             #if 'LD2' in model.name: continue
             ni = model.num
-            r0 = self.rho_r0[ni]
-            rc = self.rho_rc[ni]
+            r0 = self.rho_r0
+            rc = self.rho_rc
             fmodel = model.function
             #num_pars = model.number_of_parameters
 
@@ -2686,7 +2686,7 @@ class Setup_Interfacial_Optimization():
                 lines.append('{:.16e}\n'.format(fr))
             lines.append('\n')
         #del lines[-1]  
-        with open(path +'/frhos{:d}.ld'.format(self.nLD),'w') as f:
+        with open(path +'/frhos.ld','w') as f:
             f.write('{0:s}\n{0:s}Written by Force-Field Develop{0:s}\n{1:d} {2:d} # of LD potentials and # of tabulated values, single space separated\n\n'.format('******',N_LD,N_rho))
             for line in lines:
                 f.write(line)
@@ -3226,68 +3226,93 @@ class Interactions():
     
     def calc_interaction_values(self):
         n = len(self.data)
+        
         all_Values = np.empty(n ,dtype=object)
+        all_atom_ids = np.empty(n ,dtype=object)
+        
         atom_confs = np.array(self.data['coords'])
         interactions = np.array(self.data['interactions'])
-        for i,ac,inters in zip(range(n),atom_confs,interactions):
+        
+        for i, ac, inters in zip(range(n), atom_confs, interactions):
+            
             values = dict(keys=inters.keys())
+            atom_ids = dict(keys=inters.keys())
+            
             for intertype,vals in inters.items():
+                
                 d = {t:[] for t in vals.keys()}
+                at_ids = {t:[] for t in vals.keys()}
+                
                 for t,pairs in vals.items():
+                    
                     temp = np.empty(len(pairs),dtype=float)
+                    
+                    
                     if intertype in ['connectivity','vdw']:
+                        temp_ids = np.empty((len(pairs),2),dtype=int)
                         for im,p in enumerate(pairs):
+                            
+                            temp_ids[im] = p
+                            
                             r1 = np.array(ac[p[0]]) ; r2 = np.array( ac[p[1]])
+                    
                             temp[im] =  VectorGeometry.calc_dist(r1,r2)
+                    
                     elif intertype=='angles':
+                        temp_ids = np.empty((len(pairs),3),dtype=int)
                         for im,p in enumerate(pairs):
+                            
+                            temp_ids[im] = p
+                            
                             r1 = np.array(ac[p[0]]) ; 
                             r2 = np.array(ac[p[1]]) ; 
                             r3 = np.array(ac[p[2]])
+                            
                             temp[im] =  VectorGeometry.calc_angle(r1,r2,r3)
+                    
                     elif intertype =='dihedrals':
+                        temp_ids = np.empty((len(pairs),4),dtype=int)
                         for im,p in enumerate(pairs):
+                            
+                            temp_ids[im] = p
+                            
                             r1 = np.array(ac[p[0]]) ; 
                             r2 = np.array(ac[p[1]]) ; 
                             r3 = np.array(ac[p[2]])
                             r4 = np.array(ac[p[3]])
+                            
                             temp[im] =  VectorGeometry.calc_dihedral(r1, r2, r3, r4)
                         
                     elif intertype=='rhos':
-                        rhoi = dict()
-                        for ldi,(r0,rc) in enumerate(zip(self.rho_r0,self.rho_rc)):
-                            temp = np.empty(len(pairs),dtype=float)
-                            c = self.compute_coeff(r0, rc)
-                            for im,ltpa in enumerate(pairs):
-                                rho = 0
-                                for p in ltpa:
-                                    r1 = np.array(ac[p[0]]) ; r2 = np.array( ac[p[1]])
-                                    r12 =  VectorGeometry.calc_dist(r1,r2)
-                                    rho += self.phi_rho(r12,c,r0,rc)
+                        r0 = self.rho_r0
+                        rc = self.rho_rc
+                        
+                        temp = np.empty(len(pairs),dtype=float)
+                        temp_ids = np.empty((len(pairs),2),dtype=int)
+                        c = self.compute_coeff(r0, rc)
+                        for im,ltpa in enumerate(pairs):
+                            rho = 0
+                            for p in ltpa:
+                                temp_ids[im] = p
+                                r1 = np.array(ac[p[0]]) 
+                                r2 = np.array( ac[p[1]])
+                                r12 =  VectorGeometry.calc_dist(r1,r2)
+                                rho += self.phi_rho(r12,c,r0,rc)
                     
                                 temp[im] = rho 
-                            rhoi[str(ldi)] = temp.copy()
-                        temp = rhoi
                     else:
                         raise Exception(NotImplemented)
                     
                     d[t] = temp.copy()
+                    at_ids[t] = temp_ids.copy()
                 
-                if intertype!='rhos':
-                    values[intertype] = d.copy()
-                else:
-                    td = dict()
-                    for t,v in d.items():
-                        for ldi,rhoi in v.items():
-                            k = intertype + ldi
-                            if k not in td:
-                                td[k]=dict()
-                            td[k][t] = rhoi 
-                    
-                    values.update(td)
+                values[intertype] = d.copy()
+                atom_ids[intertype] = at_ids.copy()
             
             all_Values[i] = values
+            all_atom_ids[i] = atom_ids
         self.data['values'] = all_Values
+        self.data['atom_ids'] = all_atom_ids
         return
 
 

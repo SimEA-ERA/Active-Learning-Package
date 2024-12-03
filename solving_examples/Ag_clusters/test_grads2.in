@@ -52,8 +52,8 @@ nBO             = 0
 nAN             = 0 
 LD_model        = polynomial 
 LD_types        : 
-rho_r0          : 0.100000 2.100000 1.000000 
-rho_rc          : 5.500000 3.500000 5.200000 
+rho_r0          = 0.100000 
+rho_rc          = 7.500000 
 distance_map    = {('S', 'O'): (0.0, 2.5)} 
 reference_energy = {'atoms': {'Ag': -92251.97939301}} 
 struct_types    = [('Ag',), ('S', 'O')] 
