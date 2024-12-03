@@ -19,7 +19,7 @@ opt_disp        = 0
 optimize        = 1 
 maxiter         = 1000 
 max_moves       = 40 
-nepochs         = 3
+nepochs         = 30
 batchsize       = 6400 
 maxiter_i       = 20000 
 tolerance       = 0.000010 
@@ -64,7 +64,7 @@ rigid_style     = single
 
 &PW0 Ag Ag
 FUNC Morse
-re         : 2.61948552  1  1.12000000  4.00000000    0.00000000 
+re         : 2.61948552  1  1.12000000  6.00000000    0.00000000 
 De         : 36.47841695  1  0.10000000  60.00000000    0.10000000 
 alpha      : 1.83674603  1  0.10000000  7.00000000    0.00000000 
 /
