@@ -24,7 +24,7 @@ al = ff.al_help()
 path_log = 'data'
 path_xyz ='data_xyz'
 
-#al.log_to_xyz(path_log, path_xyz)
+al.log_to_xyz(path_log, path_xyz)
 
 data = pd.DataFrame()
 #ff.GeneralFunctions.make_dir('distr')
