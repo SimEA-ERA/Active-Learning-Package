@@ -1,5 +1,6 @@
 *.chk
 *.gjf
+*.in
 *Gau*.inp
 *Gau*.d2e
 *Gau*.int
