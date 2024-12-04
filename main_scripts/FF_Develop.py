@@ -1538,6 +1538,7 @@ class LJ:
         self.params_gradient = g
         return g
 
+
 class MorseBond:
     
     def __init__(self,r,params):
@@ -1593,6 +1594,8 @@ class MorseBond:
         self.params_gradient = g
         return g
 
+    
+    
 class Morse:
     def __init__(self,r,params):
         self.r = r
@@ -1643,19 +1646,6 @@ class Morse:
         self.params_gradient = g
         return g
     
-    def add_to_Forces(self,Forces,model_info):
-        dl = model_info.dl
-        du = model_info.du
-        dudx_vectorized = - self.find_dydx()
-        for m, ij_to_value_index in model_info.mij_to_value_index.items():
-            chunk_m = dudx_vectorized[dl[m]:du[m]]
-            forces_m = Forces[m]
-            for (i,j), value_index in ij_to_value_index.items():
-                fij = chunk_m[value_index] * model_info.mij_to_rhats[(m,i,j)] 
-                forces_m[i] += fij
-                forces_m[j] -= fij
-                
-        return
 
 class Bezier(MathAssist):
     def __init__(self,xvals, params,  M = None ):
@@ -1847,7 +1837,7 @@ class Bezier(MathAssist):
         self.dydyc = C
         return C
 
-    
+
 class TestPotentials:
     def __init__(self,function_name,params,min_value,max_value,dv=0.001,fargs=(),fkwargs={},
                  plot=False,ignore_high_u=1e16):
@@ -3242,6 +3232,7 @@ class Interactions():
             return 0
         else:    
             return c[0] + c[1]*r**2 + c[2]*r**4 + c[3]*r**6
+        
     @staticmethod
     def dphi_rho(r,c,r0,rc):
         if r<=r0:
@@ -4085,6 +4076,7 @@ class Interfacial_FF_Optimizer(Optimizer):
         super().__init__(data, train_indexes, dev_indexes, setup)
         
         return
+    
     def get_indexes(self,dataset):
         if dataset=='train':
             return self.train_indexes
@@ -4115,11 +4107,11 @@ class Interfacial_FF_Optimizer(Optimizer):
             
             dists,dl,du = self.serialize_values(values_dict,model)
             
-            minfo = self.Model_Info(model,dists,dl,du)
+            minfo = self.Model_Info(model, dists, dl, du)
             
             minfo.mij_to_value_index = self.get_mij_to_value_index(neibs_dict,model)
             
-            minfo.mij_to_rhats = self.get_mij_to_rhats(rhats_dict, neibs_dict, model)
+            minfo.mij_to_directionVec = self.get_mij_to_directionVec(rhats_dict, neibs_dict, model)
             
             models_list.append(minfo)
         return  models_list
@@ -4216,9 +4208,10 @@ class Interfacial_FF_Optimizer(Optimizer):
         return Uclass_grad
     
     @staticmethod
-    def computeForceClass(params,ne, natoms_per_point, 
-                          neibs_lists,models_list_info):
-        Forces = [np.zeros( (na,3),dtype=np.float64) for na in natoms_per_point ]
+    def computeForceClass(params, ne, natoms_per_point, models_list_info):
+        
+        Forces = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        
         npars_old = 0
         for model_info in models_list_info:
             #t0 = perf_counter()
@@ -4233,21 +4226,26 @@ class Interfacial_FF_Optimizer(Optimizer):
             Interfacial_FF_Optimizer.ForcesForEachPoint(Forces, model_pars, model_info)
             npars_old = npars_new
         return Forces
+ 
 
     @staticmethod
     def ForcesForEachPoint(Forces, model_pars, model_info ):
         #compute UvectorizedContribution
-        #a = (dists,model_pars,*model_args)
+        dists = model_info.dists
+        compute_obj = model_info.u_model(dists,model_pars,*model_info.model_args)
+        
         dl = model_info.dl
         du = model_info.du
-        dists = model_info.dists
-        assert len(Forces) == dl.shape[0],'Sizes unequal'
-        ndata = dl.shape[0]
-    
-        pobj = model_info.u_model(dists,model_pars,*model_info.model_args)
-        pobj.add_to_Forces(Forces, model_info)
-        
-        return 
+        dudx_vectorized = - compute_obj.find_dydx()
+        for m, ij_to_value_index in model_info.mij_to_value_index.items():
+            chunk_m = dudx_vectorized[dl[m]:du[m]]
+            forces_m = Forces[m]
+            for (i,j), value_index in ij_to_value_index.items():
+                fij = chunk_m[value_index] * model_info.mij_to_directionVec[ (m, i, j ) ] 
+                forces_m[i] += fij
+                forces_m[j] -= fij
+                
+        return
     def test_gradUclass(self, which='opt', dataset='all', epsilon=1e-4, order=2):
         """
         Calculate the analytical and numerical gradients of Uclass with options for higher-order finite differences.
@@ -4366,14 +4364,32 @@ class Interfacial_FF_Optimizer(Optimizer):
         
         return model_pars
     
-    def get_mij_to_rhats(self,rhats_dict, neibs_dict, model):
+
+    
+    def get_mij_to_directionVec(self,rhats_dict, neibs_dict, model):
         
-        mij_to_rhats = dict()    
+        if model.feature == 'rhos':
+            r0 = self.setup.rho_r0
+            rc = self.setup.rho_rc
+            c = Interactions.compute_coeff(r0,rc)
+            dphi_rho = Interactions.dphi_rho
+            scale_rhats = True
+            distances_ij = self.data['dist_matrix']
+        else:
+            scale_rhats = False
+            
+        mij_to_directionVec = dict()
         for m,(idx,val) in enumerate(neibs_dict.items()):
             for i,neibs in neibs_dict[idx][model.feature][model.type].items():
                 for j in neibs:
-                    mij_to_rhats[(m, i, j) ] = rhats_dict[idx][i,j]
-        return mij_to_rhats
+                    if scale_rhats:
+                        r_ij = distances_ij[idx][i,j]
+                        scale = dphi_rho(r_ij,c,r0,rc)
+                    else:
+                        scale = 1.0
+                    mij_to_directionVec[(m, i, j) ] = rhats_dict[idx][i,j]*scale
+        return mij_to_directionVec
+   
     def get_mij_to_value_index(self, neibs_dict, model):
   
         mij_to_value_index = dict()
