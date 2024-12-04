@@ -252,7 +252,7 @@ class al_help():
         #print('dataevaluations')
         #results
         optimizer.optimize_params()
-        optimizer.Upair_ondata(which='opt',dataset='all')
+        optimizer.UvectorizedContribution_ondata(which='opt',dataset='all')
         
         return optimizer
 
@@ -723,7 +723,7 @@ class al_help():
         
         #print('evaluations')
         #results
-        optimizer.Upair_ondata(which='opt',dataset='all')
+        optimizer.UvectorizedContribution_ondata(which='opt',dataset='all')
         
         setup.write_running_output()
         
@@ -1323,6 +1323,12 @@ class VectorGeometry:
         return d
     
     @jit(nopython=True,fastmath=True)
+    def calc_unitvec(r1,r2):
+        r = r2 - r1
+        d = np.sqrt(np.dot(r,r))
+        return r/d
+    
+    @jit(nopython=True,fastmath=True)
     def calc_angle(r1,r2,r3):
         d1 = r1 -r2 ; d2 = r3-r2
         nd1 = np.sqrt(np.dot(d1,d1))
@@ -1636,7 +1642,20 @@ class Morse:
         
         self.params_gradient = g
         return g
-
+    
+    def add_to_Forces(self,Forces,model_info):
+        dl = model_info.dl
+        du = model_info.du
+        dudx_vectorized = - self.find_dydx()
+        for m, ij_to_value_index in model_info.mij_to_value_index.items():
+            chunk_m = dudx_vectorized[dl[m]:du[m]]
+            forces_m = Forces[m]
+            for (i,j), value_index in ij_to_value_index.items():
+                fij = chunk_m[value_index] * model_info.mij_to_rhats[(m,i,j)] 
+                forces_m[i] += fij
+                forces_m[j] -= fij
+                
+        return
 
 class Bezier(MathAssist):
     def __init__(self,xvals, params,  M = None ):
@@ -2658,7 +2677,7 @@ class Setup_Interfacial_Optimization():
             if ty[0] not in typemap or ty[1] not in typemap:
                 continue
             #if 'LD2' in model.name: continue
-            ni = model.num
+            #ni = model.num
             r0 = self.rho_r0
             rc = self.rho_rc
             fmodel = model.function
@@ -3223,12 +3242,78 @@ class Interactions():
             return 0
         else:    
             return c[0] + c[1]*r**2 + c[2]*r**4 + c[3]*r**6
+    @staticmethod
+    def dphi_rho(r,c,r0,rc):
+        if r<=r0:
+            return 0
+        elif r>=rc:
+            return 0
+        else:
+            return 2*c[1]*r +4*c[2]*r**3+c[3]*r**5
+    
+    def calc_rhats(self):
+        n = len(self.data)
+        atom_confs = np.array(self.data['coords'])
+        all_rhats = np.empty(n,dtype=object)
+        for m in range(n):
+            ac = np.array(atom_confs[m])
+            
+            natoms = ac.shape[0]
+            rhats  = np.zeros( (natoms,natoms,3) , dtype=float)
+            for i in range(natoms):
+                xi = ac[i]
+                for j in range(natoms):
+                    if j==i: continue
+                    xj = ac[j]
+                    rh = VectorGeometry.calc_unitvec(xi,xj)
+                    rhats[i,j] = rh
+            all_rhats[m] = rhats
+        self.data['rhats'] = all_rhats
+        return
+    
+    def calc_neibs_lists(self):
+        n = len(self.data)
+        
+        all_neibs = np.empty(n,dtype=object)
+
+        interactions = np.array(self.data['interactions'])
+        
+        for m,  inters in zip(range(n), interactions):
+            neibs = dict()
+            for intertype, pairs_dict in inters.items():
+                d = {t:dict() for t in pairs_dict}
+                for t, pairs in pairs_dict.items():
+                    if intertype in ['connectivity','vdw']:
+                        for im, p in enumerate(pairs):
+                            i , j = p
+    
+                            if i not in d[t]:
+                                d[t][i] = [ j ]
+                            else:
+                                d[t][i].append(j)
+                    elif intertype =='rhos':
+                        for im,ltpa in enumerate(pairs):
+                            for o,p in enumerate(ltpa):
+                                i , j = p
+                                if i not in d[t]:
+                                    d[t][i] = [ j ]
+                                else:
+                                    d[t][i].append(j)
+                    
+                    else:
+                        raise NotImplementedError
+                neibs[intertype] = {t: {k: np.array(idxs,dtype=int) for k,idxs in v.items()} for t,v in d.items()}
+
+                
+            all_neibs[m] = neibs
+
+        self.data['neibs'] = all_neibs       
+        return
     
     def calc_interaction_values(self):
         n = len(self.data)
         
         all_Values = np.empty(n ,dtype=object)
-        all_atom_ids = np.empty(n ,dtype=object)
         
         atom_confs = np.array(self.data['coords'])
         interactions = np.array(self.data['interactions'])
@@ -3236,33 +3321,28 @@ class Interactions():
         for i, ac, inters in zip(range(n), atom_confs, interactions):
             
             values = dict(keys=inters.keys())
-            atom_ids = dict(keys=inters.keys())
+            
             
             for intertype,vals in inters.items():
                 
-                d = {t:[] for t in vals.keys()}
-                at_ids = {t:[] for t in vals.keys()}
+                d =  {t : None for t in vals.keys()}
                 
                 for t,pairs in vals.items():
                     
                     temp = np.empty(len(pairs),dtype=float)
-                    
-                    
                     if intertype in ['connectivity','vdw']:
-                        temp_ids = np.empty((len(pairs),2),dtype=int)
+                        
                         for im,p in enumerate(pairs):
                             
-                            temp_ids[im] = p
-                            
                             r1 = np.array(ac[p[0]]) ; r2 = np.array( ac[p[1]])
-                    
+                            
                             temp[im] =  VectorGeometry.calc_dist(r1,r2)
                     
                     elif intertype=='angles':
-                        temp_ids = np.empty((len(pairs),3),dtype=int)
+
                         for im,p in enumerate(pairs):
                             
-                            temp_ids[im] = p
+                           
                             
                             r1 = np.array(ac[p[0]]) ; 
                             r2 = np.array(ac[p[1]]) ; 
@@ -3271,11 +3351,9 @@ class Interactions():
                             temp[im] =  VectorGeometry.calc_angle(r1,r2,r3)
                     
                     elif intertype =='dihedrals':
-                        temp_ids = np.empty((len(pairs),4),dtype=int)
+                        
                         for im,p in enumerate(pairs):
-                            
-                            temp_ids[im] = p
-                            
+ 
                             r1 = np.array(ac[p[0]]) ; 
                             r2 = np.array(ac[p[1]]) ; 
                             r3 = np.array(ac[p[2]])
@@ -3288,31 +3366,33 @@ class Interactions():
                         rc = self.rho_rc
                         
                         temp = np.empty(len(pairs),dtype=float)
-                        temp_ids = np.empty((len(pairs),2),dtype=int)
+    
                         c = self.compute_coeff(r0, rc)
                         for im,ltpa in enumerate(pairs):
                             rho = 0
-                            for p in ltpa:
-                                temp_ids[im] = p
+                            for o,p in enumerate(ltpa):
+                                        
                                 r1 = np.array(ac[p[0]]) 
                                 r2 = np.array( ac[p[1]])
+                               
                                 r12 =  VectorGeometry.calc_dist(r1,r2)
                                 rho += self.phi_rho(r12,c,r0,rc)
-                    
-                                temp[im] = rho 
+
+                            temp[im] = rho
+                            
                     else:
                         raise Exception(NotImplemented)
                     
                     d[t] = temp.copy()
-                    at_ids[t] = temp_ids.copy()
-                
+                           
                 values[intertype] = d.copy()
-                atom_ids[intertype] = at_ids.copy()
-            
+
+                
             all_Values[i] = values
-            all_atom_ids[i] = atom_ids
+
         self.data['values'] = all_Values
-        self.data['atom_ids'] = all_atom_ids
+        self.calc_neibs_lists()
+        self.calc_rhats()
         return
 
 
@@ -4000,6 +4080,7 @@ class Optimizer():
         
     
 class Interfacial_FF_Optimizer(Optimizer):
+    
     def __init__(self,data, train_indexes, dev_indexes, setup):
         super().__init__(data, train_indexes, dev_indexes, setup)
         
@@ -4015,38 +4096,48 @@ class Interfacial_FF_Optimizer(Optimizer):
             raise Exception('available options are {"train", "dev",  "all"}')
     
     
-    def get_nessesary_info(self,models,dataset):
+    def get_list_of_model_information(self,models,dataset):
         
         #serialize parameters and bounds
 
-        data_dict = self.get_dataDict(dataset)
-
-        infoObjects = []
+        values_dict = self.get_dataDict(dataset,'values')
+        
+        neibs_dict = self.get_dataDict(dataset,'neibs')
+        
+        rhats_dict = self.get_dataDict(dataset,'rhats')
+        
+        models_list = []
 
         for name,model in models.items():
+            
             if self.check_excess_models(model.category,model.num):
                 continue
-            dists,dl,du = self.serialize_values(data_dict,model)
+            
+            dists,dl,du = self.serialize_values(values_dict,model)
             
             minfo = self.Model_Info(model,dists,dl,du)
             
-            infoObjects.append(minfo)
-        return  infoObjects
+            minfo.mij_to_value_index = self.get_mij_to_value_index(neibs_dict,model)
+            
+            minfo.mij_to_rhats = self.get_mij_to_rhats(rhats_dict, neibs_dict, model)
+            
+            models_list.append(minfo)
+        return  models_list
     
-    def Upair_ondata(self,which='opt',dataset='all'):
+    def UvectorizedContribution_ondata(self,which='opt',dataset='all'):
         ndata = len(self.get_Energy(dataset))
         models = getattr(self.setup,which+'_models')
         params, bounds, fixed_params, isnot_fixed,reguls = self.get_parameter_info(models)        
-        infoObjects =  self.get_nessesary_info(models,dataset)
+        models_list_info =  self.get_list_of_model_information(models,dataset)
         sys.stdout.flush()
-        Uclass = self.computeUclass(params, ndata, infoObjects)
+        Uclass = self.computeUclass(params, ndata, models_list_info)
         index = self.get_indexes(dataset)
         self.data.loc[index,'Uclass'] = Uclass
         return Uclass
 
     @staticmethod
-    def Upair(u_model,dists,dl,du,model_pars,*model_args):
-        #compute upair
+    def UvectorizedContribution(u_model,dists,dl,du,model_pars,*model_args):
+        #compute UvectorizedContribution
         #a = (dists,model_pars,*model_args)
         Up = np.empty((dl.shape[0]), dtype=np.float64)
         pobj = u_model(dists,model_pars,*model_args)
@@ -4059,8 +4150,8 @@ class Interfacial_FF_Optimizer(Optimizer):
         return Up
    
     @staticmethod
-    def Upair_grad(u_model,dists,dl,du,model_pars,*model_args):
-        #compute upair
+    def UvectorizedContribution_grad(u_model,dists,dl,du,model_pars,*model_args):
+        #compute UvectorizedContribution
         #a = (dists,model_pars,*model_args)
         n_p = model_pars.shape[0]
         data_size = dl.shape[0]
@@ -4074,11 +4165,12 @@ class Interfacial_FF_Optimizer(Optimizer):
                 gu[j][i] = g[j][dl[i] : du[i]].sum()
         
         return gu
+    
     @staticmethod
-    def computeUclass(params,ne,infoObjects):
+    def computeUclass(params,ne,models_list_info):
         Uclass = np.zeros(ne,dtype=float)
         npars_old = 0
-        for minf in infoObjects:
+        for minf in models_list_info:
             #t0 = perf_counter()
             npars_new = npars_old  + minf.n_notfixed
             
@@ -4089,7 +4181,7 @@ class Interfacial_FF_Optimizer(Optimizer):
                                                     )
             #print('overhead {:4.6f} sec'.format(perf_counter()-t0))
             #compute Uclass
-            Utemp = Interfacial_FF_Optimizer.Upair( minf.u_model,
+            Utemp = Interfacial_FF_Optimizer.UvectorizedContribution( minf.u_model,
                     minf.dists, minf.dl, minf.du,
                     model_pars, *minf.model_args)
             #print(minf.name, Utemp)
@@ -4099,11 +4191,11 @@ class Interfacial_FF_Optimizer(Optimizer):
         return Uclass
     
     @staticmethod
-    def gradUclass(params,ne,infoObjects):
+    def gradUclass(params,ne,models_list_info):
         n_p = params.shape[0]
         Uclass_grad = np.zeros((n_p,ne), dtype=np.float64)
         npars_old = 0
-        for minf in infoObjects:
+        for minf in models_list_info:
             #t0 = perf_counter()
             npars_new = npars_old  + minf.n_notfixed
             
@@ -4113,7 +4205,8 @@ class Interfacial_FF_Optimizer(Optimizer):
                                                     minf.isnot_fixed,
                                                     )
 
-            gu = Interfacial_FF_Optimizer.Upair_grad( minf.u_model,
+            gu = Interfacial_FF_Optimizer.UvectorizedContribution_grad( 
+                    minf.u_model,
                     minf.dists, minf.dl, minf.du,
                     model_pars, *minf.model_args)
 
@@ -4122,8 +4215,39 @@ class Interfacial_FF_Optimizer(Optimizer):
             npars_old = npars_new
         return Uclass_grad
     
+    @staticmethod
+    def computeForceClass(params,ne, natoms_per_point, 
+                          neibs_lists,models_list_info):
+        Forces = [np.zeros( (na,3),dtype=np.float64) for na in natoms_per_point ]
+        npars_old = 0
+        for model_info in models_list_info:
+            #t0 = perf_counter()
+            npars_new = npars_old  + model_info.n_notfixed
+            
+            objparams = params[ npars_old : npars_new ]
+            model_pars = Interfacial_FF_Optimizer.array_model_parameters(objparams,
+                                                    model_info.fixed_params,
+                                                    model_info.isnot_fixed,
+                                                    )
 
+            Interfacial_FF_Optimizer.ForcesForEachPoint(Forces, model_pars, model_info)
+            npars_old = npars_new
+        return Forces
 
+    @staticmethod
+    def ForcesForEachPoint(Forces, model_pars, model_info ):
+        #compute UvectorizedContribution
+        #a = (dists,model_pars,*model_args)
+        dl = model_info.dl
+        du = model_info.du
+        dists = model_info.dists
+        assert len(Forces) == dl.shape[0],'Sizes unequal'
+        ndata = dl.shape[0]
+    
+        pobj = model_info.u_model(dists,model_pars,*model_info.model_args)
+        pobj.add_to_Forces(Forces, model_info)
+        
+        return 
     def test_gradUclass(self, which='opt', dataset='all', epsilon=1e-4, order=2):
         """
         Calculate the analytical and numerical gradients of Uclass with options for higher-order finite differences.
@@ -4143,10 +4267,10 @@ class Interfacial_FF_Optimizer(Optimizer):
         ndata = len(self.get_Energy(dataset))
         models = getattr(self.setup, which + '_models')
         params, bounds, fixed_params, isnot_fixed, reguls = self.get_parameter_info(models)
-        infoObjects = self.get_nessesary_info(models, dataset)
+        models_list_info = self.get_list_of_model_information(models, dataset)
     
         # Analytical gradient calculation
-        grads_analytical = self.gradUclass(params, ndata, infoObjects)
+        grads_analytical = self.gradUclass(params, ndata, models_list_info)
         
         # Numerical gradient calculation
         n_p = params.shape[0]
@@ -4157,11 +4281,11 @@ class Interfacial_FF_Optimizer(Optimizer):
                 # Second-order central difference
                 p1 = params.copy()
                 p1[i] += epsilon
-                up1 = self.computeUclass(p1, ndata, infoObjects)
+                up1 = self.computeUclass(p1, ndata, models_list_info)
                 
                 m1 = params.copy()
                 m1[i] -= epsilon
-                um1 = self.computeUclass(m1, ndata, infoObjects)
+                um1 = self.computeUclass(m1, ndata, models_list_info)
                 
                 grads_numerical[i] = (up1 - um1) / (2 * epsilon)
             
@@ -4169,19 +4293,19 @@ class Interfacial_FF_Optimizer(Optimizer):
                 # Fourth-order central difference
                 p1 = params.copy()
                 p1[i] += epsilon
-                up1 = self.computeUclass(p1, ndata, infoObjects)
+                up1 = self.computeUclass(p1, ndata, models_list_info)
                 
                 p2 = params.copy()
                 p2[i] += 2 * epsilon
-                up2 = self.computeUclass(p2, ndata, infoObjects)
+                up2 = self.computeUclass(p2, ndata, models_list_info)
                 
                 m1 = params.copy()
                 m1[i] -= epsilon
-                um1 = self.computeUclass(m1, ndata, infoObjects)
+                um1 = self.computeUclass(m1, ndata, models_list_info)
                 
                 m2 = params.copy()
                 m2[i] -= 2 * epsilon
-                um2 = self.computeUclass(m2, ndata, infoObjects)
+                um2 = self.computeUclass(m2, ndata, models_list_info)
                 
                 grads_numerical[i] = (-up2 + 8 * up1 - 8 * um1 + um2) / (12 * epsilon)
             
@@ -4202,11 +4326,11 @@ class Interfacial_FF_Optimizer(Optimizer):
     
     @staticmethod
     def CostFunction(params,costf,grad_costf,
-                     Energy,we,infoObjects,
+                     Energy,we,models_list_info,
                      reg,reguls,regf,grad_regf):   
         # serialize the params
         ne = Energy.shape[0]
-        Uclass = Interfacial_FF_Optimizer.computeUclass(params,ne,infoObjects)
+        Uclass = Interfacial_FF_Optimizer.computeUclass(params,ne,models_list_info)
         # Compute cos
         cost = costf(Energy,Uclass,we)
         cost+= Interfacial_FF_Optimizer.compute_RegCost(params,reg,reguls,regf)
@@ -4214,12 +4338,12 @@ class Interfacial_FF_Optimizer(Optimizer):
     
     @staticmethod
     def gradCost(params,costf,grad_costf,
-                 Energy,we,infoObjects,
+                 Energy,we,models_list_info,
                  reg,reguls,regf,grad_regf):   
         # serialize the params
         ne = Energy.shape[0]
-        Uclass = Interfacial_FF_Optimizer.computeUclass(params,ne,infoObjects)
-        gradU = Interfacial_FF_Optimizer.gradUclass(params,ne,infoObjects)
+        Uclass = Interfacial_FF_Optimizer.computeUclass(params,ne,models_list_info)
+        gradU = Interfacial_FF_Optimizer.gradUclass(params,ne,models_list_info)
         # Compute cos
         grads = np.sum( grad_costf(Energy, Uclass,we) * gradU, axis = 1)
         grads += Interfacial_FF_Optimizer.grad_RegCost(params,reg,reguls,grad_regf)
@@ -4239,25 +4363,55 @@ class Interfacial_FF_Optimizer(Optimizer):
                 model_pars.append(fixed_params[k2]) 
                 k2+=1
         model_pars = np.array(model_pars)
+        
         return model_pars
     
-    def serialize_values(self,data_dict,model):
+    def get_mij_to_rhats(self,rhats_dict, neibs_dict, model):
         
-        ndata = len(data_dict)
-        dl = np.empty((ndata,),dtype=int)
-        du = np.empty((ndata,),dtype=int)
+        mij_to_rhats = dict()    
+        for m,(idx,val) in enumerate(neibs_dict.items()):
+            for i,neibs in neibs_dict[idx][model.feature][model.type].items():
+                for j in neibs:
+                    mij_to_rhats[(m, i, j) ] = rhats_dict[idx][i,j]
+        return mij_to_rhats
+    def get_mij_to_value_index(self, neibs_dict, model):
+  
+        mij_to_value_index = dict()
+        
+        for m,(idx,val) in enumerate(neibs_dict.items()):
+        
+            value_index = 0
+            mij_to_value_index[m] = dict()
+            for i,neibs in neibs_dict[idx][model.feature][model.type].items():
+                for j in neibs:
+                    mij_to_value_index[m][ (i, j) ] = value_index
+                    if model.feature in ['connectivity', 'vdw']:
+                        value_index+=1
+                if model.feature == 'rhos':
+                    value_index +=1 
+        return mij_to_value_index
+    
+    def serialize_values(self,values_dict,model):
+        
+        ndata = len(values_dict)
+        dl = np.empty((ndata,), dtype=int)
+        du = np.empty((ndata,), dtype=int)
         
         dists = [] 
+       
         nd =0
-        for i,(j,val) in enumerate(data_dict.items()):
+        
+        for m,(idx,val) in enumerate(values_dict.items()):
             if model.type  not in val[model.feature]:
                 d = np.empty(0,dtype=float)
             else:
-                d = val[model.feature][model.type]            
-            dl[i] = nd
+                d = val[model.feature][model.type]
+                # val_to_ij
+            dl[m] = nd
             nd += d.shape[0]
-            du[i] = nd 
+            du[m] = nd 
             dists.extend(d)
+
         dists = np.array(dists)
         
         return dists,dl,du
@@ -4275,13 +4429,13 @@ class Interfacial_FF_Optimizer(Optimizer):
             raise Exception(s)
         return E
     
-    def get_dataDict(self,dataset):
+    def get_dataDict(self,dataset,column):
         if dataset =='train':
-            data_dict = self.data_train['values'].to_dict()
+            data_dict = self.data_train[column].to_dict()
         elif dataset =='dev':
-            data_dict = self.data_dev['values'].to_dict()
+            data_dict = self.data_dev[column].to_dict()
         elif dataset == 'all':
-            data_dict = self.data['values'].to_dict()
+            data_dict = self.data[column].to_dict()
         else:
             s = "'dataset' only takes the values ['train','dev'','all']"
             logger.error(s)
@@ -4359,16 +4513,6 @@ class Interfacial_FF_Optimizer(Optimizer):
         return params, bounds, fixed_params, isnot_fixed,reguls
     
     
-    @staticmethod
-    def get_pairvalues(prefix,i):
-        if 'PW'==prefix:
-            pw = 'vdw'
-        elif prefix =='LD':
-            pw ='rhos'+str(i)
-        else:
-            raise NotImplementedError
-        return pw
-    
     def randomize_initial_params(self,params,bounds):
         if self.setup.increased_stochasticity >0 and self.randomize:
             s = self.setup.increased_stochasticity
@@ -4398,7 +4542,7 @@ class Interfacial_FF_Optimizer(Optimizer):
         models = getattr(self.setup,setfrom+'_models')
 
         params, bounds, fixed_parameters, isnot_fixed, reguls = self.get_parameter_info(models)        
-        infoObjects  = self.get_nessesary_info(models,'train')
+        models_list_info  = self.get_list_of_model_information(models,'train')
 
 
         opt_method = self.setup.optimization_method
@@ -4412,9 +4556,9 @@ class Interfacial_FF_Optimizer(Optimizer):
         
         regf = getattr(regularizators(),self.setup.regularization_method)
         grad_regf = getattr(regularizators(),'grad_'+self.setup.regularization_method)
-        args = (costf,grad_costf,E,weights,infoObjects, self.setup.reg_par,reguls,regf,grad_regf)
+        args = (costf,grad_costf,E,weights,models_list_info, self.setup.reg_par,reguls,regf,grad_regf)
        
-        self.infoObjects = infoObjects
+        self.models_list_info = models_list_info
         
         try:
             self.randomize
@@ -4567,7 +4711,7 @@ class Interfacial_FF_Optimizer(Optimizer):
         
         self.set_models('init','opt',res.x,isnot_fixed,fixed_parameters)
         
-        self.Upair_ondata('opt',dataset='all')
+        self.UvectorizedContribution_ondata('opt',dataset='all')
         costs = self.CostValues()
         
         costs.reg = self.compute_RegCost(res.x,self.setup.reg_par,reguls,regf)
