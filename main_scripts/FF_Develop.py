@@ -4253,7 +4253,8 @@ class Interfacial_FF_Optimizer(Optimizer):
     
     
     def test_ForceClass(self, which='opt', epsilon=1e-4,  seed = 2024,
-                        verbose=False,random_tries=10):
+                        verbose=False,random_tries=10,
+                        check_only_analytical_forces=False):
         """
         Compute and compare the analytical and numerical Forces
         using second order finite difference methods.
@@ -4282,6 +4283,8 @@ class Interfacial_FF_Optimizer(Optimizer):
         random_tries : int, optional
             The number of random configurations or trials to evaluate the gradients. 
             Default is 10.
+        check_only_analytical_forces : bool, optional
+            If True, it prints the mean and maximum analytical force for each point and returns
         """
         dataset='all'
         
@@ -4289,12 +4292,27 @@ class Interfacial_FF_Optimizer(Optimizer):
         models = getattr(self.setup, which + '_models')
         params, bounds, fixed_params, isnot_fixed, reguls = self.get_parameter_info(models)
         models_list_info = self.get_list_of_model_information(models, dataset)
-    
+        
+        t0 = perf_counter()
+        _ = self.computeUclass(params, ndata, models_list_info)
+        tf = perf_counter() - t0
+        print('Time to compute analytical classical energy {:4.3e} ms'.format(tf*1000))
+        
         # Analytical gradient calculation
         natoms_per_point = self.data['natoms'].to_numpy()
+        t0 = perf_counter()
         Forces_analytical = self.computeForceClass(params, ndata, natoms_per_point, models_list_info)
-        
-        
+        tf = perf_counter() - t0
+        print('Time to compute Analytical Forces = {:4.3e}  ms, {:4.3e} ms/datapoint '.format(tf*1000,tf*1000/len(self.data)))
+        if check_only_analytical_forces:
+            for m, fa in Forces_analytical.items():
+                max_force = np.abs(fa).max()
+                min_force = np.abs(fa).min()
+                mean_force = np.abs(fa).mean()
+                print('point {:d} max_force = {:4.3e} mean_force = {:4.3e} min_force = {:4.3e}'.format(m,max_force,mean_force,min_force))
+                if verbose:
+                    print(fa)
+            return
         # Numerical gradient calculation
         
         Forces_numerical =  {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
@@ -4354,7 +4372,8 @@ class Interfacial_FF_Optimizer(Optimizer):
                     fa_ad = fa[atom_index , dir_index]
                     diff = np.abs(fn_ad - fa_ad)
                     differences.append(diff)
-                    #print('data_point = {:d}, atom = {:d}, dir = {:d}, Fnum = {:.4e} , Fana = {:.4e} --> diff = {:.4e}'.format( m, atom_index, dir_index, fn_ad, fa_ad, diff))
+                    if verbose:
+                        print('data_point = {:d}, atom = {:d}, dir = {:d}, Fnum = {:.4e} , Fana = {:.4e} --> diff = {:.4e}'.format( m, atom_index, dir_index, fn_ad, fa_ad, diff))
             dmax = np.max(differences)
             dmean = np.mean(differences)
             print('random try {:d} --> max diff = {:4.3e}, mean diff = {:4.3e}'.format(random_try,dmax,dmean))

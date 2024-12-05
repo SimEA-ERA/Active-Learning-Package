@@ -1,5 +1,5 @@
 representation  = AA 
-storing_path    = Results 
+storing_path    = . 
 run             = 22 
 dpi             = 120 
 figsize         : 3.500000 3.500000 
