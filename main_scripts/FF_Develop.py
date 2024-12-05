@@ -3240,7 +3240,7 @@ class Interactions():
         elif r>=rc:
             return 0
         else:
-            return 2*c[1]*r +4*c[2]*r**3+c[3]*r**5
+            return 2*c[1]*r + 4*c[2]*r**3 + 6*c[3]*r**5
     
     def calc_rhats(self):
         n = len(self.data)

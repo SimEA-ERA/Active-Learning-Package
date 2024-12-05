@@ -14,7 +14,7 @@ import numpy as np
 # 1 end
 
 # 2 read the setup file
-for kk in [2]:
+for kk in [3]:
     setup = ff.Setup_Interfacial_Optimization(f'test_Forces{kk}.in')
     # 2 end 
     
