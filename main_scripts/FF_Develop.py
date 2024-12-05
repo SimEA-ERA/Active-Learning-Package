@@ -1892,7 +1892,7 @@ class TestPotentials:
             print("max difference {:4.3e}".format(diff_max))
             print('Derivative Test not passed')
             return
-        print('Derivative check ok')
+        print("Derivative check ok, max difference {:4.3e}".format(diff_max))
         return
     
     def time_cost(self, Nt=100,verbose=True):
@@ -4215,6 +4215,7 @@ class Interfacial_FF_Optimizer(Optimizer):
         npars_old = 0
         for model_info in models_list_info:
             #t0 = perf_counter()
+            print(model_info.name)
             npars_new = npars_old  + model_info.n_notfixed
             
             objparams = params[ npars_old : npars_new ]
@@ -4240,12 +4241,126 @@ class Interfacial_FF_Optimizer(Optimizer):
         for m, ij_to_value_index in model_info.mij_to_value_index.items():
             chunk_m = dudx_vectorized[dl[m]:du[m]]
             forces_m = Forces[m]
+            #npairs = len(ij_to_value_index) ; natoms = Forces[m].shape[0] ; print(m,natoms,npairs,(natoms-1)*natoms/2)
             for (i,j), value_index in ij_to_value_index.items():
+                
                 fij = chunk_m[value_index] * model_info.mij_to_directionVec[ (m, i, j ) ] 
                 forces_m[i] += fij
                 forces_m[j] -= fij
                 
         return
+    
+    
+    
+    def test_ForceClass(self, which='opt', epsilon=1e-4,  seed = 2024,
+                        verbose=False,random_tries=10):
+        """
+        Compute and compare the analytical and numerical Forces
+        using second order finite difference methods.
+    
+        This method calculates the force on randomly selected atoms per data-point at each try. 
+. 
+    
+        Parameters:
+        ----------
+        which : str, optional
+            Specifies which model to use for analytical gradient computation. 
+            Default is 'opt', which refers to the optimized model.
+            
+        epsilon : float, optional
+            The step size for finite differences when calculating numerical gradients. 
+            Default is 1e-4.
+    
+        seed : int, optional
+            Random seed for reproducibility of any stochastic processes in the function. 
+            Default is 2024.
+    
+        verbose : bool, optional
+            If True, prints detailed information about the computation and comparisons. 
+            Default is False.
+    
+        random_tries : int, optional
+            The number of random configurations or trials to evaluate the gradients. 
+            Default is 10.
+        """
+        dataset='all'
+        
+        ndata = len(self.get_Energy(dataset))
+        models = getattr(self.setup, which + '_models')
+        params, bounds, fixed_params, isnot_fixed, reguls = self.get_parameter_info(models)
+        models_list_info = self.get_list_of_model_information(models, dataset)
+    
+        # Analytical gradient calculation
+        natoms_per_point = self.data['natoms'].to_numpy()
+        Forces_analytical = self.computeForceClass(params, ndata, natoms_per_point, models_list_info)
+        
+        
+        # Numerical gradient calculation
+        
+        Forces_numerical =  {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        
+        np.random.seed(42)
+        
+        self.data.drop(columns=['rhats','values', 'interactions' ,'neibs'], inplace=True)
+        
+        
+        coords_copy = copy.deepcopy(self.data['coords'].to_numpy())
+        if verbose:
+            print(f'Calculating the Forces on a random atom, seed = {seed} ...')
+        
+        all_diffs = []
+        for random_try in range(random_tries):
+            atoms_to_modify = [np.random.randint(0,natoms) for m, natoms  in enumerate(natoms_per_point)]
+            differences = []
+            for dir_index in range(3): 
+                
+                for m,idx in enumerate(self.data.index):
+                    atom_index = atoms_to_modify[m]
+                    self.data['coords'][idx][atom_index][dir_index] += epsilon
+                    
+                al_help.make_interactions(self.data, self.setup)
+                models_list_info = self.get_list_of_model_information(models, dataset)    
+                up1 = self.computeUclass(params, ndata, models_list_info)
+                
+                self.data.drop(columns=['rhats','values', 'interactions' ,'neibs','coords'], inplace=True)
+                self.data['coords'] = copy.deepcopy(coords_copy)
+                
+                for m,idx in enumerate(self.data.index):
+                    atom_index = atoms_to_modify[m]
+                    self.data['coords'][idx][atom_index][dir_index] -= epsilon
+                
+                al_help.make_interactions(self.data, self.setup)
+                models_list_info = self.get_list_of_model_information(models, dataset)    
+               
+                um1 = self.computeUclass(params, ndata, models_list_info)
+                
+                self.data.drop(columns=['rhats','values', 'interactions' ,'neibs','coords'], inplace=True)
+                self.data['coords'] = copy.deepcopy(coords_copy)
+                
+                for m in Forces_numerical.keys():
+                    atom_index = atoms_to_modify[m]
+                    Forces_numerical[m][atom_index, dir_index] = (up1[m] - um1[m]) / ( 2*epsilon)
+                if verbose:
+                    print(f'Numerical Forces Calculated. Comparing direction {dir_index}...')
+                
+                for m in Forces_numerical.keys():
+                    
+                    fn = Forces_numerical[m]
+                    fa = Forces_analytical[m]
+                    
+                    atom_index = atoms_to_modify[m]
+                    
+                    fn_ad = fn[atom_index , dir_index]
+                    fa_ad = fa[atom_index , dir_index]
+                    diff = np.abs(fn_ad - fa_ad)
+                    differences.append(diff)
+                    #print('data_point = {:d}, atom = {:d}, dir = {:d}, Fnum = {:.4e} , Fana = {:.4e} --> diff = {:.4e}'.format( m, atom_index, dir_index, fn_ad, fa_ad, diff))
+            dmax = np.max(differences)
+            dmean = np.mean(differences)
+            print('random try {:d} --> max diff = {:4.3e}, mean diff = {:4.3e}'.format(random_try,dmax,dmean))
+            all_diffs.extend(differences)
+        return 
+    
     def test_gradUclass(self, which='opt', dataset='all', epsilon=1e-4, order=2):
         """
         Calculate the analytical and numerical gradients of Uclass with options for higher-order finite differences.
