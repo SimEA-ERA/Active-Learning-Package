@@ -3412,7 +3412,7 @@ class Interactions():
                         
                         npairs = len(pairs) 
                         
-                        r  = np.empty((npairs,1), dtype=float)
+                        r  = np.empty(npairs, dtype=float)
                         rhats_ij = np.empty( (npairs,3), dtype=float)
                         i_index = np.empty(npairs,dtype=int)
                         j_index = np.empty(npairs,dtype=int)
@@ -3428,7 +3428,7 @@ class Interactions():
                             r[ip] =  VectorGeometry.calc_dist(r1,r2)
                             rhats_ij[ip] =  VectorGeometry.calc_unitvec(r1,r2)
                        
-                        temp = {'r':r, 'rhats_ij':rhats_ij,
+                        temp = {'values':r, 'rhats_ij':rhats_ij,
                                 'i_index':i_index,'j_index':j_index}
                         
                     elif intertype=='angles':
@@ -3456,7 +3456,7 @@ class Interactions():
                             rc[ip] = VectorGeometry.calc_angle_rc(r1,r2,r3)
                             angles[ip] =  VectorGeometry.calc_angle(r1,r2,r3)
                         
-                        temp = {'angles':angles, 'ra':ra, 'rc': rc,
+                        temp = {'values':angles, 'ra':ra, 'rc': rc,
                                 'i_index':i_index, 'j_index':j_index,
                                 'k_index': k_index}
                     
@@ -3488,7 +3488,7 @@ class Interactions():
                             rd[ip] = VectorGeometry.calc_dihedral_rd(r1,r2,r3,r3)
                             dihedrals[ip] =  VectorGeometry.calc_dihedral(r1, r2, r3, r4)
                             
-                        temp = {'dihedral':dihedrals, 'ra':ra, 'rd': rd,
+                        temp = {'values':dihedrals, 'ra':ra, 'rd': rd,
                                 'i_index':i_index, 'j_index':j_index,
                                 'k_index': k_index, 'l_index': l_index}
                         
@@ -3531,7 +3531,7 @@ class Interactions():
                                 
                                 tot_iter+=1
                             rhos[iv] = rho
-                        temp = {'rhos':rhos, 'v_ij':v_ij,'to_pair_index':to_pair_index,
+                        temp = {'values':rhos, 'v_ij':v_ij,'to_pair_index':to_pair_index,
                                 'i_index':i_index,'j_index':j_index}
                     else:
                         raise Exception(NotImplemented)
@@ -4251,6 +4251,8 @@ class Interfacial_FF_Optimizer(Optimizer):
         values_dict = self.get_dataDict(dataset,'values')
         
         fid = self.get_dataDict(dataset,'forces_info')
+        
+        natoms_dict =self.get_dataDict(dataset,'natoms')
         #neibs_dict = self.get_dataDict(dataset,'neibs')
         n = len(values_dict)
         #rhats_dict = self.get_dataDict(dataset,'rhats')
@@ -4262,10 +4264,10 @@ class Interfacial_FF_Optimizer(Optimizer):
             if self.check_excess_models(model.category,model.num):
                 continue
             
-            dists,dl,du = self.serialize_values(values_dict,model)
+            model_attributes = self.serialize_values(fid, natoms_dict, model)
             
-            minfo = self.Model_Info(model, dists, dl, du)
-            
+            minfo = self.Model_Info(model, model_attributes)
+            '''
             if model.feature == 'vdw' or model.feature == 'connectivity':
                 
                 minfo.rhats_ij = {m: v[model.feature][model.type]['rhats_ij'] 
@@ -4283,6 +4285,7 @@ class Interfacial_FF_Optimizer(Optimizer):
                                   for m,v in enumerate(fid.values()) }
                 minfo.to_pair_index = {m: v[model.feature][model.type]['to_pair_index'] 
                                   for m,v in enumerate(fid.values()) }
+            '''
             '''
             if model.feature in ['rhos','connectivity','vdw']:
                 minfo.mij_to_value_index = self.get_mij_to_value_index(neibs_dict,model)
@@ -4389,10 +4392,11 @@ class Interfacial_FF_Optimizer(Optimizer):
     @staticmethod
     def computeForceClass(params, ne, natoms_per_point, models_list_info):
         
-        Forces = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        Forces_dict = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
         
         npars_old = 0
         for model_info in models_list_info:
+            Forces =  np.zeros( ( np.sum(natoms_per_point) ,3), dtype=np.float64)   
             #t0 = perf_counter()
             print(model_info.name)
             npars_new = npars_old  + model_info.n_notfixed
@@ -4405,8 +4409,33 @@ class Interfacial_FF_Optimizer(Optimizer):
 
             Interfacial_FF_Optimizer.ForcesForEachPoint(Forces, model_pars, model_info)
             npars_old = npars_new
-        return Forces
+            nat_low = model_info.nat_low
+            nat_up = model_info.nat_up
+            for m  in range(len(Forces_dict)):
+                Forces_dict[m] += Forces[nat_low[m]:nat_up[m]] 
+        return Forces_dict
     
+    def ForcesForEachPoint(Forces, model_pars, model_info ):
+        #compute UvectorizedContribution
+        dists = model_info.dists
+        compute_obj = model_info.u_model(dists,model_pars,*model_info.model_args)
+        
+        i_index = model_info.i_indexes
+        j_index = model_info.j_indexes
+       
+        dudx_vectorized = - compute_obj.find_dydx()
+        dudx_vectorized = dudx_vectorized.reshape((dudx_vectorized.shape[0],1))
+        if 'PW' == model_info.name[:2]:
+            pw_ij = dudx_vectorized*model_info.rhats_ij
+            np.add.at(Forces,i_index, pw_ij)
+            np.add.at(Forces,j_index, -pw_ij)
+        elif 'LD' == model_info.name[:2]:
+            pw_ij = dudx_vectorized[ model_info.to_ij ]*model_info.v_ij
+            np.add.at(Forces,i_index, pw_ij)
+            np.add.at(Forces,j_index, -pw_ij)
+        return
+    
+    '''
     @staticmethod
     def ForcesForEachPoint(Forces, model_pars, model_info ):
         #compute UvectorizedContribution
@@ -4445,6 +4474,8 @@ class Interfacial_FF_Optimizer(Optimizer):
                 np.add.at(forces_m,i_index[m], pw)
                 np.add.at(forces_m,j_index[m], -pw)
         return
+    '''
+    
     '''
     @staticmethod
     def ForcesForEachPoint(Forces, model_pars, model_info ):
@@ -4759,30 +4790,92 @@ class Interfacial_FF_Optimizer(Optimizer):
                     value_index +=1 
         return mij_to_value_index
     
-    def serialize_values(self,values_dict,model):
+    def serialize_values(self,values_dict, natoms_dict, model):
         
         ndata = len(values_dict)
         dl = np.empty((ndata,), dtype=int)
         du = np.empty((ndata,), dtype=int)
+        nat_up = np.empty((ndata,), dtype=int)
+        nat_low = np.empty((ndata,), dtype=int)
         
         dists = [] 
-       
-        nd =0
-        
+        nd = 0
+        na = 0
         for m,(idx,val) in enumerate(values_dict.items()):
             if model.type  not in val[model.feature]:
                 d = np.empty(0,dtype=float)
             else:
-                d = val[model.feature][model.type]
+                d = val[model.feature][model.type]['values']
                 # val_to_ij
             dl[m] = nd
             nd += d.shape[0]
             du[m] = nd 
             dists.extend(d)
-
+            
+            nat_low[m] = na
+            na += natoms_dict[idx]
+            nat_up[m] = na
+            
         dists = np.array(dists)
+        model_attributes = {'dists':dists, 'dl':dl, 'du':du,
+                                       'nat_low': nat_low, 'nat_up':nat_up
+                                       }
         
-        return dists,dl,du
+        if model.category == 'BO' or model.category =='PW':
+            
+            rhats_ij  = [] ;  i_indexes = [] ; j_indexes = []
+            na = 0
+            
+            for m,(idx,val) in enumerate(values_dict.items()):
+                
+                if model.type  not in val[model.feature]:
+                    rh = np.empty(0,dtype=float)
+                    i_ix = np.empty(0,dtype=int)
+                    j_ix = np.empty(0,dtype=int)
+                else:
+                    rh = val[model.feature][model.type]['rhats_ij']
+                    i_ix = val[model.feature][model.type]['i_index']
+                    j_ix = val[model.feature][model.type]['j_index']
+                
+            
+                rhats_ij.extend(rh)
+                i_indexes.extend(i_ix + na)
+                j_indexes.extend(j_ix + na)
+                na += natoms_dict[idx]
+            
+            model_attributes.update({'rhats_ij':np.array(rhats_ij),
+                                           'i_indexes':np.array(i_indexes),
+                                           'j_indexes':np.array(j_indexes)})
+            
+        elif model.category == 'LD':
+            
+            v_ij  = [] ;  i_indexes = [] ; j_indexes = [] ; to_ij = []
+            na = 0
+            
+            for m,(idx,val) in enumerate(values_dict.items()):
+                
+                if model.type  not in val[model.feature]:
+                    rh = np.empty(0,dtype=float)
+                    i_ix = np.empty(0,dtype=int)
+                    j_ix = np.empty(0,dtype=int)
+                    to_ij_x = np.empty(0,dtype=int)
+                else:
+                    rh = val[model.feature][model.type]['v_ij']
+                    i_ix = val[model.feature][model.type]['i_index']
+                    j_ix = val[model.feature][model.type]['j_index']
+                    to_ij_x = val[model.feature][model.type]['to_pair_index']
+            
+                v_ij.extend( rh )
+                i_indexes.extend( i_ix + na )
+                j_indexes.extend( j_ix + na )
+                to_ij.extend( to_ij_x + na )
+                na += natoms_dict[ idx ]
+            
+            model_attributes.update({'v_ij':np.array(v_ij),
+                                           'i_indexes':np.array(i_indexes),
+                                           'j_indexes':np.array(j_indexes),
+                                           'to_ij':np.array(to_ij)})
+        return model_attributes
     
     def get_Energy(self,dataset):
         if dataset =='train':
@@ -4827,7 +4920,7 @@ class Interfacial_FF_Optimizer(Optimizer):
             return x 
         
     class Model_Info():
-        def __init__(self,model,dists,dl,du):
+        def __init__(self,model, model_attributes):
             
             fixed_params = []; isnot_fixed = []
            
@@ -4844,9 +4937,11 @@ class Interfacial_FF_Optimizer(Optimizer):
             self.fixed_params = fixed_params
             self.isnot_fixed = isnot_fixed
             self.n_notfixed = np.count_nonzero(isnot_fixed)
-            self.dists = dists
-            self.dl = dl
-            self.du = du
+            #self.dists = dists
+            #self.dl = dl
+            #self.du = du
+            for k,attr in model_attributes.items():
+                setattr(self,k,attr)
             return
 
         def __repr__(self):
