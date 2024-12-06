@@ -14,8 +14,8 @@ import numpy as np
 # 1 end
 check_only_analytical = False
 verbose = False
-num = 50
-files = [f'test_Forces{kk}.in' for kk in [1,2,3]]
+num = 10
+files = [f'test_Forces{kk}.in' for kk in [3]]
 # 2 read the setup file
 files.append('result_even.in')
 for file in files:

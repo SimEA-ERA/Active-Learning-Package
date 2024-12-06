@@ -3384,9 +3384,165 @@ class Interactions():
         self.data['values'] = all_Values
         self.calc_neibs_lists()
         self.calc_rhats()
+        self.calc_force_info()
         return
-
-
+    
+    def calc_force_info(self):
+        
+        n = len(self.data)
+        
+        all_force_info = np.empty(n ,dtype=object)
+        
+        atom_confs = np.array(self.data['coords'])
+        interactions = np.array(self.data['interactions'])
+        
+        for m, ac, inters in zip(range(n), atom_confs, interactions):
+            
+            force_info = dict(keys=inters.keys())
+            
+            
+            for intertype,vals in inters.items():
+                
+                d =  {t : None for t in vals.keys()}
+                
+                for t,pairs in vals.items():
+                    
+                   
+                    if intertype in ['connectivity','vdw']:
+                        
+                        npairs = len(pairs) 
+                        
+                        r  = np.empty((npairs,1), dtype=float)
+                        rhats_ij = np.empty( (npairs,3), dtype=float)
+                        i_index = np.empty(npairs,dtype=int)
+                        j_index = np.empty(npairs,dtype=int)
+                                    
+                        for ip,p in enumerate(pairs):
+                            i, j = p
+                            
+                            r1 = np.array(ac[i]) 
+                            r2 = np.array( ac[j])
+                            
+                            i_index[ip] = i
+                            j_index[ip] = j
+                            r[ip] =  VectorGeometry.calc_dist(r1,r2)
+                            rhats_ij[ip] =  VectorGeometry.calc_unitvec(r1,r2)
+                       
+                        temp = {'r':r, 'rhats_ij':rhats_ij,
+                                'i_index':i_index,'j_index':j_index}
+                        
+                    elif intertype=='angles':
+                        npairs = len(pairs) 
+                        
+                        angles  = np.empty(npairs, dtype=float)
+                        ra = np.empty( (npairs,3), dtype=float)
+                        rc = np.empty( (npairs,3), dtype=float)
+                        i_index = np.empty(npairs,dtype=int)
+                        j_index = np.empty(npairs,dtype=int)
+                        k_index = np.empty(npairs,dtype=int)
+                        
+                        for ip,p in enumerate(pairs):
+                            i, j, k = p
+                        
+                            r1 = np.array(ac[i]) ; 
+                            r2 = np.array(ac[j]) ; 
+                            r3 = np.array(ac[k])
+                            
+                            i_index[ip] = i
+                            j_index[ip] = j
+                            k_index[ip] = k
+                            
+                            ra[ip] = VectorGeometry.calc_angle_ra(r1,r2,r3)
+                            rc[ip] = VectorGeometry.calc_angle_rc(r1,r2,r3)
+                            angles[ip] =  VectorGeometry.calc_angle(r1,r2,r3)
+                        
+                        temp = {'angles':angles, 'ra':ra, 'rc': rc,
+                                'i_index':i_index, 'j_index':j_index,
+                                'k_index': k_index}
+                    
+                    elif intertype =='dihedrals':
+                        raise NotImplementedError('Code here is incomplete. Left for later stage')
+                        npairs = len(pairs) 
+                        
+                        dihedrals  = np.empty(npairs, dtype=float)
+                        ra = np.empty( (npairs,3), dtype=float)
+                        rd = np.empty( (npairs,3), dtype=float)
+                        
+                        i_index = np.empty(npairs,dtype=int)
+                        j_index = np.empty(npairs,dtype=int)
+                        k_index = np.empty(npairs,dtype=int)
+                        l_index = np.empty(npairs,dtype=int)
+                        for ip,p in enumerate(pairs):
+                            i, j, k, l = p
+                            r1 = np.array(ac[i]) ; 
+                            r2 = np.array(ac[j]) ; 
+                            r3 = np.array(ac[k])
+                            r4 = np.array(ac[l])
+                            
+                            i_index[ip] = i
+                            j_index[ip] = j
+                            k_index[ip] = k
+                            l_index[ip] = l
+                            
+                            ra[ip] = VectorGeometry.calc_dihedral_ra(r1,r2,r3,r3)
+                            rd[ip] = VectorGeometry.calc_dihedral_rd(r1,r2,r3,r3)
+                            dihedrals[ip] =  VectorGeometry.calc_dihedral(r1, r2, r3, r4)
+                            
+                        temp = {'dihedral':dihedrals, 'ra':ra, 'rd': rd,
+                                'i_index':i_index, 'j_index':j_index,
+                                'k_index': k_index, 'l_index': l_index}
+                        
+                    elif intertype=='rhos':
+                        r0 = self.rho_r0
+                        rc = self.rho_rc
+                        
+                        n_rhos = len(pairs) 
+                        
+                        rhos  = np.empty(n_rhos, dtype=float)
+                        
+                        npairs = np.sum([len(v) for v in pairs])
+                        
+                        v_ij = np.empty( (npairs,3), dtype=float)
+                        
+                        i_index = np.empty(npairs,dtype=int)
+                        j_index = np.empty(npairs,dtype=int)
+                        to_pair_index = np.empty(npairs,dtype=int)
+                        
+                        c = self.compute_coeff(r0, rc)
+                        
+                        tot_iter = 0
+                        for iv in range(n_rhos):
+                            rho = 0
+                            for ip,p in enumerate(pairs[iv]):
+                                i,j  = p 
+                                r1 = np.array(ac[i]) 
+                                r2 = np.array(ac[j])
+                                
+                                i_index[tot_iter] = i
+                                j_index[tot_iter] = j
+                                to_pair_index[tot_iter] = iv
+                                
+                                r12 =  VectorGeometry.calc_dist(r1,r2)
+                                dirvec = self.dphi_rho(r12,c,r0,rc) * VectorGeometry.calc_unitvec(r1,r2)
+                                v_ij[tot_iter] = dirvec
+                                
+                                rho += self.phi_rho(r12,c,r0,rc)
+                                
+                                
+                                tot_iter+=1
+                            rhos[iv] = rho
+                        temp = {'rhos':rhos, 'v_ij':v_ij,'to_pair_index':to_pair_index,
+                                'i_index':i_index,'j_index':j_index}
+                    else:
+                        raise Exception(NotImplemented)
+                    
+                    d[t] = temp.copy()
+                           
+                force_info[intertype] = d.copy()
+    
+            all_force_info[m] = force_info
+        self.data['forces_info'] = all_force_info 
+        return
 
 class Data_Manager():
     def __init__(self,data,setup):
@@ -4094,9 +4250,10 @@ class Interfacial_FF_Optimizer(Optimizer):
 
         values_dict = self.get_dataDict(dataset,'values')
         
-        neibs_dict = self.get_dataDict(dataset,'neibs')
-        
-        rhats_dict = self.get_dataDict(dataset,'rhats')
+        fid = self.get_dataDict(dataset,'forces_info')
+        #neibs_dict = self.get_dataDict(dataset,'neibs')
+        n = len(values_dict)
+        #rhats_dict = self.get_dataDict(dataset,'rhats')
         
         models_list = []
 
@@ -4109,11 +4266,33 @@ class Interfacial_FF_Optimizer(Optimizer):
             
             minfo = self.Model_Info(model, dists, dl, du)
             
-            minfo.mij_to_value_index = self.get_mij_to_value_index(neibs_dict,model)
+            if model.feature == 'vdw' or model.feature == 'connectivity':
+                
+                minfo.rhats_ij = {m: v[model.feature][model.type]['rhats_ij'] 
+                                  for m,v in enumerate(fid.values()) }
+                minfo.i_index = {m: v[model.feature][model.type]['i_index'] 
+                                  for m,v in enumerate(fid.values()) }
+                minfo.j_index = {m: v[model.feature][model.type]['j_index'] 
+                                  for m,v in enumerate(fid.values()) }
+            elif model.feature == 'rhos':
+                minfo.v_ij = {m: v[model.feature][model.type]['v_ij'] 
+                                  for m,v in enumerate(fid.values()) }                
+                minfo.i_index = {m: v[model.feature][model.type]['i_index'] 
+                                  for m,v in enumerate(fid.values()) }
+                minfo.j_index = {m: v[model.feature][model.type]['j_index'] 
+                                  for m,v in enumerate(fid.values()) }
+                minfo.to_pair_index = {m: v[model.feature][model.type]['to_pair_index'] 
+                                  for m,v in enumerate(fid.values()) }
+            '''
+            if model.feature in ['rhos','connectivity','vdw']:
+                minfo.mij_to_value_index = self.get_mij_to_value_index(neibs_dict,model)
             
-            minfo.mij_to_directionVec = self.get_mij_to_directionVec(rhats_dict, neibs_dict, model)
-            
+                minfo.mij_to_directionVec = self.get_mij_to_directionVec(rhats_dict, neibs_dict, model)
+            else:
+                raise NotImplementedError('angles and dihedrals are not supported in this function')
+            '''
             models_list.append(minfo)
+        
         return  models_list
     
     def UvectorizedContribution_ondata(self,which='opt',dataset='all'):
@@ -4227,8 +4406,46 @@ class Interfacial_FF_Optimizer(Optimizer):
             Interfacial_FF_Optimizer.ForcesForEachPoint(Forces, model_pars, model_info)
             npars_old = npars_new
         return Forces
- 
-
+    
+    @staticmethod
+    def ForcesForEachPoint(Forces, model_pars, model_info ):
+        #compute UvectorizedContribution
+        dists = model_info.dists
+        compute_obj = model_info.u_model(dists,model_pars,*model_info.model_args)
+        
+        dl = model_info.dl
+        du = model_info.du
+        i_index = model_info.i_index
+        j_index = model_info.j_index
+        
+        if 'PW' == model_info.name[:2]:
+            rhats_ij = model_info.rhats_ij
+        elif 'LD' == model_info.name[:2]:
+            to_ij = model_info.to_pair_index
+            v_ij = model_info.v_ij
+        dudx_vectorized = - compute_obj.find_dydx()
+        dudx_vectorized = dudx_vectorized.reshape((dudx_vectorized.shape[0],1))
+        
+        if 'PW' == model_info.name[:2]:
+            for m in range(len(Forces)):
+                chunk_m = dudx_vectorized[dl[m]:du[m]]
+                #chunk_m = chunk_m.reshape( (chunk_m.shape[0],1) )
+                forces_m = Forces[m]
+                #npairs = len(ij_to_value_index) ; natoms = Forces[m].shape[0] ; print(m,natoms,npairs,(natoms-1)*natoms/2)
+                pw = chunk_m*rhats_ij[m]
+                np.add.at(forces_m,i_index[m], pw)
+                np.add.at(forces_m,j_index[m], -pw)
+        elif 'LD' ==   model_info.name[:2]:
+            for m in range(len(Forces)):
+                chunk_m = dudx_vectorized[dl[m]:du[m]][to_ij[m]]
+                #chunk_m = chunk_m.reshape( (chunk_m.shape[0],1) )
+                forces_m = Forces[m]
+                #npairs = len(ij_to_value_index) ; natoms = Forces[m].shape[0] ; print(m,natoms,npairs,(natoms-1)*natoms/2)
+                pw = chunk_m*v_ij[m]
+                np.add.at(forces_m,i_index[m], pw)
+                np.add.at(forces_m,j_index[m], -pw)
+        return
+    '''
     @staticmethod
     def ForcesForEachPoint(Forces, model_pars, model_info ):
         #compute UvectorizedContribution
@@ -4249,7 +4466,7 @@ class Interfacial_FF_Optimizer(Optimizer):
                 forces_m[j] -= fij
                 
         return
-    
+    '''
     
     
     def test_ForceClass(self, which='opt', epsilon=1e-4,  seed = 2024,
@@ -4309,6 +4526,7 @@ class Interfacial_FF_Optimizer(Optimizer):
                 max_force = np.abs(fa).max()
                 min_force = np.abs(fa).min()
                 mean_force = np.abs(fa).mean()
+                print(m,fa.sum())
                 print('point {:d} max_force = {:4.3e} mean_force = {:4.3e} min_force = {:4.3e}'.format(m,max_force,mean_force,min_force))
                 if verbose:
                     print(fa)
