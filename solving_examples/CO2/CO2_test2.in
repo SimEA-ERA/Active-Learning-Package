@@ -1,0 +1,76 @@
+representation  = AA 
+storing_path    = Results 
+run             = 49 
+dpi             = 120 
+figsize         : 3.500000 3.500000 
+runpath_attributes : run 
+uncertainty_method = no 
+
+max_ener        = 1.000000 
+rclean          = 6.000000 
+bC              = 30.000000 
+max_force       = 0.003000 
+central_LD_atoms : 
+split_method    = random 
+
+colsplit        = label 
+train_colvars   : 
+optimization_method = stochastic_SLSQP 
+opt_disp        = 0 
+optimize        = 1 
+maxiter         = 3000 
+max_moves       = 40 
+nepochs         = 30 
+batchsize       = 6400 
+maxiter_i       = 20000 
+tolerance       = 0.000010 
+sampling_method = random 
+seed            = 111 
+train_perc      = 0.800000 
+validation_set  = sys_name:Ag10,Ag16 
+
+regularization_method = ridge 
+increased_stochasticity = 0.200000 
+reg_par         = 0.000001 
+polish          = 1 
+
+popsize         = 30 
+mutation        : 0.500000 1.000000 
+recombination   = 0.700000 
+initial_temp    = 15230.000000 
+restart_temp_ratio = 0.000050 
+local_search_scale = 3.000000 
+accept          = -5.000000 
+visit           = 2.620000 
+weighting_method = gmin 
+w               = 1.000000 
+bT              = 2500.000000 
+bS              = 15.000000 
+clean_perc      = 0.800000 
+costf           = MSE 
+nLD             = 1 
+nPW             = 2 
+nBO             = 2 
+nAN             = 2 
+LD_model        = polynomial 
+LD_types        : 
+rho_r0          = 0.100000 
+rho_rc          = 5.500000 
+distance_map    = {('C', 'O'): (0.0, 2.5)} 
+reference_energy = {'atoms': {'Ag': -92251.97939301, 'C': -118351.8096876, 'O': 0}} 
+struct_types    = [('Ag',), ('C', 'O')] 
+rigid_types     = [] 
+perturbation_method = atoms 
+lammps_potential_extra_lines = [''] 
+rigid_style     = single 
+extra_pair_coeff = {('C', 'C'): ['lj/class2/coul/cut', '0.068', '3.915'], ('C', 'O'): ['lj/class2/coul/cut', '0.061', '3.6889'], ('O', 'O'): ['lj/class2/coul/cut', '0.067', '3.36']} 
+
+
+&AN0 O C O
+FUNC harmonic
+th0        : 3.141592653  0  3.00000000  3.50000000    0.00000000 
+k          : 12.30703994  1  0.00000000  500.00000000    1.00000000 
+/
+
+
+

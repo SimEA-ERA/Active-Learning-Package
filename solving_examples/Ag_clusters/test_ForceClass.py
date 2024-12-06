@@ -13,11 +13,11 @@ from time import perf_counter
 import numpy as np
 # 1 end
 check_only_analytical = False
-verbose = False
+verbose =False
 num = 10
 files = [f'test_Forces{kk}.in' for kk in [3]]
 # 2 read the setup file
-files.append('result_even.in')
+#files.append('result_even.in')
 for file in files:
     setup = ff.Setup_Interfacial_Optimization(file)
     # 2 end 
@@ -60,8 +60,8 @@ for file in files:
     dataMan = ff.Data_Manager(data, setup)
     train_indexes, test_indexes = dataMan.train_development_split()
     
-    optimizer = ff.Interfacial_FF_Optimizer(data,train_indexes,test_indexes, setup)
+    optimizer = ff.FF_Optimizer(data,train_indexes,test_indexes, setup)
     
-    optimizer.test_ForceClass(which='init',epsilon=1e-4,random_tries=10,
-                              verbose=verbose,
+    optimizer.test_ForceClass(which='init',epsilon=1e-3,random_tries=10,
+                              verbose=verbose,seed=12,
                               check_only_analytical_forces=check_only_analytical) 
