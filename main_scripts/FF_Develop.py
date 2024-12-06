@@ -3547,11 +3547,12 @@ class Interactions():
                                 v_ij[tot_iter] = dirvec
                                 
                                 rho += self.phi_rho(r12,c,r0,rc)
-                                
-                                
+
                                 tot_iter+=1
+                                
                             rhos[iv] = rho
-                        temp = {'values':rhos, 'v_ij':v_ij,'to_pair_index':to_pair_index,
+                        temp = {'values':rhos,'n_central':n_rhos , 
+                                'v_ij':v_ij,'to_pair_index':to_pair_index,
                                 'i_index':i_index,'j_index':j_index}
                     else:
                         raise Exception(NotImplemented)
@@ -4432,7 +4433,7 @@ class FF_Optimizer(Optimizer):
             FF_Optimizer.numba_add_angle(Forces, fa, fc, i_index, j_index, k_index)
         return
     
-    #@jit(nopython=True,fastmath=True,parallel=True)
+    @jit(nopython=True,fastmath=True,parallel=True)
     def numba_add_angle(forces, fa,fc, i_indices, j_indices,k_indices):
         for m in prange(len(i_indices)):
             i, j, k = i_indices[m] , j_indices[m], k_indices[m]
@@ -4489,17 +4490,18 @@ class FF_Optimizer(Optimizer):
         models = getattr(self.setup, which + '_models')
         params, bounds, fixed_params, isnot_fixed, reguls = self.get_parameter_info(models)
         models_list_info = self.get_list_of_model_information(models, dataset)
-        
-        t0 = perf_counter()
-        _ = self.computeUclass(params, ndata, models_list_info)
-        tf = perf_counter() - t0
+        for _ in range(2):
+            t0 = perf_counter()
+            _ = self.computeUclass(params, ndata, models_list_info)
+            tf = perf_counter() - t0
         print('Time to compute analytical classical energy {:4.3e} ms'.format(tf*1000))
         
         # Analytical gradient calculation
         natoms_per_point = self.data['natoms'].to_numpy()
-        t0 = perf_counter()
-        Forces_analytical = self.computeForceClass(params, ndata, natoms_per_point, models_list_info)
-        tf = perf_counter() - t0
+        for _ in range(2):
+            t0 = perf_counter()
+            Forces_analytical = self.computeForceClass(params, ndata, natoms_per_point, models_list_info)
+            tf = perf_counter() - t0
         print('Time to compute Analytical Forces = {:4.3e}  ms, {:4.3e} ms/datapoint '.format(tf*1000,tf*1000/len(self.data)))
         if check_only_analytical_forces:
             for m, fa in Forces_analytical.items():
@@ -4759,7 +4761,7 @@ class FF_Optimizer(Optimizer):
             
             v_ij  = [] ;  i_indexes = [] ; j_indexes = [] ; to_ij = []
             na = 0
-            
+            nc =0
             for m,(idx,val) in enumerate(values_dict.items()):
                 
                 if model.type  not in val[model.feature]:
@@ -4767,18 +4769,20 @@ class FF_Optimizer(Optimizer):
                     i_ix = np.empty(0,dtype=int)
                     j_ix = np.empty(0,dtype=int)
                     to_ij_x = np.empty(0,dtype=int)
+                    n_central = 0
                 else:
                     vh = val[model.feature][model.type]['v_ij']
-                    i_ix = val[model.feature][model.type]['i_index']
-                    j_ix = val[model.feature][model.type]['j_index']
+                    i_ix = val[model.feature][model.type]['i_index'] 
+                    j_ix = val[model.feature][model.type]['j_index'] 
                     to_ij_x = val[model.feature][model.type]['to_pair_index']
-            
+                    n_central = val[model.feature][model.type]['n_central']
+
                 v_ij.extend( vh )
-                i_indexes.extend( i_ix + na )
+                i_indexes.extend( i_ix  + na )
                 j_indexes.extend( j_ix + na )
-                to_ij.extend( to_ij_x + na )
+                to_ij.extend( to_ij_x  + nc )
                 na += natoms_dict[ idx ]
-            
+                nc += n_central
             model_attributes.update({'v_ij':np.array(v_ij),
                                            'i_indexes':np.array(i_indexes),
                                            'j_indexes':np.array(j_indexes),
