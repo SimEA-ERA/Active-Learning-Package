@@ -4517,7 +4517,7 @@ class FF_Optimizer(Optimizer):
         
         Forces_numerical =  {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
         
-        np.random.seed(seed)
+        
         
         self.data.drop(columns=['forces_info', 'interactions' ], inplace=True)
         
@@ -4527,6 +4527,7 @@ class FF_Optimizer(Optimizer):
             print(f'Calculating the Forces on a random atom, seed = {seed} ...')
         
         all_diffs = []
+        np.random.seed(seed)
         for random_try in range(random_tries):
             atoms_to_modify = [np.random.randint(0,natoms) for m, natoms  in enumerate(natoms_per_point)]
             differences = []
@@ -4572,7 +4573,7 @@ class FF_Optimizer(Optimizer):
                     fa_ad = fa[atom_index , dir_index]
                     diff = np.abs(fn_ad - fa_ad)
                     differences.append(diff)
-                    if verbose:
+                    if verbose and diff.max()>1e-3:
                         print('data_point = {:d}, atom = {:d}, dir = {:d}, Fnum = {:.4e} , Fana = {:.4e} --> diff = {:.4e}'.format( m, atom_index, dir_index, fn_ad, fa_ad, diff))
             dmax = np.max(differences)
             dmean = np.mean(differences)

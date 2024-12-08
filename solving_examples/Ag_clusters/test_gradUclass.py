@@ -43,7 +43,7 @@ for kk in range(1,3):
     dataMan = ff.Data_Manager(data, setup)
     train_indexes, test_indexes = dataMan.train_development_split()
     
-    optimizer = ff.Interfacial_FF_Optimizer(data,train_indexes,test_indexes, setup)
+    optimizer = ff.FF_Optimizer(data,train_indexes,test_indexes, setup)
     grads_a,grads_n = optimizer.test_gradUclass(which='init',order=2,epsilon=1e-4)
     
     diff = np.abs(grads_a - grads_n).max()

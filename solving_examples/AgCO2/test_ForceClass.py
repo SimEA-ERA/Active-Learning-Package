@@ -15,7 +15,7 @@ import numpy as np
 check_only_analytical = False
 verbose = False
 num = 10
-file = 'AgCO2_test5.in'
+file = 'runned_test1.in'
 setup = ff.Setup_Interfacial_Optimization(file)
 # 2 end 
 
@@ -46,6 +46,6 @@ train_indexes, test_indexes = dataMan.train_development_split()
 
 optimizer = ff.FF_Optimizer(data,train_indexes,test_indexes, setup)
 
-optimizer.test_ForceClass(which='init',epsilon=1e-4,random_tries=10,
-                          verbose=verbose,seed=12,
+optimizer.test_ForceClass(which='init',epsilon=1e-4,random_tries=1,
+                          verbose=verbose,seed=2024,
                           check_only_analytical_forces=check_only_analytical) 
