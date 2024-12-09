@@ -1455,7 +1455,7 @@ class harmonic3:
         
         return g
     
-    def find_params_gradient(self):
+    def find_gradient(self):
         
         r0, k1, k2, k3 = self.params
         r = self.r
@@ -1498,7 +1498,7 @@ class harmonic:
         self.dydx = g
         return g
     
-    def find_params_gradient(self):
+    def find_gradient(self):
         
         r0, k = self.params
         r = self.r
@@ -1544,7 +1544,7 @@ class LJ:
         self.dydx = g
         return g
        
-    def find_params_gradient(self):
+    def find_gradient(self):
         sigma, epsilon = self.params
         r = self.r
         
@@ -1594,7 +1594,7 @@ class MorseBond:
         self.dydx = g
         return g
        
-    def find_params_gradient(self):
+    def find_gradient(self):
         r = self.r
         x = self.params
         re, De, alpha = x
@@ -1614,7 +1614,28 @@ class MorseBond:
         
         self.params_gradient = g
         return g
-
+    
+    def find_derivative_gradient(self):
+        r = self.r
+        x = self.params
+        re, De, alpha = x
+        nr = r.shape[0]
+        n = self.params.shape[0]
+        
+        fg = np.zeros((n,nr))
+        
+        r_re = r-re
+        t1 = -alpha*r_re
+        e1 = np.exp(t1)
+        e2 = np.exp(2*t1)
+        rr = (e2  - e1 )
+        r2r = (2*e2-e1)
+        fg[0] = -2 *  alpha * alpha * De  * r2r  #d^2udrdre
+        fg[1] = -2 * alpha * rr # d^2udrDe
+        fg[2] = 2 * De * ( alpha*r_re*r2r - rr  ) # d^22udrdalpha
+        
+        self.derivative_gradient = fg
+        return fg
     
     
 class Morse:
@@ -1646,7 +1667,7 @@ class Morse:
         self.dydx = g
         return g
        
-    def find_params_gradient(self):
+    def find_gradient(self):
         r = self.r
         x = self.params
         re, De, alpha = x
@@ -1667,6 +1688,27 @@ class Morse:
         self.params_gradient = g
         return g
     
+    def find_derivative_gradient(self):
+        r = self.r
+        x = self.params
+        re, De, alpha = x
+        nr = r.shape[0]
+        n = self.params.shape[0]
+        
+        fg = np.zeros((n,nr))
+        
+        r_re = r-re
+        t1 = -alpha*r_re
+        e1 = np.exp(t1)
+        e2 = np.exp(2*t1)
+        rr = (e2  - e1 )
+        r2r = (2*e2-e1)
+        fg[0] = -2 *  alpha * alpha * De  * r2r  #d^2udrdre
+        fg[1] = -2 * alpha * rr # d^2udrDe
+        fg[2] = 2 * De * ( alpha*r_re*r2r - rr  ) # d^22udrdalpha
+        
+        self.derivative_gradient = fg
+        return fg
 
 class Bezier(MathAssist):
     def __init__(self,xvals, params,  M = None ):
@@ -1782,7 +1824,7 @@ class Bezier(MathAssist):
         
         return self.dydx
     
-    def find_params_gradient(self):
+    def find_gradient(self):
         
         if not hasattr(self,'dxdxc'):
             C = self.find_dydyc_vectorized()
@@ -1935,7 +1977,7 @@ class TestPotentials:
         
         t0 = perf_counter()
         for b,_ in zip(bs,range(Nt)):
-            _ = b.find_params_gradient()
+            _ = b.find_gradient()
         tf = 1000*(perf_counter() - t0 ) - t_overhead
         
         times['grads'] = tf/Nt 
@@ -1946,9 +1988,17 @@ class TestPotentials:
         tf = 1000*(perf_counter() - t0 ) - t_overhead
         
         times['dydx'] = tf/Nt 
+        
+        t0 = perf_counter()
+        for b,_ in zip(bs,range(Nt)):
+            _ = b.find_derivative_gradient()
+        tf = 1000*(perf_counter() - t0 ) - t_overhead
+        
+        times['grads_dydx'] = tf/Nt 
+        
         if verbose:
-            line = ", ".join(["{:s}  --> {:4.3e} ms".format(k,v) for k,v in times.items() ]) 
-            print(" Npoints: {:d} -- -- > {:s} ".format(u.shape[0],line))
+            line = ", ".join(["{:s}  --> {:4.3e} ms\n".format(k,v) for k,v in times.items() ]) 
+            print(" Npoints: {:d} -- -- > {:s} \n".format(u.shape[0],line))
         return times
     
     def vectorization_scalability(self,Nt=30,verbose=False,plot=True):
@@ -1990,6 +2040,55 @@ class TestPotentials:
             plt.show()
         return 
     
+    def derivative_gradient_check(self, epsilon=1e-4,tol=1,plot=False,verbose=False):
+        tol=tol*epsilon
+        b = self.b
+        params = self.params.copy()
+        vals = self.vals
+        filt = self.filt
+        
+        passed = True
+        
+        g = b.find_derivative_gradient()
+        for i in range(params.shape[0]):
+            # Create copies of params and perturb only the i-th parameter for 4th order central difference
+            p1p, p1m = params.copy(), params.copy()
+            p1p[i] += epsilon
+            p1m[i] -= epsilon
+            p2p, p2m = params.copy(), params.copy()
+            p2p[i] += 2 * epsilon
+            p2m[i] -= 2 * epsilon
+    
+            # Compute function values at perturbed points
+            du1p = self.f(vals, p1p, *self.fargs, **self.fkwargs).find_dydx()
+            du1m = self.f(vals, p1m, *self.fargs, **self.fkwargs).find_dydx()
+            du2p = self.f(vals, p2p, *self.fargs, **self.fkwargs).find_dydx()
+            du2m = self.f(vals, p2m, *self.fargs, **self.fkwargs).find_dydx()
+            
+            # 4th-order central difference approximation
+            g_num = (-du2p + 8 * du1p - 8 * du1m + du2m) / (12 * epsilon)
+    
+            # Compute the max difference between numerical and analytical gradients
+            diff = np.abs(g_num[filt] - g[i][filt]).max()
+            if verbose:
+                print("parameter {:d} --> max difference {:4.3e}".format(i, diff))
+            
+            if plot:
+                _ = plt.figure(figsize=(3.3,3.3),dpi=250)
+                plt.title(f'Derivative Gradient of x_{i}')
+                plt.plot(vals[filt], g_num[filt], label='numerical')
+                plt.plot(vals[filt], g[i][filt], label='analytical',ls='--')
+                plt.legend(fontsize=6,frameon=False)
+                plt.show()
+            if diff > tol:
+                
+                print('Derivative Gradient Test not passed')
+                passed = False
+        if passed:
+            print('Derivative Gradient check ok')
+        return
+    
+    
     def gradient_check(self, epsilon=1e-4,tol=1,plot=False,verbose=False):
         tol=tol*epsilon
         b = self.b
@@ -1997,7 +2096,7 @@ class TestPotentials:
         vals = self.vals
         filt = self.filt
         
-        g = b.find_params_gradient()
+        g = b.find_gradient()
         for i in range(params.shape[0]):
             # Create copies of params and perturb only the i-th parameter for 4th order central difference
             p1p, p1m = params.copy(), params.copy()
@@ -4322,7 +4421,7 @@ class FF_Optimizer(Optimizer):
         gu = np.empty((n_p,data_size), dtype=np.float64)
         
         pobj = u_model(dists,model_pars,*model_args)
-        g = pobj.find_params_gradient() # shape = (n_p, dists.shape[0]) # dists.shape[0] == all the values serialized
+        g = pobj.find_gradient() # shape = (n_p, dists.shape[0]) # dists.shape[0] == all the values serialized
 
         for j in range(n_p):
             for i in prange(data_size):
