@@ -1801,6 +1801,7 @@ class Bezier(MathAssist):
         self.ycurve = yr
         return yr
     
+    
     def find_dydx(self):
         y = self.ycontrol
         M = self.M
@@ -1816,6 +1817,7 @@ class Bezier(MathAssist):
             for j in range(i,n):
                 mij = M[i,j]
                 coeff_tj[j] += ry * mij * j
+        
         
         g0_1 = np.dot(taus_power[0:-1].T,coeff_tj[1:])   
         
@@ -1848,6 +1850,48 @@ class Bezier(MathAssist):
         
         return g
     
+    def find_derivative_gradient(self):
+        
+        taus = self.taus
+        M = self.M
+        y = self.ycontrol
+        n = self.npoints
+        
+        if not hasattr(self,'dC'):
+            dC = self.find_dC_vectorized()
+        else:
+            dC = self.dC 
+        if not hasattr(self,'dydt'):
+           _ = self.find_dydx()
+        
+        taus_power = self.taus_power
+        coeff_tj = np.zeros((n,))
+        
+        for i in range(n):
+            ry = y[i]
+            for j in range(i,n):
+                mij = M[i,j]
+                coeff_tj[j] += ry * mij * j * (j-1)
+        
+        g0_1 = np.dot(taus_power[0:-2].T,coeff_tj[2:])   
+        
+        self.d2ydt2 = g0_1
+        
+        
+        nt = taus.shape[0]
+        fg = np.zeros((self.params.shape[0],nt))
+        L = self.L
+        
+        fg[0] = ( -1/(L*L) )*(self.dydt + self.taus*g0_1) # dydt*dtdL
+        
+        fg[1] = (dC[0] + dC[1] + dC[2])/L
+        fg[-1] = (dC[-1] + dC[-2] + dC[-3])/L
+        
+        fg[2:-1] = dC[3:-3]/L
+        
+        self.params_gradient = fg
+        
+        return fg
     
     def find_dydyc_numerically(self,epsilon=1e-3):
         n = self.npoints
@@ -1884,16 +1928,53 @@ class Bezier(MathAssist):
         self.dxdxc = C
         return C 
    
+    
+    def find_dC_vectorized(self):
+        
+        M = self.M
+        if not hasattr(self,'taus_power'):
+            self.find_taus_power()
+        taus_power = self.taus_power
+        
+        j = np.arange(1, self.npoints)  # Create an array of j indices (1-based)
+        # Create a mask to determine valid (i, j) pairs where j >= i
+        
+        C =  np.dot(M[:,j]*j,taus_power[j-1]) 
+        self.dC = C
+
+        return C 
+   
+    def find_dC_serial(self):
+        n = self.npoints
+        M = self.M
+        if not hasattr(self,'taus_power'):
+            self.find_taus_power()
+            
+        taus_power = self.taus_power
+        nt = self.taus.shape[0]
+        C = np.zeros((n, nt))
+        
+        for i in range(n):
+            for j in range(i,n):
+                C[i] += j*M[i,j]*taus_power[j-1]
+        self.dC = C
+        return C 
+   
     def find_dydyc_serial(self):
         n = self.npoints
         M = self.M
         taus = self.taus
         nt = taus.shape[0]
+        
+        if not hasattr(self,'taus_power'):
+            self.find_taus_power()
+            
+        taus_power = self.taus_power
+        
+        
         C = np.zeros((n, nt))
-        taus_power = np.ones((n,nt))
-        taus_power[1] = taus
-        for j in range(2,n):
-            taus_power[j] = taus_power[j-1]*taus
+        
+        
         for i in range(n):
             for j in range(i,n):
                 C[i] += M[i,j]*taus_power[j]
@@ -1968,12 +2049,15 @@ class TestPotentials:
             pass
         t_overhead = perf_counter()-t_overhead
         
+        
         t0 = perf_counter()
         for b,_ in zip(bs,range(Nt)):
             u = b.u_vectorized()
         tf = 1000*(perf_counter() - t0 ) - t_overhead
 
         times['func'] = tf/Nt 
+        
+        bs = [ copy.deepcopy(self.b) for _ in range(Nt)]
         
         t0 = perf_counter()
         for b,_ in zip(bs,range(Nt)):
@@ -1982,12 +2066,16 @@ class TestPotentials:
         
         times['grads'] = tf/Nt 
         
+        bs = [ copy.deepcopy(self.b) for _ in range(Nt)]
+        
         t0 = perf_counter()
         for b,_ in zip(bs,range(Nt)):
             _ = b.find_dydx()
         tf = 1000*(perf_counter() - t0 ) - t_overhead
         
         times['dydx'] = tf/Nt 
+        
+        bs = [ copy.deepcopy(self.b) for _ in range(Nt)]
         
         t0 = perf_counter()
         for b,_ in zip(bs,range(Nt)):
@@ -1997,8 +2085,8 @@ class TestPotentials:
         times['grads_dydx'] = tf/Nt 
         
         if verbose:
-            line = ", ".join(["{:s}  --> {:4.3e} ms\n".format(k,v) for k,v in times.items() ]) 
-            print(" Npoints: {:d} -- -- > {:s} \n".format(u.shape[0],line))
+            line = "".join(["{:s}  --> {:4.3e} ms\n".format(k,v) for k,v in times.items() ]) 
+            print(" Npoints: {:d}\n ------\n {:s} ".format(u.shape[0],line))
         return times
     
     def vectorization_scalability(self,Nt=30,verbose=False,plot=True):
@@ -2008,7 +2096,7 @@ class TestPotentials:
         else:
             L=10.0
         xe =L+x0
-        func = [] ; grads = [] ; dydx = []
+        func = [] ; grads = [] ; dydx = [] ; grads_dydx = []
         Npoints = []
         for dx in [1.0,1e-1,1e-2,1e-3,1e-4,1e-5]:
             xvals = np.arange(x0,xe,dx)
@@ -2021,10 +2109,11 @@ class TestPotentials:
             func.append(times['func'])
             grads.append(times['grads'])
             dydx.append(times['dydx'])
-            
+            grads_dydx.append(times['grads_dydx'])
         func = np.array(func)
         grads = np.array(grads)
         dydx = np.array(dydx)
+        grads_dydx = np.array(grads_dydx)
         Npoints = np.array(Npoints)
         if plot:
             _ = plt.figure(figsize=(3.3,3.3),dpi=250)
@@ -2036,6 +2125,8 @@ class TestPotentials:
             plt.plot(Npoints, func/Npoints, marker='o', label='func',ls='-')
             plt.plot(Npoints, grads/Npoints,marker='s', label='grads',ls='--')
             plt.plot(Npoints, dydx/Npoints,marker='v', label='dydx',ls=':')
+            plt.plot(Npoints, grads_dydx/Npoints,marker='*', 
+                     label='grads_dydx',ls='-.')
             plt.legend(fontsize=6,frameon=False)
             plt.show()
         return 
@@ -2085,7 +2176,7 @@ class TestPotentials:
                 print('Derivative Gradient Test not passed')
                 passed = False
         if passed:
-            print('Derivative Gradient check ok')
+            print('Derivative Gradient check ok!')
         return
     
     
@@ -2095,6 +2186,7 @@ class TestPotentials:
         params = self.params.copy()
         vals = self.vals
         filt = self.filt
+        passed = True
         
         g = b.find_gradient()
         for i in range(params.shape[0]):
@@ -2128,10 +2220,10 @@ class TestPotentials:
                 plt.legend(fontsize=6,frameon=False)
                 plt.show()
             if diff > tol:
-                
+                passed =False
                 print('Gradient Test not passed')
-                return
-        print('Gradient check ok')
+        if passed:
+            print('Gradient check ok!')
         return
 
     @staticmethod
