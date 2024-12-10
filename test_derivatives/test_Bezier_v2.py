@@ -12,7 +12,7 @@ import FF_Develop as ff
 from time import perf_counter
 L = 10
 dx =0.001
-if True:
+if False:
     params = np.array([ L,0,1,3,-5,20,-20,-15,-5,0],dtype=np.float64)
     m1 = ff.TestPotentials('Bezier',params,0,L,dx,plot=False)
     #m1.derivative_check(plot=True,verbose=True,)
@@ -20,8 +20,14 @@ if True:
     m1.derivative_gradient_check(tol=1e1,verbose=True,plot=True)
     times = m1.time_cost(10)
     m1.vectorization_scalability(Nt=30,verbose=True,plot=True)
-    
 if True:
+    params = np.array([9.63867045, 0.00000000, -66.54039635, 4.07947377, -54.83075095, 
+                 37.50432904, -96.86545553, -15.73889857, 0.00000000])
+    m1 = ff.TestPotentials('Bezier',params,0,9.63867045,dx,plot=False)
+    #m1.derivative_check(plot=True,verbose=True,)
+    m1.gradient_check(tol=1e0,plot=True,verbose=True,epsilon=1e-4)
+    m1.derivative_gradient_check(tol=1e1,verbose=True,plot=True)
+if False:
     L /= 10
     params = np.array([L,0,3,3,-5,20,-20,-15,-5,0], dtype=np.float64 )
     m2 = ff.TestPotentials('Bezier',params,0,L,dx)
