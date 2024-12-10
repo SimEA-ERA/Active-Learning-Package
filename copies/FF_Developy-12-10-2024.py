@@ -4793,16 +4793,14 @@ class FF_Optimizer(Optimizer):
         for _ in range(2):
             t0 = perf_counter()
             Forces_tot = self.computeForceClass(params, ndata, natoms_per_point, models_list_info)
-        tf = perf_counter() - t0
-        Forces_analytical = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
-
-        for m  in range(len(Forces_analytical)):
-            for model_info in models_list_info:
-                nat_low = model_info.nat_low
-                nat_up = model_info.nat_up
+            Forces_analytical = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        for model_info in models_list_info:
+            nat_low = model_info.nat_low
+            nat_up = model_info.nat_up
+            for m  in range(len(Forces_analytical)):
                 Forces_analytical[m] = Forces_tot[nat_low[m]:nat_up[m]] 
             
-            
+            tf = perf_counter() - t0
         print('Time to compute Analytical Forces = {:4.3e}  ms, {:4.3e} ms/datapoint '.format(tf*1000,tf*1000/len(self.data)))
         if check_only_analytical_forces:
             for m, fa in Forces_analytical.items():
