@@ -4615,9 +4615,8 @@ class FF_Optimizer(Optimizer):
     
     @staticmethod
     def computeForceClass(params, ne, natoms_per_point, models_list_info):
-        
-        Forces_dict = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
-        
+
+        Forces_tot =  np.zeros( ( np.sum(natoms_per_point) ,3), dtype=np.float64) 
         npars_old = 0
         for model_info in models_list_info:
             Forces =  np.zeros( ( np.sum(natoms_per_point) ,3), dtype=np.float64)   
@@ -4635,10 +4634,14 @@ class FF_Optimizer(Optimizer):
             
             
             npars_old = npars_new
+            Forces_tot+= Forces
+            
+        Forces_dict = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        for model_info in models_list_info:
             nat_low = model_info.nat_low
             nat_up = model_info.nat_up
             for m  in range(len(Forces_dict)):
-                Forces_dict[m] += Forces[nat_low[m]:nat_up[m]] 
+                Forces_dict[m] = Forces_tot[nat_low[m]:nat_up[m]] 
             
         return Forces_dict
     
