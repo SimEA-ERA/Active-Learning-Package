@@ -17,7 +17,7 @@ if True:
     m1 = ff.TestPotentials('Bezier',params,0,L,dx,plot=False)
     #m1.derivative_check(plot=True,verbose=True,)
     m1.gradient_check(tol=1e0,plot=True,verbose=True,epsilon=1e-4)
-    m1.derivative_gradient_check(tol=1e1,verbose=True)
+    m1.derivative_gradient_check(tol=1e1,verbose=True,plot=True)
     times = m1.time_cost(10)
     m1.vectorization_scalability(Nt=30,verbose=True,plot=True)
     

@@ -1476,6 +1476,25 @@ class harmonic3:
         
         return g
     
+    def find_derivative_gradient(self):
+        
+        r0, k1, k2, k3 = self.params
+        r = self.r
+        r_r0 = r - r0
+        r_r0m2 = r_r0*r_r0
+        r_r0m3 = r_r0m2*r_r0
+        
+        fg = np.empty((4,r.shape[0]), dtype=np.float64)
+        
+        
+        fg[0] = - (2*k1 + 6*k2*r_r0 + 12*k3*r_r0m2)
+        fg[1] = 2*r_r0 
+        fg[2] = 3*r_r0m2 
+        fg[3] = 4*r_r0m3 
+        
+        self.derivative_gradient = fg
+        
+        return fg
 
 
 class harmonic:
@@ -1511,7 +1530,18 @@ class harmonic:
         self.params_gradient = g
         return g
 
-
+    def find_derivative_gradient(self):
+        
+        r0, k = self.params
+        r = self.r
+        
+        fg = np.empty((2,r.shape[0]), dtype=np.float64)
+        r_r0 = r - r0
+        fg[0] = -2*k
+        fg[1] = 2*r_r0 
+        
+        self.derivative_gradient = fg
+        return fg
 
 
 class LJ:
@@ -1559,7 +1589,20 @@ class LJ:
         self.params_gradient = g
         return g
 
-
+    def find_derivative_gradient(self):
+        sigma, epsilon = self.params
+        r = self.r
+        
+        so_r6 = (sigma/r)**6
+        so_r12 = so_r6*so_r6
+        
+        fg = np.zeros((2,r.shape[0]))
+        
+        fg[0] = 144 * epsilon * (so_r6  - 4*so_r12 )/sigma/r 
+        fg[1] = 24 * (so_r6 -2*so_r12)/r 
+        
+        self.derivative_gradient = fg
+        return fg
 class MorseBond:
     
     def __init__(self,r,params):
