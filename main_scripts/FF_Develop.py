@@ -4661,12 +4661,16 @@ class FF_Optimizer(Optimizer):
             
             gradForces_tot[npars_old: npars_new] = gradForces[model_info.isnot_fixed]
             
+            npars_old = npars_new
+            
         return gradForces_tot
     
     @staticmethod
     def gradForcesForEachPoint(gradForces, model_pars, model_info ):
         #compute UvectorizedContribution
         dists = model_info.dists
+        if dists.shape[0] == 0: 
+            return
         n_pars = model_info.n_pars
         
         compute_obj = model_info.u_model(dists,model_pars,*model_info.model_args)
@@ -4675,21 +4679,21 @@ class FF_Optimizer(Optimizer):
         j_index = model_info.j_indexes
         #ntotal = number of forces
         fg = - compute_obj.find_derivative_gradient() #shape = (npars, ntotal)
-        
+        nf = fg.shape[1]
         if model_info.category == 'PW' or model_info.category == 'BO':
             for n in range(n_pars):
-                pw_ij = fg[n]*model_info.rhats_ij
+                pw_ij = fg[n].reshape( (nf,1) )*model_info.rhats_ij
                 FF_Optimizer.numba_add_ij(gradForces[n], pw_ij, i_index, j_index)
             
         elif model_info.category == 'LD':
             for n in range(n_pars):
-                pw_ij = fg[n][ model_info.to_ij ]*model_info.v_ij
+                pw_ij = fg[n].reshape( (nf,1) )[ model_info.to_ij ]*model_info.v_ij
                 FF_Optimizer.numba_add_ij(gradForces[n], pw_ij, i_index, j_index)
         elif model_info.category =='AN':
             k_index = model_info.k_indexes
             for n in range(n_pars):
-                fa = model_info.pa*fg[n]
-                fc = model_info.pc*fg[n]
+                fa = model_info.pa*fg[n].reshape( (nf,1) )
+                fc = model_info.pc*fg[n].reshape( (nf,1) )
                 FF_Optimizer.numba_add_angle(gradForces[n], fa, fc, i_index, j_index, k_index)
         return
     
@@ -4739,6 +4743,65 @@ class FF_Optimizer(Optimizer):
             forces[j] -= pairwise_forces[k]
         return 
     
+    def test_gradForceClass(self, which='opt', epsilon=1e-4, 
+                        verbose=False,order=2):
+        dataset='all'
+        
+        ndata = len(self.get_Energy(dataset))
+        models = getattr(self.setup, which + '_models')
+        params, bounds, fixed_params, isnot_fixed, reguls = self.get_parameter_info(models)
+        models_list_info = self.get_list_of_model_information(models, dataset)
+        
+        n_p = params.shape[0]
+        natoms_per_point = self.data['natoms'].to_numpy()
+        for _ in range(2):
+            t0 = perf_counter()
+            gradForces_tot = self.computeGradForceClass(params, ndata,
+                            natoms_per_point, models_list_info)
+            tf = perf_counter() - t0
+        
+        grads_numerical = np.empty_like(gradForces_tot)
+        
+        print('Time to compute Analytical Force Gradients = {:4.3e}  ms, {:4.3e} ms/datapoint '.format(tf*1000,tf*1000/len(self.data)))
+        for i in range(n_p):
+            p1 = params.copy()
+            p1[i] += epsilon
+            fp1 = self.computeForceClass(p1, ndata,natoms_per_point, models_list_info)
+            
+            m1 = params.copy()
+            m1[i] -= epsilon
+            fm1 = self.computeForceClass(m1, ndata, natoms_per_point, models_list_info)
+            if order == 2:
+                # Second-order central difference
+
+                grads_numerical[i] = (fp1 - fm1) / (2 * epsilon)
+            
+            elif order == 4:
+                p2 = params.copy()
+                p2[i] += 2*epsilon
+                fp2 = self.computeForceClass(p2, ndata, natoms_per_point,  models_list_info)
+                
+                m2 = params.copy()
+                m2[i] -= 2 * epsilon
+                fm2 = self.computeForceClass(m2, ndata, natoms_per_point,  models_list_info)
+                
+                grads_numerical[i] = (-fp2 + 8 * fp1 - 8 * fm1 + fm2) / (12 * epsilon)
+            
+            else:
+                raise ValueError("Order must be 2 or 4.")
+            if verbose:
+                for dr in range(3):
+                    max_diff = np.abs(grads_numerical[i,:,dr] - gradForces_tot[i,:,dr]).max()
+                    a = np.abs(grads_numerical[i,:,dr] - gradForces_tot[i,:,dr]).argmax()
+                    print('Gradient {:d}: direction {:d} max diff = {:4.3e} on {}'.format(i,dr, max_diff,a))
+        
+        max_diff = np.abs(grads_numerical - gradForces_tot).max()
+        a = np.abs(grads_numerical - gradForces_tot).argmax()
+        indices = np.unravel_index(a, gradForces_tot.shape)
+        print('max diff = {:4.3e} at {}'.format(max_diff, indices))
+        
+        return gradForces_tot
+   
     def test_ForceClass(self, which='opt', epsilon=1e-4,  seed = 2024,
                         verbose=False,random_tries=10,
                         check_only_analytical_forces=False,order=4):
@@ -4813,7 +4876,7 @@ class FF_Optimizer(Optimizer):
                 print('point {:d} max_force = {:4.3e} mean_force = {:4.3e} min_force = {:4.3e}'.format(m,max_force,mean_force,min_force))
                 if verbose:
                     print(fa)
-            return
+            return Forces_analytical
         # Numerical gradient calculation
         
         Forces_numerical =  {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
@@ -4918,7 +4981,7 @@ class FF_Optimizer(Optimizer):
             all_diffs.extend(differences)
         a = where_max_diff[np.argmax(all_diffs)]
         print('Max diff: {:4.3e} at {}'.format(np.max(all_diffs),a))
-        return 
+        return  Forces_analytical
     
     def test_gradUclass(self, which='opt', dataset='all', epsilon=1e-4, order=2):
         """
@@ -4949,31 +5012,22 @@ class FF_Optimizer(Optimizer):
         grads_numerical = np.empty((n_p, ndata), dtype=np.float64)
         
         for i in range(n_p):
+            p1 = params.copy()
+            p1[i] += epsilon
+            up1 = self.computeUclass(p1, ndata, models_list_info)
+            
+            m1 = params.copy()
+            m1[i] -= epsilon
+            um1 = self.computeUclass(m1, ndata, models_list_info)
             if order == 2:
                 # Second-order central difference
-                p1 = params.copy()
-                p1[i] += epsilon
-                up1 = self.computeUclass(p1, ndata, models_list_info)
-                
-                m1 = params.copy()
-                m1[i] -= epsilon
-                um1 = self.computeUclass(m1, ndata, models_list_info)
-                
+
                 grads_numerical[i] = (up1 - um1) / (2 * epsilon)
             
             elif order == 4:
-                # Fourth-order central difference
-                p1 = params.copy()
-                p1[i] += epsilon
-                up1 = self.computeUclass(p1, ndata, models_list_info)
-                
                 p2 = params.copy()
-                p2[i] += 2 * epsilon
+                p2[i] += 2*epsilon
                 up2 = self.computeUclass(p2, ndata, models_list_info)
-                
-                m1 = params.copy()
-                m1[i] -= epsilon
-                um1 = self.computeUclass(m1, ndata, models_list_info)
                 
                 m2 = params.copy()
                 m2[i] -= 2 * epsilon
