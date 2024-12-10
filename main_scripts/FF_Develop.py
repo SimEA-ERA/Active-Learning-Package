@@ -4608,7 +4608,7 @@ class FF_Optimizer(Optimizer):
                     minf.dists, minf.dl, minf.du,
                     model_pars, *minf.model_args)
 
-            Uclass_grad[npars_old: npars_new] += gu[minf.isnot_fixed][:]
+            Uclass_grad[npars_old: npars_new] += gu[minf.isnot_fixed]
            
             npars_old = npars_new
         return Uclass_grad
@@ -4641,6 +4641,68 @@ class FF_Optimizer(Optimizer):
                 Forces_dict[m] += Forces[nat_low[m]:nat_up[m]] 
             
         return Forces_dict
+    
+    @staticmethod
+    def computeGradForceClass(params, ne, natoms_per_point, models_list_info):
+        
+        
+        Forces_dict = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        
+        npars_old = 0
+        for model_info in models_list_info:
+            gradForces =  np.zeros( ( model_info.n_pars,  np.sum(natoms_per_point) ,3),
+                               dtype=np.float64)   
+            #t0 = perf_counter()
+           
+            npars_new = npars_old  + model_info.n_notfixed
+            
+            objparams = params[ npars_old : npars_new ]
+            model_pars = FF_Optimizer.array_model_parameters(objparams,
+                                                    model_info.fixed_params,
+                                                    model_info.isnot_fixed,
+                                                    )
+            
+            FF_Optimizer.gradForcesForEachPoint(gradForces, model_pars, model_info)
+            
+            ForceClass_grad[npars_old: npars_new] += gradForces[minf.isnot_fixed]
+            npars_old = npars_new
+            nat_low = model_info.nat_low
+            nat_up = model_info.nat_up
+            for m  in range(len(Forces_dict)):
+                Forces_dict[m] += Forces[nat_low[m]:nat_up[m]] 
+            
+        return Forces_dict
+    
+    @staticmethod
+    def gradForcesForEachPoint(gradForces, model_pars, model_info ):
+        #compute UvectorizedContribution
+        dists = model_info.dists
+        n_pars = model_info.n_pars
+        
+        compute_obj = model_info.u_model(dists,model_pars,*model_info.model_args)
+        
+        i_index = model_info.i_indexes
+        j_index = model_info.j_indexes
+        #ntotal = number of forces
+        fg = - compute_obj.find_derivative_gradient() #shape = (npars, ntotal)
+        
+        if model_info.category == 'PW' or model_info.category == 'BO':
+            for n in range(n_pars):
+                pw_ij = fg[n]*model_info.rhats_ij
+                FF_Optimizer.numba_add_ij(gradForces[n], pw_ij, i_index, j_index)
+            
+        elif model_info.category == 'LD':
+            for n in range(n_pars):
+                pw_ij = fg[n][ model_info.to_ij ]*model_info.v_ij
+                FF_Optimizer.numba_add_ij(gradForces[n], pw_ij, i_index, j_index)
+        elif model_info.category =='AN':
+            k_index = model_info.k_indexes
+            for n in range(n_pars):
+                fa = model_info.pa*fg[n]
+                fc = model_info.pc*fg[n]
+                FF_Optimizer.numba_add_angle(gradForces[n], fa, fc, i_index, j_index, k_index)
+        return
+    
     
     @staticmethod
     def ForcesForEachPoint(Forces, model_pars, model_info ):
@@ -5115,6 +5177,7 @@ class FF_Optimizer(Optimizer):
             self.name = model.name
             self.category = model.category
             self.u_model = model.function 
+            self.n_pars = len(model.pinfo)
             self.model_args = model.model_args
             self.fixed_params = fixed_params
             self.isnot_fixed = isnot_fixed
