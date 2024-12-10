@@ -4542,7 +4542,7 @@ class FF_Optimizer(Optimizer):
         U = pobj.u_vectorized()
         #U = u_model(*a)
         for i in prange(Up.size):
-            ui = U[dl[i] : du[i]].sum() #if du[i] -dl[i]>0 else 0
+            ui = U[dl[i] : du[i]].sum()
             Up[i] = ui 
         
         return Up
@@ -4608,14 +4608,13 @@ class FF_Optimizer(Optimizer):
                     minf.dists, minf.dl, minf.du,
                     model_pars, *minf.model_args)
 
-            Uclass_grad[npars_old: npars_new] = gu[minf.isnot_fixed]
+            Uclass_grad[npars_old: npars_new] += gu[minf.isnot_fixed]
            
             npars_old = npars_new
         return Uclass_grad
     
     @staticmethod
     def computeForceClass(params, ne, natoms_per_point, models_list_info):
-        #Forces_analytical = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
 
         Forces_tot =  np.zeros( ( np.sum(natoms_per_point) ,3), dtype=np.float64) 
         npars_old = 0
@@ -4636,13 +4635,15 @@ class FF_Optimizer(Optimizer):
             
             npars_old = npars_new
             Forces_tot += Forces
-
+            
         return Forces_tot
     
     @staticmethod
     def computeGradForceClass(params, ne, natoms_per_point, models_list_info):
         
-        gradForces_tot =  np.zeros( (params.shape[0], np.sum(natoms_per_point) ,3), dtype=np.float64) 
+        
+        Forces_dict = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        
         npars_old = 0
         for model_info in models_list_info:
             gradForces =  np.zeros( ( model_info.n_pars,  np.sum(natoms_per_point) ,3),
@@ -4659,9 +4660,14 @@ class FF_Optimizer(Optimizer):
             
             FF_Optimizer.gradForcesForEachPoint(gradForces, model_pars, model_info)
             
-            gradForces_tot[npars_old: npars_new] = gradForces[model_info.isnot_fixed]
+            ForceClass_grad[npars_old: npars_new] += gradForces[minf.isnot_fixed]
+            npars_old = npars_new
+            nat_low = model_info.nat_low
+            nat_up = model_info.nat_up
+            for m  in range(len(Forces_dict)):
+                Forces_dict[m] += Forces[nat_low[m]:nat_up[m]] 
             
-        return gradForces_tot
+        return Forces_dict
     
     @staticmethod
     def gradForcesForEachPoint(gradForces, model_pars, model_info ):
@@ -4698,8 +4704,6 @@ class FF_Optimizer(Optimizer):
     def ForcesForEachPoint(Forces, model_pars, model_info ):
         #compute UvectorizedContribution
         dists = model_info.dists
-        if dists.shape[0] == 0:
-            return
         compute_obj = model_info.u_model(dists,model_pars,*model_info.model_args)
         
         i_index = model_info.i_indexes
@@ -4707,7 +4711,6 @@ class FF_Optimizer(Optimizer):
        
         dudx_vectorized = - compute_obj.find_dydx()
         dudx_vectorized = dudx_vectorized.reshape((dudx_vectorized.shape[0],1))
-        
         if model_info.category == 'PW' or model_info.category == 'BO':
             pw_ij = dudx_vectorized*model_info.rhats_ij
             FF_Optimizer.numba_add_ij(Forces,pw_ij,i_index,j_index)
@@ -4722,7 +4725,7 @@ class FF_Optimizer(Optimizer):
             FF_Optimizer.numba_add_angle(Forces, fa, fc, i_index, j_index, k_index)
         return
     
-    @jit(nopython=True,fastmath=True)
+    @jit(nopython=True,fastmath=True,parallel=True)
     def numba_add_angle(forces, fa,fc, i_indices, j_indices,k_indices):
         for m in prange(len(i_indices)):
             i, j, k = i_indices[m] , j_indices[m], k_indices[m]
@@ -4731,7 +4734,7 @@ class FF_Optimizer(Optimizer):
             forces[j] -= (fa[m]+fc[m])
         return
     
-    @jit(nopython=True,fastmath=True)
+    @jit(nopython=True,fastmath=True,parallel=True)
     def numba_add_ij(forces, pairwise_forces, i_indices, j_indices):
         for k in prange(len(i_indices)):
             i, j = i_indices[k], j_indices[k]
@@ -4741,7 +4744,7 @@ class FF_Optimizer(Optimizer):
     
     def test_ForceClass(self, which='opt', epsilon=1e-4,  seed = 2024,
                         verbose=False,random_tries=10,
-                        check_only_analytical_forces=False,order=4):
+                        check_only_analytical_forces=False):
         """
         Compute and compare the analytical and numerical Forces
         using second order finite difference methods.
@@ -4762,6 +4765,7 @@ class FF_Optimizer(Optimizer):
         seed : int, optional
             Random seed for reproducibility of any stochastic processes in the function. 
             Default is 2024.
+    
         verbose : bool, optional
             If True, prints detailed information about the computation and comparisons. 
             Default is False.
@@ -4771,10 +4775,6 @@ class FF_Optimizer(Optimizer):
             Default is 10.
         check_only_analytical_forces : bool, optional
             If True, it prints the mean and maximum analytical force for each point and returns
-        order : int, optional
-            order of differentiation
-            Default is 4
-        
         """
         dataset='all'
         
@@ -4793,16 +4793,14 @@ class FF_Optimizer(Optimizer):
         for _ in range(2):
             t0 = perf_counter()
             Forces_tot = self.computeForceClass(params, ndata, natoms_per_point, models_list_info)
-        tf = perf_counter() - t0
-        Forces_analytical = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
-        #Forces_analytical = Forces_tot
-        for m  in range(len(Forces_analytical)):
-            for model_info in models_list_info:
-                nat_low = model_info.nat_low
-                nat_up = model_info.nat_up
+            Forces_analytical = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        for model_info in models_list_info:
+            nat_low = model_info.nat_low
+            nat_up = model_info.nat_up
+            for m  in range(len(Forces_analytical)):
                 Forces_analytical[m] = Forces_tot[nat_low[m]:nat_up[m]] 
             
-            
+            tf = perf_counter() - t0
         print('Time to compute Analytical Forces = {:4.3e}  ms, {:4.3e} ms/datapoint '.format(tf*1000,tf*1000/len(self.data)))
         if check_only_analytical_forces:
             for m, fa in Forces_analytical.items():
@@ -4828,16 +4826,12 @@ class FF_Optimizer(Optimizer):
             print(f'Calculating the Forces on a random atom, seed = {seed} ...')
         
         all_diffs = []
-        where_max_diff = [] 
         np.random.seed(seed)
-        seeds = np.random.randint(0,random_tries*1000,size=random_tries)
         for random_try in range(random_tries):
-            np.random.seed(seeds[random_try])
             atoms_to_modify = [np.random.randint(0,natoms) for m, natoms  in enumerate(natoms_per_point)]
             differences = []
             for dir_index in range(3): 
                 
-                # up1
                 for m,idx in enumerate(self.data.index):
                     atom_index = atoms_to_modify[m]
                     self.data['coords'][idx][atom_index][dir_index] += epsilon
@@ -4849,7 +4843,6 @@ class FF_Optimizer(Optimizer):
                 self.data.drop(columns=['forces_info', 'interactions','coords' ], inplace=True)
                 self.data['coords'] = copy.deepcopy(coords_copy)
                 
-                #um1
                 for m,idx in enumerate(self.data.index):
                     atom_index = atoms_to_modify[m]
                     self.data['coords'][idx][atom_index][dir_index] -= epsilon
@@ -4862,41 +4855,11 @@ class FF_Optimizer(Optimizer):
                 self.data.drop(columns=['forces_info', 'interactions','coords' ], inplace=True)
                 self.data['coords'] = copy.deepcopy(coords_copy)
                 
-                
-                if order == 4:
-                    #up2
-                    for m,idx in enumerate(self.data.index):
-                        atom_index = atoms_to_modify[m]
-                        self.data['coords'][idx][atom_index][dir_index] += 2*epsilon
-                        
-                    al_help.make_interactions(self.data, self.setup)
-                    models_list_info = self.get_list_of_model_information(models, dataset)    
-                    up2 = self.computeUclass(params, ndata, models_list_info)
-                    
-                    self.data.drop(columns=['forces_info', 'interactions','coords' ], inplace=True)
-                    self.data['coords'] = copy.deepcopy(coords_copy)
-                    
-                    for m,idx in enumerate(self.data.index):
-                        atom_index = atoms_to_modify[m]
-                        self.data['coords'][idx][atom_index][dir_index] -= 2*epsilon
-                        
-                    al_help.make_interactions(self.data, self.setup)
-                    models_list_info = self.get_list_of_model_information(models, dataset)    
-                    um2 = self.computeUclass(params, ndata, models_list_info)
-                    
-                    self.data.drop(columns=['forces_info', 'interactions','coords' ], inplace=True)
-                    self.data['coords'] = copy.deepcopy(coords_copy)
-
-                if order==4:
-                    for m in Forces_numerical.keys():
-                        atom_index = atoms_to_modify[m]
-                        Forces_numerical[m][atom_index, dir_index] = (-up2[m] + 8 * up1[m] - 8 * um1[m] + um2[m]) / (12 * epsilon)
-                else:
-                    for m in Forces_numerical.keys():
-                        atom_index = atoms_to_modify[m]
-                        Forces_numerical[m][atom_index, dir_index] = (up1[m] - um1[m]) / ( 2*epsilon)
-                #if verbose:
-                #    print(f'Numerical Forces Calculated. Comparing direction {dir_index}...')
+                for m in Forces_numerical.keys():
+                    atom_index = atoms_to_modify[m]
+                    Forces_numerical[m][atom_index, dir_index] = (up1[m] - um1[m]) / ( 2*epsilon)
+                if verbose:
+                    print(f'Numerical Forces Calculated. Comparing direction {dir_index}...')
                 
                 for m in Forces_numerical.keys():
                     
@@ -4909,15 +4872,12 @@ class FF_Optimizer(Optimizer):
                     fa_ad = fa[atom_index , dir_index]
                     diff = np.abs(fn_ad - fa_ad)
                     differences.append(diff)
-                    where_max_diff.append((m,atom_index,dir_index))
                     if verbose and diff.max()>1e-3:
                         print('data_point = {:d}, atom = {:d}, dir = {:d}, Fnum = {:.4e} , Fana = {:.4e} --> diff = {:.4e}'.format( m, atom_index, dir_index, fn_ad, fa_ad, diff))
             dmax = np.max(differences)
             dmean = np.mean(differences)
             print('random try {:d} --> max diff = {:4.3e}, mean diff = {:4.3e}'.format(random_try,dmax,dmean))
             all_diffs.extend(differences)
-        a = where_max_diff[np.argmax(all_diffs)]
-        print('Max diff: {:4.3e} at {}'.format(np.max(all_diffs),a))
         return 
     
     def test_gradUclass(self, which='opt', dataset='all', epsilon=1e-4, order=2):
