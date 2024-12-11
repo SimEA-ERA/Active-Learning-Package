@@ -1,6 +1,7 @@
 *.chk
 *.gjf
 *.in
+*.pyc
 *Gau*.inp
 *Gau*.d2e
 *Gau*.int
