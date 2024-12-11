@@ -90,7 +90,8 @@ class al_help():
 
     def map_to_lammps_style(self,style):
         return self.lammps_style_map[style]
-
+    
+        
     @staticmethod
     def decompose_data_to_structures(df,structs):
         nc = [] ; nt = [] ; nn = [] ; ns = []
@@ -2555,7 +2556,7 @@ class Setup_Interfacial_Optimization():
                         r = np.arange(1e-12,model.pinfo['L'].value,dr)
                     fu = model.function
                     ty = ' '.join( model.type)
-                    print(model.name, model.parameters)
+                    #print(model.name, model.parameters)
                     b = fu(r,model.parameters,*model.model_args)
                     u = b.u_vectorized()
                     if 'PW1' in model.name:
@@ -4614,13 +4615,13 @@ class FF_Optimizer(Optimizer):
         return Uclass_grad
     
     @staticmethod
-    def computeForceClass(params, ne, natoms_per_point, models_list_info):
+    def computeForceClass(params, n_forces, models_list_info):
         #Forces_analytical = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
 
-        Forces_tot =  np.zeros( ( np.sum(natoms_per_point) ,3), dtype=np.float64) 
+        Forces_tot =  np.zeros( ( n_forces ,3), dtype=np.float64) 
         npars_old = 0
         for model_info in models_list_info:
-            Forces =  np.zeros( ( np.sum(natoms_per_point) ,3), dtype=np.float64)   
+            Forces =  np.zeros( (  n_forces ,3), dtype=np.float64)   
             #t0 = perf_counter()
            
             npars_new = npars_old  + model_info.n_notfixed
@@ -4640,12 +4641,12 @@ class FF_Optimizer(Optimizer):
         return Forces_tot
     
     @staticmethod
-    def computeGradForceClass(params, ne, natoms_per_point, models_list_info):
+    def computeGradForceClass(params, n_forces, models_list_info):
         
-        gradForces_tot =  np.zeros( (params.shape[0], np.sum(natoms_per_point) ,3), dtype=np.float64) 
+        gradForces_tot =  np.zeros( (params.shape[0], n_forces ,3), dtype=np.float64) 
         npars_old = 0
         for model_info in models_list_info:
-            gradForces =  np.zeros( ( model_info.n_pars,  np.sum(natoms_per_point) ,3),
+            gradForces =  np.zeros( ( model_info.n_pars,  n_forces ,3),
                                dtype=np.float64)   
             #t0 = perf_counter()
            
@@ -4767,12 +4768,6 @@ class FF_Optimizer(Optimizer):
         verbose : bool, optional
             If True, prints detailed information about the computation and comparisons. 
             Default is False.
-    
-        random_tries : int, optional
-            The number of random configurations or trials to evaluate the gradients. 
-            Default is 10.
-        check_only_analytical_forces : bool, optional
-            If True, it prints the mean and maximum analytical force for each point and returns
         order : int, optional
             order of differentiation
             Default is 4
@@ -4891,7 +4886,7 @@ class FF_Optimizer(Optimizer):
         natoms_per_point = self.data['natoms'].to_numpy()
         for _ in range(2):
             t0 = perf_counter()
-            Forces_tot = self.computeForceClass(params, ndata, natoms_per_point, models_list_info)
+            Forces_tot = self.computeForceClass(params, np.sum( natoms_per_point), models_list_info)
         tf = perf_counter() - t0
         Forces_analytical = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
         #Forces_analytical = Forces_tot
@@ -4908,7 +4903,7 @@ class FF_Optimizer(Optimizer):
                 max_force = np.abs(fa).max()
                 min_force = np.abs(fa).min()
                 mean_force = np.abs(fa).mean()
-                print(m,fa.sum())
+                
                 print('point {:d} max_force = {:4.3e} mean_force = {:4.3e} min_force = {:4.3e}'.format(m,max_force,mean_force,min_force))
                 if verbose:
                     print(fa)
@@ -5081,29 +5076,64 @@ class FF_Optimizer(Optimizer):
         print( "Maximum Difference in numerical and analytical gradient {:4.3e} , mean diff = {:4.3e}".format(diff,ave))
         return grads_analytical, grads_numerical
 
+    def test_CostGrads(self,params, args, order = 4, epsilon= 1e-5,tol=10 ):
+        print('Testing Cost Gradient ... ')
+        n_p = params.shape[0]
+        gnum = np.empty_like(params)
+        gana = self.gradCost(params,*args)
+        for i in range(n_p):
+            p1 = params.copy()
+            p1[i] += epsilon
+            up1 = self.CostFunction(p1, *args)
+            
+            m1 = params.copy()
+            m1[i] -= epsilon
+            um1 = self.CostFunction(m1, *args)
+            if order == 2:
+                # Second-order central difference
 
+                gnum[i] = (up1 - um1) / (2 * epsilon)
+            
+            elif order == 4:
+                p2 = params.copy()
+                p2[i] += 2*epsilon
+                up2 = self.CostFunction(p2, *args)
+                
+                m2 = params.copy()
+                m2[i] -= 2 * epsilon
+                um2 = self.CostFunction(m2, *args)
+                
+                gnum[i] = (-up2 + 8 * up1 - 8 * um1 + um2) / (12 * epsilon)
+            
+            else:
+                raise ValueError("Order must be 2 or 4.")
+            diff = np.abs(gnum[i] - gana[i])
+            print('parameter {:d} diff = {:4.3e} '.format(i, diff ) )
+            if diff > tol*epsilon:
+                print(f'Warning: Parameter {i} might have inaccuracies. It might be also due to numerical errors on the gradient estimation')
+        return
     @staticmethod
     def CostFunction(params,
-                     Energy, we, models_list_info,
+                     Energy, Forces, we, models_list_info,
                      reg,reguls,
                      measure,reg_measure):   
         
         cE = CostFunctions.Energy(params, Energy, we, models_list_info, measure)
         cR = reg*CostFunctions.Regularization(params,reguls,reg_measure) 
-
-        cost = cE + cR
+        cF = CostFunctions.Forces(params, Forces, models_list_info, measure) 
+        cost = cF + cE + cR
         return cost
     
     @staticmethod
     def gradCost(params,
-                Energy, we, models_list_info,
+                Energy, Forces, we, models_list_info,
                 reg,reguls,
                 measure,reg_measure):   
         # serialize the params
         gradE = CostFunctions.gradEnergy(params, Energy, we, models_list_info, measure)
         gradR = reg*CostFunctions.gradRegularization(params,reguls,reg_measure) 
-        
-        grads = gradE + gradR
+        gradF = CostFunctions.gradForces(params, Forces, models_list_info, measure) 
+        grads = gradF + gradE + gradR
         
         return grads
     
@@ -5288,7 +5318,7 @@ class FF_Optimizer(Optimizer):
         @staticmethod
         def format_time(seconds):
             # Convert to milliseconds
-            milliseconds = int((seconds - int(seconds)) * 1000)
+            milliseconds = (seconds - int(seconds)) * 1000.0
         
             # Convert to hours and remaining seconds
             hours = int(seconds // 3600)
@@ -5298,22 +5328,16 @@ class FF_Optimizer(Optimizer):
             mins = int(remaining_seconds // 60)
             secs = int(remaining_seconds % 60) 
             
-            return f"{hours}:{mins:02}:{secs:02}.{milliseconds:03}"
+            return f"{hours} h : {mins:02} min :{secs:02} sec  + " + "{:4.3e}".format(milliseconds)
         def __repr__(self):
             x = 'Time Cost : value \n--------------------\n'
             for k,v in self.__dict__.items():
-                x+='{} : {:4.3e} ms\n'.format(k,self.format_time(v)  )
+                x+='{} : {} ms\n'.format(k,self.format_time(v)  )
             x+='--------------------\n'
             return x 
     
     class CostValues:
-        def __init__(self):
-            self.reg = None
-            self.cost = None
-            self.total = None
-            self.train = None
-            self.dev = None
-            
+        def __init__(self): 
             return
 
         def __repr__(self):
@@ -5398,10 +5422,39 @@ class FF_Optimizer(Optimizer):
                     params[change_id] = 0.999*blow if blow < 0 else 1.001*blow
         return params
     
+    def get_params_n_args(self,setfrom,dataset):
+        
+        E = self.get_Energy(dataset)
+        
+        Forces = np.concatenate( list( self.get_dataDict(dataset,'Forces').values() ) )
+        
+        weights =  GeneralFunctions.weighting(self.data_train,
+                self.setup.weighting_method,self.setup.bT,self.setup.w)
+        #argsopt= np.where (self.data_train['label']=='optimal')[0]
+        #weights[argsopt]*=5.0
+        self.weights = weights
+
+        models = getattr(self.setup,setfrom+'_models')
+
+        params, bounds, fixed_parameters, isnot_fixed, reguls = self.get_parameter_info(models) 
+        
+        models_list_info  = self.get_list_of_model_information(models,'train')
+        
+        self.models_list_info = models_list_info
+        
+        args = (E,Forces,weights,models_list_info, 
+                self.setup.reg_par, reguls,
+                self.setup.costf,
+                self.setup.regularization_method)
+        
+        return params, bounds, args, fixed_parameters, isnot_fixed
     def optimize_params(self,setfrom='init'):
         t0 = perf_counter()
-
+        '''
         E = self.get_Energy('train')
+        
+        Forces = np.concatenate( list( self.get_dataDict('train','Forces').values() ) )
+        
         weights =  GeneralFunctions.weighting(self.data_train,
                 self.setup.weighting_method,self.setup.bT,self.setup.w)
         #argsopt= np.where (self.data_train['label']=='optimal')[0]
@@ -5422,12 +5475,25 @@ class FF_Optimizer(Optimizer):
         CostFunc = self.CostFunction
         
         
-        args = (E,weights,models_list_info, 
+        args = (E,Forces,weights,models_list_info, 
                 self.setup.reg_par, reguls,
                 self.setup.costf,
                 self.setup.regularization_method)
+        '''
+        CostFunc = self.CostFunction
+        opt_method = self.setup.optimization_method
+        tol = self.setup.tolerance
+        maxiter = self.setup.maxiter
+        
+        params, bounds,  args, fixed_parameters, isnot_fixed = self.get_params_n_args(setfrom,'train')
+        
+        n_train = args[0].shape[0]
+        
+        if not hasattr(self,'checkedGrads'):
+            self.test_CostGrads(params, args)
+            self.checkedGrads = True
+    
        
-        self.models_list_info = models_list_info
         
         try:
             self.randomize
@@ -5497,13 +5563,13 @@ class FF_Optimizer(Optimizer):
                     itera=0
                     while( len(current_total_indexes) > 0):
                         self.train_indexes = np.random.choice(current_total_indexes,replace=False,
-                                                              size=min(self.setup.batchsize, E.shape[0] , len(current_total_indexes) )
+                                                              size=min(self.setup.batchsize, n_train , len(current_total_indexes) )
                                                               )
                         current_total_indexes = [ i for i in current_total_indexes if i not in self.train_indexes ]
 
                         self.optimize_params('init')
                         time_only_min += self.minimization_time
-                        cost = self.current_costs.dev
+                        cost = self.current_costs.dev_cost_unreg
 
                         self.set_models('opt','init')
                         #
@@ -5513,7 +5579,7 @@ class FF_Optimizer(Optimizer):
                             self.set_models('opt','best_opt')
                             self.best_costs = copy.deepcopy(self.current_costs)
 
-                        print('epoch = {:d}, i = {:d},  development cost = {:.4e} train cost = {:.4e} '.format(self.epoch,itera,  cost, self.current_costs.train))
+                        print('epoch = {:d}, i = {:d},  development cost = {:.4e} train cost = {:.4e} '.format(self.epoch,itera,  cost, self.current_costs.train_cost_unreg))
                         sys.stdout.flush()
                         total_fev += self.res.nfev
                         itera+=1
@@ -5537,7 +5603,7 @@ class FF_Optimizer(Optimizer):
                 print('time elapsed = {:.3e} sec t/fev = {:.3e} sec/eval eval_time = {:.3e} , overhead = {:.3e} '.format( tn, 
                     time_only_min/total_fev,time_only_min, tn-time_only_min))
                 
-                self.timecosts = self.TimeValues(tn,total_fev,tn-time_only_min, E.shape[0]) 
+                self.timecosts = self.TimeValues(tn,total_fev,tn-time_only_min, args[0].shape[0]) 
                 #Final on all data
                 self.set_models('best_opt','opt')
                 self.set_models('best_opt','init')
@@ -5567,7 +5633,7 @@ class FF_Optimizer(Optimizer):
             optimization_performed = False
         
         if optimization_performed:
-            self.set_results(res,isnot_fixed,fixed_parameters,reguls)
+            self.set_results(res)
             
              
         else:
@@ -5578,35 +5644,43 @@ class FF_Optimizer(Optimizer):
                     
             
         return 
-    def set_results(self,res,isnot_fixed,fixed_parameters,reguls):
-        
-        self.set_models('init','opt',res.x,isnot_fixed,fixed_parameters)
+    
+    def set_results(self,res):
         
         setup = self.setup 
+        
+        params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('init','train')
+        
+        self.set_models('init','opt',res.x, isnot_fixed, fixed_parameters)
+        
+        
+        
         self.UperModelContribution_ondata('opt',dataset='all')
+        
         costs = self.CostValues() 
-        creg = CostFunctions.Regularization(res.x,reguls,setup.regularization_method)
-        costs.reg = creg
-        costs.reg_scaled = setup.reg_par*creg 
-        costs.cost = res.fun - costs.reg_scaled
-        costs.total = res.fun
         
-        dev_eval = Interfacial_Evaluator(self.data_dev,self.setup,prefix='development')
-        
-        train_eval = Interfacial_Evaluator(self.data_train,self.setup,prefix='train')
-         
-        dev_tab = dev_eval.make_evaluation_table([self.setup.costf],['sys_name'])
-        
-        train_tab = train_eval.make_evaluation_table([self.setup.costf],['sys_name'])
-        
-        costs.dev = dev_tab.loc['TOTAL',self.setup.costf]
-        costs.train = train_tab.loc['TOTAL',self.setup.costf]
-        
+        for dataname in ['train','dev', 'all']:
+            params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt','train')
+            
+            (E,Forces, weights,models_list_info, 
+            reg_par, reguls,
+            measure,
+            measure_reg ) = args
+            
+            creg = CostFunctions.Regularization(res.x,reguls, measure_reg)
+            ce = CostFunctions.Energy(res.x, E,weights, models_list_info, measure)
+            cf = CostFunctions.Forces(res.x, Forces,models_list_info, measure)
+                
+            setattr(costs,dataname+'_energy',  ce)
+            setattr(costs,dataname+'_forces', cf) 
+            setattr(costs,dataname+'_cost_total', ce + cf + reg_par*creg) 
+            setattr(costs,dataname+'_reg', creg) 
+            setattr(costs,dataname+'_reg_scaled', reg_par*creg) 
+            setattr(costs,dataname+'_cost_unreg', res.fun - reg_par*creg) 
+            if dataname =='train':
+                 tot_cost = ce + cf + reg_par*creg
+                 assert np.abs(res.fun -tot_cost)<1e-10,'Train res.fun = {:4.6e} not equal to tot_cost = {:4.6e}'.format(res.fun,tot_cost)
         self.current_costs = costs
-        self.timef = 'time/fev = {:.3e} sec'.format(self.opt_time/res.nfev)
-        logger.info(self.timef)
-        
-        logger.info('Total optimization time = {:.3e} sec'.format(self.opt_time))
         #Get the new params and give to vdw_dataframe
         self.res = res
         return
@@ -6146,19 +6220,33 @@ class CostFunctions():
         gradU = FF_Optimizer.gradUclass(params,ne,models_list_info)
         
         func = getattr(measures,'grad_'+measure)
-        gradE = np.sum( func(Energy, Uclass, we) * gradU, axis = 1)
+        grad = np.sum( func(Energy, Uclass, we) * gradU, axis = 1)
         
-        return gradE 
+        return grad 
     
-    def Forces():
-        return
+    def Forces(params,Forces_True, models_list_info, measure):
+        n_forces = Forces_True.shape[0]
+        
+        Forces = FF_Optimizer.computeForceClass(params,n_forces,models_list_info)
+        
+        func = getattr(measures,measure)
+        cf = func(Forces_True, Forces)
+        return cf
     
-    def gradForces():
-        return
+    def gradForces(params,Forces_True, models_list_info, measure):
+        n_forces = Forces_True.shape[0]
+        
+        Forces = FF_Optimizer.computeForceClass(params,n_forces,models_list_info)
+        gradF = FF_Optimizer.computeGradForceClass(params,n_forces,models_list_info)
+        
+        func = getattr(measures,'grad_'+measure)
+        grad = np.sum( func(Forces_True, Forces) * gradF, axis = (1,2) )
+        return grad
     
     def Regularization(params,reguls,reg_measure):
         cr = getattr(regularizators,reg_measure)(params*reguls)
         return cr
+    
     def gradRegularization(params,reguls,reg_measure):
         gr = getattr(regularizators,'grad_'+reg_measure)(params*reguls)
         return gr
