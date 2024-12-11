@@ -5567,7 +5567,7 @@ class FF_Optimizer(Optimizer):
 
                         self.optimize_params('init')
                         time_only_min += self.minimization_time
-                        cost = self.current_costs.dev_cost_unreg
+                        cost = self.current_costs.dev_cost
 
                         self.set_models('opt','init')
                         #
