@@ -22,7 +22,7 @@ setup = ff.Setup_Interfacial_Optimization(file)
 # 3  Let's read the data
 
 al = ff.al_help()
-path_xyz ='test_data'
+path_xyz ='test_data1'
    
 
 #al.log_to_xyz(path_log, path_xyz)
@@ -46,12 +46,14 @@ train_indexes, test_indexes = dataMan.train_development_split()
 
 optimizer = ff.FF_Optimizer(data,train_indexes,test_indexes, setup)
 
-fd = optimizer.test_ForceClass(which='init',epsilon=1e-3,random_tries=1,
+fd = optimizer.test_ForceClass(which='init',epsilon=1e-3,random_tries=100,
                           verbose=verbose,seed=204,order=4,
                           check_only_analytical_forces=check_only_analytical) 
+ff.al_help.make_interactions(data,setup)
+grads_a,grads_n = optimizer.test_gradUclass(which='init',order=4,epsilon=1e-4)
 
 ff.al_help.make_interactions(data,setup)
 dataMan = ff.Data_Manager(data, setup)
 train_indexes, test_indexes = dataMan.train_development_split()
-fg = optimizer.test_gradForceClass(which='init',epsilon=7e-4,order=4,
+fg = optimizer.test_gradForceClass(which='init',epsilon=1e-5,order=4,
                           verbose=verbose)
