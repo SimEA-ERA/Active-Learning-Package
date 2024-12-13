@@ -2,6 +2,7 @@
 *.gjf
 *.in
 *.pyc
+*__pycashe__/*
 *Gau*.inp
 *Gau*.d2e
 *Gau*.int
