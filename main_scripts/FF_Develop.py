@@ -2880,13 +2880,10 @@ class Setup_Interfacial_Optimization():
             r = np.array ( [ rmin + dr*i for i in range(Nr) ] )
             lines.append('N {:d} R {:.16e} {:.16e}\n'.format(Nr,r[0],r[-1]))
 
-            fu = model.function
+            cobj = model.function(r,model.parameters,*model.model_args)
+            u = cobj.u_vectorized()
+            du = cobj.find_dydx()
             
-            u = fu(r,model.parameters,*model.model_args)
-            du = np.empty_like(u)
-            du[0] = -(u[1]-u[0])/dr
-            du[1:-1] = -(u[2:]-u[:-2])/(2*dr)
-            du[-1] = -(u[-1]-u[-2])/dr
             for i in range(Nr):
                 s = '{:d} {:.16e} {:.16e} {:.16e}'.format(i+1,r[i],u[i],du[i])
                 lines.append(s)
@@ -2926,7 +2923,6 @@ class Setup_Interfacial_Optimization():
             #ni = model.num
             r0 = self.rho_r0
             rc = self.rho_rc
-            fmodel = model.function
             #num_pars = model.number_of_parameters
 
             x  =  model.parameters
@@ -2945,7 +2941,11 @@ class Setup_Interfacial_Optimization():
                 raise Exception('model = {:s} not prober discretization rho_shape = {:d} != N_rho = {:d}'.format(model.name,rhov.shape[0],N_rho))
             #lines.append('{:.8e} {:.8e} {:.8e} {:s}\n'.format(rho_min,rho_max+diff,diff,lc4))
             lines.append('{:.16e} {:.16e} {:.16e} {:s}\n'.format(rho_min,rho_max,diff,lc4))
-            Frho = fmodel(rhov,x,*model.model_args)
+            
+            cobj = model.function(r,model.parameters,*model.model_args)
+            Frho = cobj.u_vectorized()
+            #du = cobj.find_dydx()
+            
             for i,fr in enumerate(Frho):
                 #lines.append('{:.8e}\n'.format(fr))
                 lines.append('{:.16e}\n'.format(fr))
