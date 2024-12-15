@@ -4784,10 +4784,10 @@ class FF_Optimizer(Optimizer):
         
         n_p = params.shape[0]
         natoms_per_point = self.data['natoms'].to_numpy()
+        ntot  =  np.sum(natoms_per_point)
         for _ in range(2):
             t0 = perf_counter()
-            gradForces_tot = self.computeGradForceClass(params, ndata,
-                            natoms_per_point, models_list_info)
+            gradForces_tot = self.computeGradForceClass(params,ntot, models_list_info)
             tf = perf_counter() - t0
         
         grads_numerical = np.empty_like(gradForces_tot)
@@ -4796,11 +4796,11 @@ class FF_Optimizer(Optimizer):
         for i in range(n_p):
             p1 = params.copy()
             p1[i] += epsilon
-            fp1 = self.computeForceClass(p1, ndata,natoms_per_point, models_list_info)
+            fp1 = self.computeForceClass(p1, ntot , models_list_info)
             
             m1 = params.copy()
             m1[i] -= epsilon
-            fm1 = self.computeForceClass(m1, ndata, natoms_per_point, models_list_info)
+            fm1 = self.computeForceClass(m1, ntot, models_list_info)
             if order == 2:
                 # Second-order central difference
 
@@ -4809,11 +4809,11 @@ class FF_Optimizer(Optimizer):
             elif order == 4:
                 p2 = params.copy()
                 p2[i] += 2*epsilon
-                fp2 = self.computeForceClass(p2, ndata, natoms_per_point,  models_list_info)
+                fp2 = self.computeForceClass(p2, ntot,  models_list_info)
                 
                 m2 = params.copy()
                 m2[i] -= 2 * epsilon
-                fm2 = self.computeForceClass(m2, ndata, natoms_per_point,  models_list_info)
+                fm2 = self.computeForceClass(m2, ntot,  models_list_info)
                 
                 grads_numerical[i] = (-fp2 + 8 * fp1 - 8 * fm1 + fm2) / (12 * epsilon)
             
