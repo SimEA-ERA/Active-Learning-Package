@@ -46,7 +46,7 @@ train_indexes, test_indexes = dataMan.train_development_split()
 
 optimizer = ff.FF_Optimizer(data,train_indexes,test_indexes, setup)
 
-fd = optimizer.test_ForceClass(which='init',epsilon=1e-3,random_tries=100,
+fd = optimizer.test_ForceClass(which='init',epsilon=1e-3,random_tries=1,
                           verbose=verbose,seed=204,order=4,
                           check_only_analytical_forces=check_only_analytical) 
 ff.al_help.make_interactions(data,setup)
