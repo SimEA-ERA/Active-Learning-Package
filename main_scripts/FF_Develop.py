@@ -245,11 +245,11 @@ class al_help():
         al_help.make_interactions(data,setup)
         
         
-        train_indexes, dev_indexes = Data_Manager(data,setup).train_development_split()
-        
+        #train_indexes, dev_indexes = Data_Manager(data,setup).train_development_split()
+        indexes = data.index
         setup.optimize = False
 
-        optimizer = FF_Optimizer(data,train_indexes, dev_indexes, setup)
+        optimizer = FF_Optimizer(data,indexes, indexes, setup)
         #print('dataevaluations')
         #results
         optimizer.set_models('init','opt')
@@ -257,6 +257,7 @@ class al_help():
         #optimizer.optimize_params()
         optimizer.set_UFclass_ondata(which='opt',dataset='all')
         
+
         return optimizer
 
     @staticmethod
@@ -656,15 +657,18 @@ class al_help():
 
         GeneralFunctions.make_dir(setup.runpath)
         
-        al_help.evaluate_potential(data,setup)
+        optimizer = al_help.evaluate_potential(data,setup)
         
+        optimizer.set_results()
+        predicted_costs = optimizer.current_costs
+
         dataeval = Interfacial_Evaluator(data,setup,prefix='all')
         #print(data)
         #funs = ['MAE','relMAE','BIAS','STD','MSE']
-        funs = ['MAE','MSE','relMAE','relMSE','MAX','relBIAS']
+        funs = ['MAE','MSE']
         
         cols = ['sys_name']
-        df = cols + ['relMAE','relMSE','relBIAS','MAE','MSE']
+        df = cols + ['MAE','MSE']
         if setup.costf not in funs: funs.append(setup.costf)
         
         trev = dataeval.make_evaluation_table(funs,cols,save_csv='predict.csv')
@@ -676,7 +680,7 @@ class al_help():
         
         dataeval.plot_eners(subsample=1,fname='predicteners.png')
        
-        return  trev.loc['TOTAL',['MAE','MSE',setup.costf]].to_dict()
+        return  predicted_costs
 
     @staticmethod
     def set_L_toRhoMax(dm,setup):
@@ -1128,8 +1132,8 @@ class al_help():
     
     
     @staticmethod
-    def write_errors(model_costs,num):
-        errfile = 'COSTS.csv'
+    def write_errors(model_costs, num, prefix='' ):
+        errfile = prefix + 'COSTS.csv'
         if os.path.exists(errfile):
             with open(errfile,'r') as f:
                 nl = len(f.readlines())
@@ -1141,8 +1145,8 @@ class al_help():
         else:
             write_header=True
           
-        head_line = ', '.join(['AL iteration'] +  list(model_costs.__dict__.keys())  )
-        values_line = ', '.join([ str(num) ] + ['{:4.6e}'.format(x) for x in  list(model_costs.__dict__.values()) ]  )
+        head_line = ','.join(['AL_iteration'] +  list(model_costs.__dict__.keys())  )
+        values_line = ','.join([ str(num) ] + ['{:4.6e}'.format(x) for x in  list(model_costs.__dict__.values()) ]  )
 
         with open(errfile,'a') as f:
             if write_header:
@@ -4227,7 +4231,7 @@ class Data_Manager():
                     li = line.split()
                     forces.append(np.array(li[2:5],dtype=float))
                 forces = np.array(forces)
-                if units =='kcal/mol': forces*=1185.821 #hartrees/bohr to kcal/mol/A
+                if units =='kcal/mol': forces*=627.5096080305927 #hartrees/A to kcal/mol/A
                 fdat.append(np.array(forces))
             
             data_dict['Forces'] = fdat
@@ -4541,10 +4545,10 @@ class FF_Optimizer(Optimizer):
         
         Uclass = self.computeUclass(params, ndata, models_list_info)
         
-        natoms_per_point = self.get_dataDict(dataset,'natoms').to_numpy() 
+        natoms_per_point = np.array( list( self.get_dataDict(dataset,'natoms').values() ) ) 
         n_forces = np.sum( natoms_per_point )
         
-        Fclass_array = self.computeForceClass(params, n_forces, models_list_info):
+        Fclass_array = self.computeForceClass(params, n_forces, models_list_info)
         
         Fclass = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
         for m  in range(ndata):

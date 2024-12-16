@@ -15,8 +15,8 @@ main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the s
 
 inff="$script_dir/AgCO2.in"
 bsize=100
-Niters=0
-iexist=0
+Niters=10
+iexist=6
 contin=0
 sigma=0.02
 charge_map="C:0.8,O:-0.4,Ag:0"
@@ -61,20 +61,23 @@ for ((num=$contin; num<=$Niters; num++)); do
 
        while true; do
            squeue -u $(whoami) --job $jobid > report_of_run
-           line_count=$(wc -l < report_of_run)
+           line_count=$(wc -l < "report_of_run")
            if [[ $line_count -le 1 ]]; then
                break
            fi
            sleep 10
        done
 
-       bash extract_logfiles.sh $nextnum $datapath
+       bash "$main_set_of_files_path/extract_logfiles.sh" $nextnum $datapath
        rm report_of_run
    else
        echo "Iteration $nextnum not performing DFT since data already exist"
    fi
 
+       bash "$main_set_of_files_path/extract_logfiles.sh" $nextnum $datapath
+   
    inff_eval="$results_path/$num/runned.in"
+   
    python "$main_set_of_files_path/evaluate_predictions.py" \
           -n $nextnum -f $inff_eval -dp $datapath
 
@@ -83,7 +86,6 @@ for ((num=$contin; num<=$Niters; num++)); do
        exit 1
    fi
 
-   ninit=$(python "$main_set_of_files_path/get_init.py")
-   inff="$results_path/$ninit/runned.in"
+   inff="$results_path/$num/runned.in"
 done
 

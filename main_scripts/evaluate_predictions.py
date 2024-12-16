@@ -50,13 +50,9 @@ def main():
     #data = al.clean_data(data,setup,prefix='evaluation data')
     nld =setup.nLD
     print('Evaluating for nld = {:d} models'.format(setup.nLD))
-    err = dict()
-    err[nld]= al.predict_model(data,setup)
-    errors = al.rearrange_dict_keys(err)
-    e = dict()
-    for k in errors.keys():
-        e['pred_'+k.lower()] = [v for v in errors[k].values()]
-    al.write_errors(e,num) 
+    predicted_costs = al.predict_model(data,setup)
+    
+    al.write_errors(predicted_costs, num, 'predict') 
 
     print('FF development Prediction Evaluation Time --> {:.3e} sec'.format(perf_counter()-t0))
     
