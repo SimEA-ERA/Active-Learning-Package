@@ -26,16 +26,8 @@ sampling_method="md"
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
-eval_dir="$script_dir/evaluations"
 
 mkdir -p $eval_dir
-
-if [ "$contin" -eq 0 ]; then
-  > $eval_dir/mae.dat
-  > $eval_dir/mse.dat
-  > $eval_dir/pred_mae.dat
-  > $eval_dir/pred_mse.dat
-fi
 
 for ((num=$contin; num<=$Niters; num++)); do
    if [ "$num" -le 5 ]; then
@@ -59,7 +51,7 @@ for ((num=$contin; num<=$Niters; num++)); do
    nextnum=$((num + 1))
 
    if (( nextnum > iexist )); then
-       bash make_rundirs.sh $nextnum $datapath
+       bash "$main_set_of_files_path/make_rundirs.sh" $nextnum $datapath
        rundir="${datapath}/R${nextnum}"
        cd "$rundir" || exit
        echo "Working in directory: $(pwd)"

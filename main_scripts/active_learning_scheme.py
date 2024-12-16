@@ -93,11 +93,10 @@ def main():
     data, model_costs, setup = al.solve_model(data,setup)
     print('solving time = {:.3e} '.format(perf_counter()-t1))
     
-
     sys.stdout.flush()
 
     al.write_errors(model_costs,num) 
-    raise 
+    
     if num >= parsed_args.existing_data:
         t2 = perf_counter()
         parsed_args.ffinputfile='Results/{:d}/runned.in'.format(num)

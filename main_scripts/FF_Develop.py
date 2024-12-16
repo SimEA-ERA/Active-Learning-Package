@@ -252,8 +252,10 @@ class al_help():
         optimizer = FF_Optimizer(data,train_indexes, dev_indexes, setup)
         #print('dataevaluations')
         #results
-        optimizer.optimize_params()
-        optimizer.UperModelContribution_ondata(which='opt',dataset='all')
+        optimizer.set_models('init','opt')
+
+        #optimizer.optimize_params()
+        optimizer.set_UFclass_ondata(which='opt',dataset='all')
         
         return optimizer
 
@@ -725,7 +727,7 @@ class al_help():
         optimizer.report()
         #print('evaluations')
         #results
-        optimizer.UperModelContribution_ondata(which='opt',dataset='all')
+        optimizer.set_UFclass_ondata(which='opt',dataset='all')
         
         setup.write_running_output()
         
@@ -2379,8 +2381,6 @@ class Setup_Interfacial_Optimization():
         'sampling_method':'random',
         'seed':1291412,
         'train_perc':0.8,
-        'validation_set':'colname1:colv1 , colv2, colv3 & colname2: colv1 , colv2',
-        'development_set':'colname1:colv1 , colv2, colv3 & colname2: colv1 , colv2',
         'regularization_method': 'ridge',
         'increased_stochasticity':0.0,
         'reg_par': 0.0,
@@ -4530,19 +4530,34 @@ class FF_Optimizer(Optimizer):
         
         return  models_list
     
-    def UperModelContribution_ondata(self,which='opt',dataset='all'):
+    def set_UFclass_ondata(self,which='opt',dataset='all'):
+        
         ndata = len(self.get_Energy(dataset))
         models = getattr(self.setup,which+'_models')
+        
         
         params, bounds, fixed_params, isnot_fixed,reguls = self.get_parameter_info(models)        
         models_list_info =  self.get_list_of_model_information(models,dataset)
         
         Uclass = self.computeUclass(params, ndata, models_list_info)
         
+        natoms_per_point = self.get_dataDict(dataset,'natoms').to_numpy() 
+        n_forces = np.sum( natoms_per_point )
+        
+        Fclass_array = self.computeForceClass(params, n_forces, models_list_info):
+        
+        Fclass = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
+        for m  in range(ndata):
+            for model_info in models_list_info:
+                nat_low = model_info.nat_low
+                nat_up = model_info.nat_up
+                Fclass[m] = Fclass_array[nat_low[m]:nat_up[m]].copy() 
+        
+        
         index = self.get_indexes(dataset)
         self.data.loc[index,'Uclass'] = Uclass
-        
-        return Uclass
+        self.data.loc[index,'Fclass'] = Fclass
+        return 
 
     @staticmethod
     def UperModelContribution(u_model,dists,dl,du,model_pars,*model_args):
@@ -4626,7 +4641,6 @@ class FF_Optimizer(Optimizer):
     
     @staticmethod
     def computeForceClass(params, n_forces, models_list_info):
-        #Forces_analytical = {m: np.zeros( (natoms,3),dtype=float) for m, natoms in enumerate(natoms_per_point) }
 
         Forces_tot =  np.zeros( ( n_forces ,3), dtype=np.float64) 
         npars_old = 0
@@ -5625,14 +5639,15 @@ class FF_Optimizer(Optimizer):
         else:
             # Filling with dump values to avoid coding errors
             self.set_models('init','opt')
-            
+            self.set_results()
+
         return 
     
     def set_results(self):
         
         params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt','train')
     
-        self.UperModelContribution_ondata('opt',dataset='all')
+        self.set_UFclass_ondata('opt',dataset='all')
         
         costs = self.CostValues() 
         
