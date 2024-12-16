@@ -5949,7 +5949,7 @@ class Interfacial_Evaluator(Evaluator):
                 plt.minorticks_on()
                 plt.tick_params(direction='in', which='minor',length=size)
                 plt.tick_params(direction='in', which='major',length=2*size)
-                perf_line = [x_data.min()*1.05,x_data.max()*1.05]
+                perf_line = [x_data[f].min()*1.05,x_data[f].max()*1.05]
                 plt.plot(perf_line,perf_line, ls='--', color='k',lw=size/2)
                 f = col == c
                 plt.plot(x_data[f], y_data[f],label=c,ls='None',color=colors[i],
