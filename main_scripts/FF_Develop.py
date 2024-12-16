@@ -722,6 +722,7 @@ class al_help():
          
         optimizer.optimize_params()
         
+        optimizer.report()
         #print('evaluations')
         #results
         optimizer.UperModelContribution_ondata(which='opt',dataset='all')
@@ -747,10 +748,6 @@ class al_help():
         
         #trev = train_eval.make_evaluation_table(funs,cols,save_csv='train.csv')
         tv = dev_eval.make_evaluation_table(funs,cols,save_csv='development.csv')
-        errors = {'mae': tv.loc['TOTAL','MAE'],
-                  'mse': tv.loc['TOTAL','MSE']
-                  }
-        errors[setup.costf.lower()] = tv.loc['TOTAL',setup.costf]
 
         train_eval.plot_eners(subsample=1,path=setup.runpath,fname='eners.png')
         
@@ -761,7 +758,7 @@ class al_help():
         
         tf =perf_counter() - t0
         print('Time consumed for solving the model --> {:4.3e} min'.format(tf/60))
-        return  data, errors , optimizer
+        return  data, optimizer.current_costs , optimizer.setup
 
     @staticmethod
     def make_random_petrubations(data,nper=10,sigma=0.05,method='atoms'):
@@ -908,7 +905,7 @@ class al_help():
                   multiplicity=1):
         file = '{:s}/{:s}'.format(path,fname)
         #lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf=xqc scfcyc=999\n\nTemplate file\n\n']    
-        lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc,Conver=6) scfcyc=999\n\nTemplate file\n\n']    
+        lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force=EnOnly\n\nTemplate file\n\n']    
         lines.append(' 0 {:1d}\n'.format(multiplicity))
         for i in range(len(atom_types)):
             at = atom_types[i]
@@ -932,7 +929,7 @@ class al_help():
         "#SBATCH --nodes=1  ",
         "#SBATCH --ntasks-per-node=16  ",
         "#SBATCH --partition=milan  ",
-        "#SBATCH --time=1:19:00  ",
+        "#SBATCH --time=2:00:00  ",
         "",
         "module load Gaussian/16.C.01-AVX2  ",
         "source $g16root/g16/bsd/g16.profile  ",
@@ -993,18 +990,18 @@ class al_help():
         return names
 
     @staticmethod
-    def log_to_xyz(input_path,output_path):
+    def log_to_xyz(input_path,output_path,read_forces=True):
         GeneralFunctions.make_dir(output_path)
         
         for fname in [x for x in os.listdir(input_path) if x[-4:] =='.log'] :
             try:
-                data = Data_Manager.read_Gaussian_output('{:s}/{:s}'.format(input_path,fname))
+                data = Data_Manager.read_Gaussian_output('{:s}/{:s}'.format(input_path,fname),
+                        read_forces=read_forces)
             except Exception as ve:
                 print('warning: DFT null data --> {}'.format(ve))
                 continue
-            data['gaussianfile'] = data['filename']
          
-            labels = [c for c in data.columns if c not in ['coords','natoms','at_type','filename'] ]
+            labels = [c for c in data.columns if c not in ['coords','natoms','at_type','filename', 'Forces'] ]
             Data_Manager.save_selected_data('{:s}/{:s}.xyz'.format(output_path,fname.split('.')[0]), data,labels=labels)
         return
 
@@ -1129,13 +1126,30 @@ class al_help():
     
     
     @staticmethod
-    def write_errors(err,num):
-        GeneralFunctions.make_dir('evaluations')
-        for k,e in err.items():
-            with open('evaluations/{:s}.dat'.format(k),'a') as f:
-                f.write('{:d} {:s} \n'.format(num,'   '.join([str(i) for i in e])))
-                f.closed
+    def write_errors(model_costs,num):
+        errfile = 'COSTS.csv'
+        if os.path.exists(errfile):
+            with open(errfile,'r') as f:
+                nl = len(f.readlines())
+                if nl ==0:
+                    write_header=True
+                else:
+                    write_header=False
+            f.closed
+        else:
+            write_header=True
+          
+        head_line = ', '.join(['AL iteration'] +  list(model_costs.__dict__.keys())  )
+        values_line = ', '.join([ str(num) ] + ['{:4.6e}'.format(x) for x in  list(model_costs.__dict__.values()) ]  )
+
+        with open(errfile,'a') as f:
+            if write_header:
+                f.write(f'{head_line}\n')
+        
+            f.write(f'{values_line}\n')
+            f.closed
         return
+
     @staticmethod
     @jit(nopython=True)
     def calc_dmin(c1,c2):
@@ -2560,7 +2574,8 @@ class Setup_Interfacial_Optimization():
                     b = fu(r,model.parameters,*model.model_args)
                     u = b.u_vectorized()
                     if 'PW1' in model.name:
-                        print(u.min(),u.max())
+                        pass
+                        #print(u.min(),u.max())
                     if c in ['PW','BO','AN'] and len(current_models)>1:
                         if k == 0 : lstyle = '--' 
                         if k == 1: lstyle =':'
@@ -3891,12 +3906,21 @@ class Data_Manager():
                 ac = data['coords']
                 na = data['natoms']
                 try:
+                    fa = data['Forces']
+                    fa_ex=True
+                except:
+                    fa_ex=False
+                try:
                     comment = data['comment']
                 except:
                     comment = ''
                 f.write('{:d} \n{:s}\n'.format(na,comment))
-                for j in range(na):
-                    f.write('{:3s} \t {:8.8f} \t {:8.8f} \t {:8.8f}  \n'.format(at[j],ac[j][0],ac[j][1],ac[j][2]) )
+                if fa_ex == False:
+                    for j in range(na):
+                        f.write('{:3s} \t {:8.8f} \t {:8.8f} \t {:8.8f}  \n'.format(at[j],ac[j][0],ac[j][1],ac[j][2]) )
+                else:
+                    for j in range(na):
+                        f.write('{:3s} \t {:8.8f} \t {:8.8f} \t {:8.8f}  \t {:8.8f} \t {:8.8f} \t {:8.8f}\n'.format(at[j],ac[j][0],ac[j][1],ac[j][2], fa[j][0],fa[j][1],fa[j][2]) )
             f.closed
             
         return 
@@ -4005,13 +4029,16 @@ class Data_Manager():
         newattr['natoms'] = natoms
         at_types = []
         coords= []
+        forces=[]
         for line in lines[2:na+2]:
             l = line.split()
             at_types.append(l[0])
-            coords.append(np.array(l[1:],dtype=float))
+            coords.append(np.array(l[1:4], dtype=float))
+            forces.append(np.array(l[4:7], dtype=float))
+
         newattr['coords'] = [coords]
         newattr['at_type'] = [at_types]
-        
+        newattr['Forces'] = [forces]
         return pd.DataFrame(newattr)
         
     
@@ -4177,26 +4204,7 @@ class Data_Manager():
                 li = line.split()
                 coords.append(np.array(li[3:6],dtype=float))
             config.append( np.array(coords) )
-        if clean_maxForce is not None:
-        #if clean_maxForce is not None and eners.shape[0]>1:
-            forces_max = []
-            for j,i in enumerate(forcelines):
-                forces= []
-                for k,line in enumerate(lines_list[i:i+natoms]):
-                    li = line.split()
-                    forces.append(np.array(li[3:6],dtype=float))
-                m = np.abs(forces).max()
-                if units =='kcal/mol': m*=627.5096080305927
-                forces_max.append(m)
-            forceFilt = np.array(forces_max) < clean_maxForce
-            
-            logger.debug('ForceFilt shape = {}'.format(forceFilt.shape))
-            config = [config[i] for i,b in enumerate(forceFilt) if b]
-            eners = eners[forceFilt]
-            
-            nconfs = len(config)
-            logger.info('NEW AFTER CLEANING nconfs = {:d} ,ener values = {:d},\
-                    natoms = {:d}'.format(nconfs,len(eners),natoms))
+        
         if nconfs ==0 :
             
             raise ValueError("File {:s} does not contain any configuration. Probably it didn't run for enough time".format(filename))
@@ -4217,15 +4225,14 @@ class Data_Manager():
                 forces= []
                 for k,line in enumerate(lines_list[i:i+natoms]):
                     li = line.split()
-                    forces.append(np.array(li[3:6],dtype=float))
+                    forces.append(np.array(li[2:5],dtype=float))
                 forces = np.array(forces)
-                if units =='kcal/mol': forces*=627.5096080305927
+                if units =='kcal/mol': forces*=1185.821 #hartrees/bohr to kcal/mol/A
                 fdat.append(np.array(forces))
-            #print (data_dict)
+            
             data_dict['Forces'] = fdat
-            #print(data_dict)
+        
         data_dict['Energy'] = eners
-        #print(data_dict)
 
         data = pd.DataFrame(data_dict)
         
@@ -4526,12 +4533,15 @@ class FF_Optimizer(Optimizer):
     def UperModelContribution_ondata(self,which='opt',dataset='all'):
         ndata = len(self.get_Energy(dataset))
         models = getattr(self.setup,which+'_models')
+        
         params, bounds, fixed_params, isnot_fixed,reguls = self.get_parameter_info(models)        
         models_list_info =  self.get_list_of_model_information(models,dataset)
-        sys.stdout.flush()
+        
         Uclass = self.computeUclass(params, ndata, models_list_info)
+        
         index = self.get_indexes(dataset)
         self.data.loc[index,'Uclass'] = Uclass
+        
         return Uclass
 
     @staticmethod
@@ -5327,6 +5337,7 @@ class FF_Optimizer(Optimizer):
             secs = int(remaining_seconds % 60) 
             
             return f"{hours} h : {mins:02} min :{secs:02} sec  + " + "{:4.3e}".format(milliseconds)
+
         def __repr__(self):
             x = 'Time Cost : value \n--------------------\n'
             for k,v in self.__dict__.items():
@@ -5344,7 +5355,7 @@ class FF_Optimizer(Optimizer):
                 x+='{} : {:7.8f} \n'.format(k, v )
             x+='--------------------\n'
             return x 
-        
+
     class Model_Info():
         def __init__(self,model, model_attributes):
             
@@ -5446,38 +5457,10 @@ class FF_Optimizer(Optimizer):
                 self.setup.regularization_method)
         
         return params, bounds, args, fixed_parameters, isnot_fixed
+    
     def optimize_params(self,setfrom='init'):
         t0 = perf_counter()
-        '''
-        E = self.get_Energy('train')
         
-        Forces = np.concatenate( list( self.get_dataDict('train','Forces').values() ) )
-        
-        weights =  GeneralFunctions.weighting(self.data_train,
-                self.setup.weighting_method,self.setup.bT,self.setup.w)
-        #argsopt= np.where (self.data_train['label']=='optimal')[0]
-        #weights[argsopt]*=5.0
-        self.weights = weights
-
-        models = getattr(self.setup,setfrom+'_models')
-
-        params, bounds, fixed_parameters, isnot_fixed, reguls = self.get_parameter_info(models)        
-        models_list_info  = self.get_list_of_model_information(models,'train')
-
-
-        opt_method = self.setup.optimization_method
-        tol = self.setup.tolerance
-        maxiter = self.setup.maxiter
-        
-        
-        CostFunc = self.CostFunction
-        
-        
-        args = (E,Forces,weights,models_list_info, 
-                self.setup.reg_par, reguls,
-                self.setup.costf,
-                self.setup.regularization_method)
-        '''
         CostFunc = self.CostFunction
         opt_method = self.setup.optimization_method
         tol = self.setup.tolerance
@@ -5566,18 +5549,19 @@ class FF_Optimizer(Optimizer):
                         current_total_indexes = [ i for i in current_total_indexes if i not in self.train_indexes ]
 
                         self.optimize_params('init')
+
                         time_only_min += self.minimization_time
-                        cost = self.current_costs.dev_cost
 
                         self.set_models('opt','init')
+                        dev_cost = getattr(self.current_costs, self.setup.costf+'_dev_cost')
                         #
-                        if cost <= best_cost:
+                        if dev_cost <= best_cost:
                             best_epoch = self.epoch
-                            best_cost = cost
+                            best_cost = dev_cost
                             self.set_models('opt','best_opt')
                             self.best_costs = copy.deepcopy(self.current_costs)
-
-                        print('epoch = {:d}, i = {:d},  development cost = {:.4e} train cost = {:.4e} '.format(self.epoch,itera,  cost, self.current_costs.train_cost_unreg))
+                        train_cost = getattr(self.current_costs, self.setup.costf+'_train_cost_total')  
+                        print('epoch = {:d}, i = {:d},  development cost = {:.4e} train cost = {:.4e} '.format(self.epoch,itera,  dev_cost, train_cost ))
                         sys.stdout.flush()
                         total_fev += self.current_res.nfev
                         itera+=1
@@ -5606,6 +5590,8 @@ class FF_Optimizer(Optimizer):
                 self.set_models('best_opt','opt')
                 self.set_models('best_opt','init')
                 
+                self.set_results()
+
                 self.train_indexes = self.total_train_indexes
                 temp = self.setup.increased_stochasticity
 
@@ -5650,27 +5636,29 @@ class FF_Optimizer(Optimizer):
         
         costs = self.CostValues() 
         
-        for dataname in ['train','dev', 'all']:
-            params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt','train')
-            
-            (E,Forces, weights,models_list_info, 
+        (E,Forces, weights,models_list_info, 
             reg_par, reguls,
             measure,
             measure_reg ) = args
             
-            creg = CostFunctions.Regularization(params,reguls, measure_reg)
-            ce = CostFunctions.Energy(params, E,weights, models_list_info, measure)
-            cf = CostFunctions.Forces(params, Forces,models_list_info, measure)
-                
-            setattr(costs,dataname+'_energy',  ce)
-            setattr(costs,dataname+'_forces', cf) 
-            if dataname=='train':
-                setattr(costs,dataname+'_cost_total', ce + cf + reg_par*creg) 
-                setattr(costs,dataname+'_reg', creg) 
-                setattr(costs,dataname+'_reg_scaled', reg_par*creg) 
-                setattr(costs,dataname+'_cost_unreg', ce + cf) 
-            else:
-                setattr(costs,dataname+'_cost', ce + cf) 
+
+        for meas in np.unique(['MAE','MSE',measure]):
+            for dataname in ['train','dev', 'all']:
+                params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt','train')
+            
+                creg = CostFunctions.Regularization(params,reguls, measure_reg)
+                ce = CostFunctions.Energy(params, E,weights, models_list_info, meas)
+                cf = CostFunctions.Forces(params, Forces,models_list_info, meas)
+                prefix = meas+'_'+dataname+'_' 
+                setattr(costs,prefix + 'energy',  ce)
+                setattr(costs,prefix + 'forces', cf) 
+                if dataname=='train':
+                    setattr(costs,prefix + 'cost_total', ce + cf + reg_par*creg) 
+                    setattr(costs,prefix + 'reg', creg) 
+                    setattr(costs,prefix + 'reg_scaled', reg_par*creg) 
+                    setattr(costs,prefix + 'cost_unreg', ce + cf) 
+                else:
+                    setattr(costs,prefix + 'cost', ce + cf) 
         self.current_costs = costs
         #Get the new params and give to vdw_dataframe
         return
@@ -5885,7 +5873,7 @@ class Interfacial_Evaluator(Evaluator):
                                units =r'$kcal/mol$',
                                label_map=None,
                                path=None, fname='pred_vs_target.png',attrs=None,
-                               save_fig=True,compare=None,diff=False,scale=0.05):
+                               save_fig=True,compare=None,scale=0.05):
         GeneralFunctions.make_dir(path)
         x_data = self.data[col1].to_numpy()
         y_data = self.data[col2].to_numpy()
@@ -5905,39 +5893,38 @@ class Interfacial_Evaluator(Evaluator):
             uncol = np.array(attrs)
         
         
-        if not diff:
-            _ = plt.figure(figsize=(size,size),dpi=dpi)
-            plt.minorticks_on()
-            plt.tick_params(direction='in', which='minor',length=size)
-            plt.tick_params(direction='in', which='major',length=2*size)
-            xmin = x_data.min()
-            xmax = x_data.max()
-            air = scale*(xmax-xmin)
-            perf_line = [xmin - air , xmax + air]
-            plt.xticks(fontsize=3.0*size)
-            plt.yticks(fontsize=3.0*size)
-            if title is not None:
-                plt.title(title,fontsize=3.5*size)
-            if compare is None:
-                plt.plot(x_data, y_data,ls='None',color='purple',marker='.',markersize=1.3*size,fillstyle='none')
-            else:
-                for i,c in enumerate(uncol):
-                    f = col == c
-                    if label_map is not None:
-                        lbl = label_map[c]
-                    else:
-                        lbl = c
-                    plt.plot(x_data[f], y_data[f],label=lbl,ls='None',color=colors[i],
-                             marker='.',markersize=1.8*size,fillstyle='none')
-            plt.plot(perf_line,perf_line, ls='--', color='k',lw=size/2)
-            plt.xlabel(xlabel,fontsize=3.5*size)
-            plt.ylabel(ylabel,fontsize=3.5*size)
-            if label_map is not None:
-                 plt.legend(frameon=False,fontsize=3.0*size)
-            if fname is not None:
-                plt.savefig('{:s}/{:s}'.format(path,fname),bbox_inches='tight')
-            #plt.show()
+        _ = plt.figure(figsize=(size,size),dpi=dpi)
+        plt.minorticks_on()
+        plt.tick_params(direction='in', which='minor',length=size)
+        plt.tick_params(direction='in', which='major',length=2*size)
+        xmin = x_data.min()
+        xmax = x_data.max()
+        air = scale*(xmax-xmin)
+        perf_line = [xmin - air , xmax + air]
+        plt.xticks(fontsize=3.0*size)
+        plt.yticks(fontsize=3.0*size)
+        if title is not None:
+            plt.title(title,fontsize=3.5*size)
+        if compare is None:
+            plt.plot(x_data, y_data,ls='None',color='purple',marker='.',markersize=1.3*size,fillstyle='none')
         else:
+            for i,c in enumerate(uncol):
+                f = col == c
+                if label_map is not None:
+                    lbl = label_map[c]
+                else:
+                    lbl = c
+                plt.plot(x_data[f], y_data[f],label=lbl,ls='None',color=colors[i],
+                         marker='.',markersize=1.8*size,fillstyle='none')
+        plt.plot(perf_line,perf_line, ls='--', color='k',lw=size/2)
+        plt.xlabel(xlabel,fontsize=3.5*size)
+        plt.ylabel(ylabel,fontsize=3.5*size)
+        if label_map is not None:
+             plt.legend(frameon=False,fontsize=3.0*size)
+        if fname is not None:
+            plt.savefig('{:s}/{:s}'.format(path,fname),bbox_inches='tight')
+        #plt.show()
+        if compare is not None:
             for i,c in enumerate(uncol):
                 _ = plt.figure(figsize=(size,size),dpi=dpi)
                 plt.minorticks_on()
@@ -5952,7 +5939,9 @@ class Interfacial_Evaluator(Evaluator):
                 plt.ylabel(ylabel)
                 plt.legend(frameon=False,ncol=ncol)
                 if fname is not None:
-                    plt.savefig('{:s}/{:s}'.format(path,fname),bbox_inches='tight')
+                    pre,po = fname.split('.')
+                    fn = f'{pre}_{c}.{po}'
+                    plt.savefig('{:s}/{:s}'.format(path,fn),bbox_inches='tight')
                 #plt.show()
         
         
@@ -6221,7 +6210,7 @@ class CostFunctions():
         
         func = getattr(measures,measure)
         cf = func(Forces_True, Forces)
-        return cf
+        return cf/3.0 # forces on each atom are three dimensional
     
     def gradForces(params,Forces_True, models_list_info, measure):
         n_forces = Forces_True.shape[0]

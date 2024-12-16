@@ -68,7 +68,7 @@ def main():
     al.log_to_xyz(path_log, path_xyz)
     data = pd.DataFrame()
     
-    ff.make_dir('distr')
+    ff.GeneralFunctions.make_dir('distr')
     for n in range(num+1):
         print('Reading iteration {:d} '.format(n))
         sys.stdout.flush()
@@ -90,12 +90,14 @@ def main():
     
     t1 = perf_counter()
     
-    data,errors,setup = al.solve_model(data,setup)
+    data, model_costs, setup = al.solve_model(data,setup)
     print('solving time = {:.3e} '.format(perf_counter()-t1))
     
+
     sys.stdout.flush()
 
-    al.write_errors(errors,num) 
+    al.write_errors(model_costs,num) 
+    raise 
     if num >= parsed_args.existing_data:
         t2 = perf_counter()
         parsed_args.ffinputfile='Results/{:d}/runned.in'.format(num)
