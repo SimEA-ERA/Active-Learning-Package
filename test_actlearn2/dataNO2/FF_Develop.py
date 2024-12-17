@@ -736,7 +736,8 @@ class al_help():
         setup.write_running_output()
         
         funs = ['MAE','MSE','MAX','BIAS','STD']
-
+        
+        cols = ['sys_name']
         #df = cols + ['relMAE','relMSE','relBIAS','MAE','MSE']
         if setup.costf not in funs: funs.append(setup.costf)
         
@@ -750,6 +751,9 @@ class al_help():
         dev_eval.plot_predict_vs_target(path = setup.runpath,title='development dataset',
                                           fname='development.png',size=2.35,compare='sys_name')
         
+        
+        #trev = train_eval.make_evaluation_table(funs,cols,save_csv='train.csv')
+        tv = dev_eval.make_evaluation_table(funs,cols,save_csv='development.csv')
 
         train_eval.plot_eners(subsample=1,path=setup.runpath,fname='eners.png')
         
@@ -907,7 +911,7 @@ class al_help():
                   multiplicity=1):
         file = '{:s}/{:s}'.format(path,fname)
         #lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf=xqc scfcyc=999\n\nTemplate file\n\n']    
-        lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force=EnOnly\n\nTemplate file\n\n']    
+        lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force\n\nTemplate file\n\n']    
         lines.append(' 0 {:1d}\n'.format(multiplicity))
         for i in range(len(atom_types)):
             at = atom_types[i]
@@ -2381,7 +2385,6 @@ class Setup_Interfacial_Optimization():
         'sampling_method':'random',
         'seed':1291412,
         'train_perc':0.8,
-         'lambda_force':0.0,
         'regularization_method': 'ridge',
         'increased_stochasticity':0.0,
         'reg_par': 0.0,
@@ -2941,6 +2944,8 @@ class Setup_Interfacial_Optimization():
             rc = self.rho_rc
             #num_pars = model.number_of_parameters
 
+            x  =  model.parameters
+            
             N_LD+=1
             lines.append('{:4.9f} {:4.9f}  {:s}\n'.format(r0,rc,lc1))
             tyc = typemap[ty[0]]
@@ -2956,7 +2961,7 @@ class Setup_Interfacial_Optimization():
             #lines.append('{:.8e} {:.8e} {:.8e} {:s}\n'.format(rho_min,rho_max+diff,diff,lc4))
             lines.append('{:.16e} {:.16e} {:.16e} {:s}\n'.format(rho_min,rho_max,diff,lc4))
             
-            cobj = model.function(rhov,model.parameters,*model.model_args)
+            cobj = model.function(r,model.parameters,*model.model_args)
             Frho = cobj.u_vectorized()
             #du = cobj.find_dydx()
             
@@ -4218,7 +4223,6 @@ class Data_Manager():
         data_dict ={'coords':config,'natoms':[int(natoms)]*nconfs,
                     'at_type':[at_type]*nconfs,'sys_name':[sysname]*nconfs,
                     'filename':[filename]*nconfs,'name':[name]*nconfs}
-        
         if read_forces:
             fdat = []
             for j,i in enumerate(forcelines):
@@ -4227,13 +4231,13 @@ class Data_Manager():
                     li = line.split()
                     forces.append(np.array(li[2:5],dtype=float))
                 forces = np.array(forces)
-                if units =='kcal/mol': forces*=627.5096080305927/0.529177 #hartrees/A to kcal/mol/A
+                if units =='kcal/mol': forces *= 627.5096080305927/0.529177  #hartrees/bohr to kcal/mol/A
                 fdat.append(np.array(forces))
             
             data_dict['Forces'] = fdat
         
         data_dict['Energy'] = eners
-        
+
         data = pd.DataFrame(data_dict)
         
         return data
@@ -4556,7 +4560,7 @@ class FF_Optimizer(Optimizer):
         
         index = self.get_indexes(dataset)
         self.data.loc[index,'Uclass'] = Uclass
-        self.data.loc[index,'Fclass'] = pd.Series(Fclass.values(), index=index)
+        self.data.loc[index,'Fclass'] = Fclass
         return 
 
     @staticmethod
@@ -4750,7 +4754,7 @@ class FF_Optimizer(Optimizer):
             fa = model_info.pa*dudx_vectorized
             fc = model_info.pc*dudx_vectorized
             FF_Optimizer.numba_add_angle(Forces, fa, fc, i_index, j_index, k_index)
-            
+        
         return
     
     @jit(nopython=True,fastmath=True)
@@ -4800,7 +4804,8 @@ class FF_Optimizer(Optimizer):
         
         
         dataset='all'
-
+        
+        ndata = len(self.get_Energy(dataset))
         models = getattr(self.setup, which + '_models')
         params, bounds, fixed_params, isnot_fixed, reguls = self.get_parameter_info(models)
         models_list_info = self.get_list_of_model_information(models, dataset)
@@ -5135,26 +5140,25 @@ class FF_Optimizer(Optimizer):
         return
     @staticmethod
     def CostFunction(params,
-                     Energy, Forces, lambda_force, models_list_info,
-                     reg, reguls,
+                     Energy, Forces, we, models_list_info,
+                     reg,reguls,
                      measure,reg_measure):   
-        
-        cE = CostFunctions.Energy(params, Energy, models_list_info, measure)
+        cE = CostFunctions.Energy(params, Energy, we, models_list_info, measure)
         cR = reg*CostFunctions.Regularization(params,reguls,reg_measure) 
         cF = CostFunctions.Forces(params, Forces, models_list_info, measure) 
-        cost = cE + cR + lambda_force*cF
+        cost = cF + cE + cR
         return cost
     
     @staticmethod
     def gradCost(params,
-                Energy, Forces, lambda_force, models_list_info,
+                Energy, Forces, we, models_list_info,
                 reg,reguls,
                 measure,reg_measure):   
         # serialize the params
-        gradE = CostFunctions.gradEnergy(params, Energy, models_list_info, measure)
+        gradE = CostFunctions.gradEnergy(params, Energy, we, models_list_info, measure)
         gradR = reg*CostFunctions.gradRegularization(params,reguls,reg_measure) 
         gradF = CostFunctions.gradForces(params, Forces, models_list_info, measure) 
-        grads =  gradE + gradR + lambda_force*gradF
+        grads = gradF + gradE + gradR
         
         return grads
     
@@ -5444,20 +5448,11 @@ class FF_Optimizer(Optimizer):
                     params[change_id] = 0.999*blow if blow < 0 else 1.001*blow
         return params
     
-    def get_true_Forces(self,dataset):
-        fv = self.get_dataDict(dataset,'Forces').values()
-        Forces = []
-        for f in fv:
-            for fatom in f:
-                Forces.append(fatom)
-        return np.array(Forces)
-    
     def get_params_n_args(self,setfrom,dataset):
         
         E = self.get_Energy(dataset)
         
-        Forces = self.get_true_Forces(dataset)
-        
+        Forces = np.concatenate( list( self.get_dataDict(dataset,'Forces').values() ) )
         
         weights =  GeneralFunctions.weighting(self.data_train,
                 self.setup.weighting_method,self.setup.bT,self.setup.w)
@@ -5469,12 +5464,11 @@ class FF_Optimizer(Optimizer):
 
         params, bounds, fixed_parameters, isnot_fixed, reguls = self.get_parameter_info(models) 
         
-        models_list_info  = self.get_list_of_model_information(models, dataset)
+        models_list_info  = self.get_list_of_model_information(models,'train')
         
         self.models_list_info = models_list_info
         
-        args = (E,Forces,self.setup.lambda_force,
-                models_list_info, 
+        args = (E,Forces,weights,models_list_info, 
                 self.setup.reg_par, reguls,
                 self.setup.costf,
                 self.setup.regularization_method)
@@ -5496,7 +5490,9 @@ class FF_Optimizer(Optimizer):
         #if not hasattr(self,'checkedGrads'):
         #    self.test_CostGrads(params, args)
         #    self.checkedGrads = True
-
+    
+       
+        
         try:
             self.randomize
         except AttributeError:
@@ -5658,33 +5654,29 @@ class FF_Optimizer(Optimizer):
         
         costs = self.CostValues() 
         
-        (E,Forces, lambda_force,models_list_info, 
-                 reg_par, reguls,
-                 measure,
-                 measure_reg ) = args  
+        (E,Forces, weights,models_list_info, 
+            reg_par, reguls,
+            measure,
+            measure_reg ) = args
+            
 
         for meas in np.unique(['MAE','MSE',measure]):
             for dataname in ['train','dev', 'all']:
-                params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt',dataname)
-                
-                (E,Forces, lambda_force,models_list_info, 
-                 reg_par, reguls,
-                 measure,
-                 measure_reg ) = args
-                
+                params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt','train')
+            
                 creg = CostFunctions.Regularization(params,reguls, measure_reg)
-                ce = CostFunctions.Energy(params, E, models_list_info, meas)
+                ce = CostFunctions.Energy(params, E,weights, models_list_info, meas)
                 cf = CostFunctions.Forces(params, Forces,models_list_info, meas)
                 prefix = meas+'_'+dataname+'_' 
                 setattr(costs,prefix + 'energy',  ce)
                 setattr(costs,prefix + 'forces', cf) 
                 if dataname=='train':
-                    setattr(costs,prefix + 'cost_total', ce + lambda_force*cf + reg_par*creg) 
+                    setattr(costs,prefix + 'cost_total', ce + cf + reg_par*creg) 
                     setattr(costs,prefix + 'reg', creg) 
                     setattr(costs,prefix + 'reg_scaled', reg_par*creg) 
-                    setattr(costs,prefix + 'cost_unreg', ce + lambda_force*cf) 
+                    setattr(costs,prefix + 'cost_unreg', ce + cf) 
                 else:
-                    setattr(costs,prefix + 'cost', ce + lambda_force*cf) 
+                    setattr(costs,prefix + 'cost', ce + cf) 
         self.current_costs = costs
         #Get the new params and give to vdw_dataframe
         return
@@ -5713,12 +5705,8 @@ class FF_Optimizer(Optimizer):
     
     def report(self):
         print(self.current_costs)
-        try:
-            print(self.timecosts)
-        except AttributeError:
-            print('optimization not performed ... time costs info not available')
-        return
-    
+        print(self.timecosts)
+                
 class regularizators:
     @staticmethod
     def ridge(x):
@@ -5957,15 +5945,12 @@ class Interfacial_Evaluator(Evaluator):
         if compare is not None:
             for i,c in enumerate(uncol):
                 _ = plt.figure(figsize=(size,size),dpi=dpi)
-                f = col == c
                 plt.minorticks_on()
                 plt.tick_params(direction='in', which='minor',length=size)
                 plt.tick_params(direction='in', which='major',length=2*size)
-                xmin = x_data[f].min()
-                xmax = x_data[f].max()
-                perf_line = [xmin*(1 - 0.05*np.sign(xmin)), xmax*(1+0.05*np.sign(xmax))]
+                perf_line = [x_data[f].min()*1.05,x_data[f].max()*1.05]
                 plt.plot(perf_line,perf_line, ls='--', color='k',lw=size/2)
-                
+                f = col == c
                 plt.plot(x_data[f], y_data[f],label=c,ls='None',color=colors[i],
                              marker='.',markersize=1.8*size,fillstyle='none')
                 plt.xlabel(xlabel)
@@ -6214,25 +6199,26 @@ class mappers():
     
 
 class CostFunctions():   
-    def Energy(params, Energy, models_list_info, measure):
+    
+    def Energy(params, Energy, we, models_list_info, measure):
     
         ne = Energy.shape[0]
         
         Uclass = FF_Optimizer.computeUclass(params,ne,models_list_info)
         
         func = getattr(measures,measure)
-        ce = func(Energy, Uclass)
+        ce = func(Energy, Uclass, we)
         
         return ce
     
-    def gradEnergy(params, Energy, models_list_info, measure):
+    def gradEnergy(params, Energy, we, models_list_info, measure):
         ne = Energy.shape[0]
         
         Uclass = FF_Optimizer.computeUclass(params,ne,models_list_info)
         gradU = FF_Optimizer.gradUclass(params,ne,models_list_info)
         
         func = getattr(measures,'grad_'+measure)
-        grad = np.sum( func(Energy, Uclass) * gradU, axis = 1)
+        grad = np.sum( func(Energy, Uclass, we) * gradU, axis = 1)
         
         return grad 
     
@@ -6249,10 +6235,9 @@ class CostFunctions():
         n_forces = Forces_True.shape[0]
         
         Forces = FF_Optimizer.computeForceClass(params,n_forces,models_list_info)
-        gradF = FF_Optimizer.computeGradForceClass(params,n_forces,models_list_info)
+        gradF  = FF_Optimizer.computeGradForceClass(params,n_forces,models_list_info)
         
         func = getattr(measures,'grad_'+measure)
-        
         grad = np.sum( func(Forces_True, Forces) * gradF, axis = (1,2) )
         return grad/3.0
     
