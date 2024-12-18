@@ -1,0 +1,120 @@
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2619: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2619: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2619: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2619: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2619: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2619: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2619: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+Traceback (most recent call last):
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3/../main_scripts/active_learning_scheme.py", line 128, in <module>
+    main()
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3/../main_scripts/active_learning_scheme.py", line 109, in main
+    possible_data = al.sample_via_lammps(data,r_setup,parsed_args)
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py", line 183, in sample_via_lammps
+    al_help.write_potential_files(setup,df, parsed_args,bonded_inters)
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py", line 215, in write_potential_files
+    al_help.write_Lammps_potential_file(setup, data_point, bonded_inters,maps['types_map'],maps['charge_map'])
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py", line 520, in write_Lammps_potential_file
+    setup.write_LDtable(types_map,50000,which=which)
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py", line 2964, in write_LDtable
+    cobj = model.function(r,model.parameters,*model.model_args)
+NameError: name 'r' is not defined

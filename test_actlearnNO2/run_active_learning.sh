@@ -13,10 +13,10 @@ module load numba/0.54.1-foss-2021b
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
-inff="$script_dir/CO2.in"
+inff="$script_dir/NO2.in"
 bsize=100
 Niters=10
-iexist=2
+iexist=0
 contin=0
 sigma=0.02
 charge_map="C:0.8,O:-0.4,Ag:0"

@@ -911,7 +911,7 @@ class al_help():
                   multiplicity=1):
         file = '{:s}/{:s}'.format(path,fname)
         #lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf=xqc scfcyc=999\n\nTemplate file\n\n']    
-        lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force=EnOnly\n\nTemplate file\n\n']    
+        lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force\n\nTemplate file\n\n']    
         lines.append(' 0 {:1d}\n'.format(multiplicity))
         for i in range(len(atom_types)):
             at = atom_types[i]
@@ -4231,7 +4231,7 @@ class Data_Manager():
                     li = line.split()
                     forces.append(np.array(li[2:5],dtype=float))
                 forces = np.array(forces)
-                if units =='kcal/mol': forces*=627.5096080305927 #hartrees/A to kcal/mol/A
+                if units =='kcal/mol': forces *= 627.5096080305927/0.529177  #hartrees/bohr to kcal/mol/A
                 fdat.append(np.array(forces))
             
             data_dict['Forces'] = fdat
@@ -5143,7 +5143,6 @@ class FF_Optimizer(Optimizer):
                      Energy, Forces, we, models_list_info,
                      reg,reguls,
                      measure,reg_measure):   
-        
         cE = CostFunctions.Energy(params, Energy, we, models_list_info, measure)
         cR = reg*CostFunctions.Regularization(params,reguls,reg_measure) 
         cF = CostFunctions.Forces(params, Forces, models_list_info, measure) 
@@ -6200,6 +6199,7 @@ class mappers():
     
 
 class CostFunctions():   
+    
     def Energy(params, Energy, we, models_list_info, measure):
     
         ne = Energy.shape[0]
@@ -6235,11 +6235,11 @@ class CostFunctions():
         n_forces = Forces_True.shape[0]
         
         Forces = FF_Optimizer.computeForceClass(params,n_forces,models_list_info)
-        gradF = FF_Optimizer.computeGradForceClass(params,n_forces,models_list_info)
+        gradF  = FF_Optimizer.computeGradForceClass(params,n_forces,models_list_info)
         
         func = getattr(measures,'grad_'+measure)
         grad = np.sum( func(Forces_True, Forces) * gradF, axis = (1,2) )
-        return grad
+        return grad/3.0
     
     def Regularization(params,reguls,reg_measure):
         cr = getattr(regularizators,reg_measure)(params*reguls)
