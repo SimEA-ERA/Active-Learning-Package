@@ -1370,20 +1370,20 @@ class VectorGeometry:
     
     @jit(nopython=True,fastmath=True)
     def calc_dist(r1,r2):
-        r = r2 - r1
+        r = r1 - r2
         d = np.sqrt(np.dot(r,r))
         return d
     
     @jit(nopython=True,fastmath=True)
     def calc_unitvec(r1,r2):
-        r = r2 - r1
+        r = r1 - r2
         d = np.sqrt(np.dot(r,r))
         return r/d
     
     @jit(nopython=True,fastmath=True)
     def calc_angle_pa_pc(ri,rj,rk):
-        vij = rj - ri 
-        vkj = rj - rk
+        vij = ri - rj 
+        vkj = rk - rj
         
         a = np.dot(vij,vkj)
         b = np.sqrt( np.dot(vij,vij) )
@@ -1403,7 +1403,7 @@ class VectorGeometry:
     
     @jit(nopython=True,fastmath=True)
     def calc_angle(r1,r2,r3):
-        d1 = r2 -r1 ; d2 = r2-r3
+        d1 = r1 -r2 ; d2 = r3 - r2
         nd1 = np.sqrt(np.dot(d1,d1))
         nd2 = np.sqrt(np.dot(d2,d2))
         cos_th = np.dot(d1,d2)/(nd1*nd2)
@@ -2417,7 +2417,7 @@ class Setup_Interfacial_Optimization():
         'sampling_method':'random',
         'seed':1291412,
         'train_perc':0.8,
-         'lambda_force':0.0,
+         'lambda_force':1.0,
          'normalize_data':True,
         'regularization_method': 'ridge',
         'increased_stochasticity':0.0,
@@ -3720,22 +3720,22 @@ class Interactions():
                         npairs = len(pairs) 
                         
                         r  = np.empty(npairs, dtype=float)
-                        rhats_ij = np.empty( (npairs,3), dtype=float)
+                        partial_ri = np.empty( (npairs,3), dtype=float)
                         i_index = np.empty(npairs,dtype=int)
                         j_index = np.empty(npairs,dtype=int)
                                     
                         for ip,p in enumerate(pairs):
                             i, j = p
                             
-                            r1 = np.array(ac[i]) 
-                            r2 = np.array( ac[j])
+                            r1 = np.array( ac[i] ) 
+                            r2 = np.array( ac[j] )
                             
                             i_index[ip] = i
                             j_index[ip] = j
                             r[ip] =  VectorGeometry.calc_dist(r1,r2)
-                            rhats_ij[ip] =  VectorGeometry.calc_unitvec(r1,r2)
+                            partial_ri[ip] =  VectorGeometry.calc_unitvec(r1,r2)
                        
-                        temp = {'values':r, 'rhats_ij':rhats_ij,
+                        temp = {'values':r, 'partial_ri':partial_ri,
                                 'i_index':i_index,'j_index':j_index}
                         
                     elif intertype=='angles':
@@ -4263,7 +4263,7 @@ class Data_Manager():
                 for k,line in enumerate(lines_list[i:i+natoms]):
                     li = line.split()
                     forces.append(np.array(li[2:5],dtype=float))
-                forces = -np.array(forces)
+                forces = np.array(forces)
                  #hartrees/bohr to kcal/mol/A
                 if units =='kcal/mol': forces*=627.5096080305927/0.529177
                 fdat.append(np.array(forces))
@@ -4745,7 +4745,7 @@ class FF_Optimizer(Optimizer):
         nf = fg.shape[1]
         if model_info.category == 'PW' or model_info.category == 'BO':
             for n in range(n_pars):
-                pw_ij = fg[n].reshape( (nf,1) )*model_info.rhats_ij
+                pw_ij = fg[n].reshape( (nf,1) )*model_info.partial_ri
                 FF_Optimizer.numba_add_ij(gradForces[n], pw_ij, i_index, j_index)
             
         elif model_info.category == 'LD':
@@ -4776,12 +4776,12 @@ class FF_Optimizer(Optimizer):
         dudx_vectorized = dudx_vectorized.reshape((dudx_vectorized.shape[0],1))
         
         if model_info.category == 'PW' or model_info.category == 'BO':
-            pw_ij = dudx_vectorized*model_info.rhats_ij
-            FF_Optimizer.numba_add_ij(Forces,pw_ij,i_index,j_index)
+            pw_i = dudx_vectorized*model_info.partial_ri
+            FF_Optimizer.numba_add_ij(Forces, pw_i, i_index, j_index)
             
         elif model_info.category == 'LD':
-            pw_ij = dudx_vectorized[ model_info.to_ij ]*model_info.v_ij
-            FF_Optimizer.numba_add_ij(Forces,pw_ij,i_index,j_index)
+            pw_i = dudx_vectorized[ model_info.to_ij ]*model_info.v_ij
+            FF_Optimizer.numba_add_ij(Forces,pw_i, i_index,j_index)
         
         elif model_info.category =='AN':
             k_index = model_info.k_indexes
@@ -5043,11 +5043,11 @@ class FF_Optimizer(Optimizer):
                 if order==4:
                     for m in Forces_numerical.keys():
                         atom_index = atoms_to_modify[m]
-                        Forces_numerical[m][atom_index, dir_index] = (-up2[m] + 8 * up1[m] - 8 * um1[m] + um2[m]) / (12 * epsilon)
+                        Forces_numerical[m][atom_index, dir_index] = - (-up2[m] + 8 * up1[m] - 8 * um1[m] + um2[m]) / (12 * epsilon)
                 else:
                     for m in Forces_numerical.keys():
                         atom_index = atoms_to_modify[m]
-                        Forces_numerical[m][atom_index, dir_index] = (up1[m] - um1[m]) / ( 2*epsilon)
+                        Forces_numerical[m][atom_index, dir_index] = - (up1[m] - um1[m]) / ( 2*epsilon)
                 #if verbose:
                 #    print(f'Numerical Forces Calculated. Comparing direction {dir_index}...')
                 
@@ -5251,7 +5251,7 @@ class FF_Optimizer(Optimizer):
         
         if model.category == 'BO' or model.category =='PW':
             
-            rhats_ij  = [] ;  i_indexes = [] ; j_indexes = []
+            partial_ri  = [] ;  i_indexes = [] ; j_indexes = []
             na = 0
             
             for m,(idx,val) in enumerate(values_dict.items()):
@@ -5261,17 +5261,17 @@ class FF_Optimizer(Optimizer):
                     i_ix = np.empty(0,dtype=int)
                     j_ix = np.empty(0,dtype=int)
                 else:
-                    rh = val[model.feature][model.type]['rhats_ij']
+                    rh = val[model.feature][model.type]['partial_ri']
                     i_ix = val[model.feature][model.type]['i_index']
                     j_ix = val[model.feature][model.type]['j_index']
                 
             
-                rhats_ij.extend(rh)
+                partial_ri.extend(rh)
                 i_indexes.extend(i_ix + na)
                 j_indexes.extend(j_ix + na)
                 na += natoms_dict[idx]
             
-            model_attributes.update({'rhats_ij':np.array(rhats_ij),
+            model_attributes.update({'partial_ri':np.array(partial_ri),
                                            'i_indexes':np.array(i_indexes),
                                            'j_indexes':np.array(j_indexes)})
             
