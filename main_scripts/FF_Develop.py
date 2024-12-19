@@ -1655,6 +1655,7 @@ class LJ:
         
         self.derivative_gradient = fg
         return fg
+    
 class MorseBond:
     
     def __init__(self,r,params):
@@ -2417,6 +2418,7 @@ class Setup_Interfacial_Optimization():
         'seed':1291412,
         'train_perc':0.8,
          'lambda_force':0.0,
+         'normalize_data':True,
         'regularization_method': 'ridge',
         'increased_stochasticity':0.0,
         'reg_par': 0.0,
@@ -5537,7 +5539,7 @@ class FF_Optimizer(Optimizer):
         #if not hasattr(self,'checkedGrads'):
         #    self.test_CostGrads(params, args)
         #    self.checkedGrads = True
-        normalize_data = True
+        normalize_data = self.setup.normalize_data
         if normalize_data:
             Energy, Forces = args[0], args[1]
             mu_e = Energy.mean()
@@ -5622,14 +5624,15 @@ class FF_Optimizer(Optimizer):
                         time_only_min += self.minimization_time
 
                         self.set_models('opt','init')
-                        dev_cost = getattr(self.current_costs, self.setup.costf+'_dev_cost')
+                        norm = 'norm_' if normalize_data else ''
+                        dev_cost = getattr(self.current_costs, norm + self.setup.costf+'_dev_cost')
                         #
                         if dev_cost <= best_cost:
                             best_epoch = self.epoch
                             best_cost = dev_cost
                             self.set_models('opt','best_opt')
                             self.best_costs = copy.deepcopy(self.current_costs)
-                        train_cost = getattr(self.current_costs, self.setup.costf+'_train_cost_total')  
+                        train_cost = getattr(self.current_costs, norm + self.setup.costf +'_train_cost')  
                         print('epoch = {:d}, i = {:d},  development cost = {:.4e} train cost = {:.4e} '.format(self.epoch,itera,  dev_cost, train_cost ))
                         sys.stdout.flush()
                         total_fev += self.current_res.nfev
@@ -5697,42 +5700,58 @@ class FF_Optimizer(Optimizer):
             self.set_results()
 
         return 
-    
+    def get_normalized_data(self,Energy,Forces):
+        mu_e = Energy.mean()
+        std_e = Energy.std()
+        mu_f = Forces.mean()
+        std_f = Forces.std()
+        return mu_e, std_e , mu_f ,std_f
     def set_results(self):
         
         params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt','train')
-    
+        
         self.set_UFclass_ondata('opt',dataset='all')
         
         costs = self.CostValues() 
         
-        (E,Forces, lambda_force,models_list_info, 
-                 reg_par, reguls,
-                 measure,
-                 measure_reg ) = args  
-
-        for meas in np.unique(['MAE','MSE',measure]):
-            for dataname in ['train','dev', 'all']:
-                params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt',dataname)
-                
-                (E,Forces, lambda_force,models_list_info, 
+        (Energy,Forces, lambda_force,models_list_info, 
                  reg_par, reguls,
                  measure,
                  measure_reg ) = args
+        
+        normalize = self.setup.normalize_data
+        
+        
+        for meas in np.unique(['MAE','MSE',measure]):
+            for dataname in ['train','dev', 'all']:
+                for norm in ['','norm_']:
+                    params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt',dataname)
                 
-                creg = CostFunctions.Regularization(params,reguls, measure_reg)
-                ce = CostFunctions.Energy(params, E, models_list_info, meas)
-                cf = CostFunctions.Forces(params, Forces,models_list_info, meas)
-                prefix = meas+'_'+dataname+'_' 
-                setattr(costs,prefix + 'energy',  ce)
-                setattr(costs,prefix + 'forces', cf) 
-                if dataname=='train':
-                    setattr(costs,prefix + 'cost_total', ce + lambda_force*cf + reg_par*creg) 
-                    setattr(costs,prefix + 'reg', creg) 
-                    setattr(costs,prefix + 'reg_scaled', reg_par*creg) 
-                    setattr(costs,prefix + 'cost_unreg', ce + lambda_force*cf) 
-                else:
+                    (Energy,Forces, lambda_force,models_list_info, 
+                     reg_par, reguls,
+                     measure,
+                     measure_reg ) = args
+                    if normalize and norm =='norm_':
+                        mu_e, std_e, mu_f, std_f = self.get_normalized_data(Energy,Forces)
+                    else:
+                        mu_e, std_e, mu_f, std_f = 0.0, 1.0, 0.0, 1.0
+                    
+                    creg = CostFunctions.Regularization(params,reguls, measure_reg)
+                    ce = CostFunctions.Energy(params, Energy, models_list_info, meas, mu_e, std_e)
+                    cf = CostFunctions.Forces(params, Forces, models_list_info, meas, mu_f, std_f)
+                    
+                    prefix = norm + meas+'_'+dataname+'_' 
+                    setattr(costs,prefix + 'energy',  ce)
+                    setattr(costs,prefix + 'forces', cf) 
+                    
+                    if dataname=='train':
+                        if (normalize and norm=='norm_') or (norm=='' and normalize==False):
+                            setattr(costs,prefix + 'cost_with_reg', ce + lambda_force*cf + reg_par*creg) 
+                        if norm == '': 
+                            setattr(costs,prefix + 'reg', creg) 
+                            setattr(costs,prefix + 'reg_scaled', reg_par*creg) 
                     setattr(costs,prefix + 'cost', ce + lambda_force*cf) 
+        
         self.current_costs = costs
         #Get the new params and give to vdw_dataframe
         return
@@ -5805,27 +5824,27 @@ class measures:
     
     @staticmethod
     def MAE(u1,u2,w=1):
-        u = np.abs(u2-u1)
-        return np.sum(u*w)/u1.shape[0]
+        u = np.abs(u1-u2)
+        return np.sum(u*w)/u2.size
     
     @staticmethod
     def grad_MAE(u1,u2,w=1):
-        u = u2-u1
-        return w*np.sign(u)/u1.shape[0]
+        u = u1-u2
+        return w*np.sign(u)/u2.size
     
     @staticmethod
     def MSE(u1,u2,w=1):
-        u = u2 -u1
-        return np.sum(w*u*u)/u1.shape[0]
+        u = u1 -u2
+        return np.sum(w*u*u)/u2.size
     
     @staticmethod
     def grad_MSE(u1,u2,w=1):
-        u = u2-u1
-        return 2*w*u/u1.shape[0]
+        u = u1-u2
+        return 2*w*u/u2.size
 
     @staticmethod
     def BIAS(u1,u2):
-        u = u2-u1
+        u = u1-u2
         return u.mean()
     
     @staticmethod
@@ -6265,7 +6284,7 @@ class CostFunctions():
         Uclass = FF_Optimizer.computeUclass(params,ne,models_list_info)
         
         func = getattr(measures,measure)
-        ce = func( (Energy-mu)/std, (Uclass-mu)/std )
+        ce = func(  (Uclass-mu)/std, (Energy-mu)/std )
         
         return ce
     
@@ -6276,7 +6295,7 @@ class CostFunctions():
         gradU = FF_Optimizer.gradUclass(params,ne,models_list_info)
         
         func = getattr(measures,'grad_'+measure)
-        grad = np.sum( func( (Energy-mu)/std, (Uclass-mu)/std) * gradU/std, axis = 1)
+        grad = np.sum( func( (Uclass-mu)/std, (Energy-mu)/std ) * gradU/std, axis = 1)
         
         return grad 
     
@@ -6286,8 +6305,8 @@ class CostFunctions():
         Forces = FF_Optimizer.computeForceClass(params,n_forces,models_list_info)
         
         func = getattr(measures,measure)
-        cf = func((Forces_True-mu)/std, (Forces-mu)/std )
-        return cf/3.0 # forces on each atom are three dimensional
+        cf = func( (Forces-mu)/std, (Forces_True-mu)/std )
+        return cf 
     
     def gradForces(params,Forces_True, models_list_info, measure, mu=0.0, std=1.0):
         n_forces = Forces_True.shape[0]
@@ -6297,8 +6316,8 @@ class CostFunctions():
         
         func = getattr(measures,'grad_'+measure)
         
-        grad = np.sum( func((Forces_True-mu)/std, (Forces -mu)/std ) * gradF/std, axis = (1,2) )
-        return grad/3.0
+        grad = np.sum( func( (Forces -mu)/std, (Forces_True-mu)/std ) * gradF/std, axis = (1,2) )
+        return grad
     
     def Regularization(params,reguls,reg_measure):
         cr = getattr(regularizators,reg_measure)(params*reguls)
