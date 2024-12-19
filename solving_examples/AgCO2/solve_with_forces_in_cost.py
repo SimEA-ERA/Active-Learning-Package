@@ -32,7 +32,6 @@ al.make_absolute_Energy_to_interaction(data,setup)
 #ff.Data_Manager.distribution(data['Energy'],'distr/data{:d}.png'.format(n))
 # 3 end - data are read in the dataframe "data"
 
-
 # 4 clean the data
 data = al.clean_data(data,setup)
 al.make_interactions(data, setup)
@@ -56,5 +55,5 @@ data['Forces'] = sudoForces.values()
 t1 = perf_counter()    
 data, errors, optimizer = al.solve_model(data,setup)
 print('solving time = {:.3e} sec '.format(perf_counter()-t1))
-optimizer.report()
+
 # 5 end

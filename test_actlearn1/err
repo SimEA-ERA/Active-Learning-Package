@@ -1,0 +1,98 @@
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2653: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2653: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2653: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2653: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2653: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2653: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+mkdir: missing operand
+Try 'mkdir --help' for more information.
+/nvme/h/buildsets/eb_nepheli/software/SciPy-bundle/2021.10-foss-2021b/lib/python3.9/site-packages/scipy/optimize/optimize.py:282: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+  warnings.warn("Values in x were outside bounds during a "
+/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py:2653: UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.
+  plt.show()
+bash: lammps_sample_run.sh: No such file or directory
+cp: cannot stat 'samples.lammpstrj': No such file or directory
+Traceback (most recent call last):
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/test_actlearn1/../main_scripts/active_learning_scheme.py", line 128, in <module>
+    main()
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/test_actlearn1/../main_scripts/active_learning_scheme.py", line 109, in main
+    possible_data = al.sample_via_lammps(data,r_setup,parsed_args)
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py", line 198, in sample_via_lammps
+    new_data = al_help.read_lammps_structs('lammps_working/samples.lammpstrj',inv_types)
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/FF_Develop.py", line 121, in read_lammps_structs
+    a  = lammps_reader.LammpsTrajReader(fname)
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/lammpsreader.py", line 100, in __init__
+    self.reader = FileLineReader(filename)
+  File "/onyx/data/simea/nikolas/postDoc/Active-Learning-Package/main_scripts/lammpsreader.py", line 10, in __init__
+    self.file = open(filename,'r')
+FileNotFoundError: [Errno 2] No such file or directory: 'lammps_working/samples.lammpstrj'

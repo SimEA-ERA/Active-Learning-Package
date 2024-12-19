@@ -90,7 +90,7 @@ def main():
     
     t1 = perf_counter()
     
-    data, model_costs, setup = al.solve_model(data,setup)
+    data, model_costs, setup, optimizer = al.solve_model(data,setup)
     print('solving time = {:.3e} '.format(perf_counter()-t1))
     
     sys.stdout.flush()

@@ -3,421 +3,444 @@ Reading iteration 0
 Kept 100.000 % of the  data
 STOCHASTIC SLSQP Began
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.03900977403897398
-            Iterations: 19
-            Function evaluations: 74
-            Gradient evaluations: 19
-epoch = 0, i = 0,  development cost = 6.8046e-05 train cost = 3.9010e-02 
-epoch = 0 ,  best_epoch = 0 , best_cost = 6.8046e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.039693986019324674
-            Iterations: 47
-            Function evaluations: 153
-            Gradient evaluations: 47
-epoch = 1, i = 0,  development cost = 1.0837e-03 train cost = 3.9694e-02 
-epoch = 1 ,  best_epoch = 0 , best_cost = 6.8046e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 4.11002428633231
-            Iterations: 3
-            Function evaluations: 17
-            Gradient evaluations: 3
-epoch = 2, i = 0,  development cost = 4.0659e+00 train cost = 4.1100e+00 
-epoch = 2 ,  best_epoch = 0 , best_cost = 6.8046e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.048192077325512644
-            Iterations: 33
-            Function evaluations: 88
-            Gradient evaluations: 33
-epoch = 3, i = 0,  development cost = 3.8425e-05 train cost = 4.8192e-02 
-epoch = 3 ,  best_epoch = 3 , best_cost = 3.8425e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.4754076836281045
-            Iterations: 21
-            Function evaluations: 90
-            Gradient evaluations: 21
-epoch = 4, i = 0,  development cost = 4.3437e-01 train cost = 4.7541e-01 
-epoch = 4 ,  best_epoch = 3 , best_cost = 3.8425e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.26781904037665794
-            Iterations: 26
-            Function evaluations: 160
-            Gradient evaluations: 25
-epoch = 5, i = 0,  development cost = 2.2708e-01 train cost = 2.6782e-01 
-epoch = 5 ,  best_epoch = 3 , best_cost = 3.8425e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.041093633169741656
-            Iterations: 31
-            Function evaluations: 92
-            Gradient evaluations: 31
-epoch = 6, i = 0,  development cost = 1.3988e-05 train cost = 4.1094e-02 
-epoch = 6 ,  best_epoch = 6 , best_cost = 1.3988e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.04686568762102706
-            Iterations: 20
-            Function evaluations: 79
-            Gradient evaluations: 20
-epoch = 7, i = 0,  development cost = 1.9614e-04 train cost = 4.6866e-02 
-epoch = 7 ,  best_epoch = 6 , best_cost = 1.3988e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.04261209225757429
-            Iterations: 25
-            Function evaluations: 96
-            Gradient evaluations: 25
-epoch = 8, i = 0,  development cost = 1.0622e-04 train cost = 4.2612e-02 
-epoch = 8 ,  best_epoch = 6 , best_cost = 1.3988e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.04849882718817472
-            Iterations: 38
-            Function evaluations: 117
-            Gradient evaluations: 38
-epoch = 9, i = 0,  development cost = 2.4066e-05 train cost = 4.8499e-02 
-epoch = 9 ,  best_epoch = 6 , best_cost = 1.3988e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.9081641063631218
-            Iterations: 29
-            Function evaluations: 154
-            Gradient evaluations: 28
-epoch = 10, i = 0,  development cost = 1.8653e+00 train cost = 1.9082e+00 
-epoch = 10 ,  best_epoch = 6 , best_cost = 1.3988e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 3.3887178816325116
-            Iterations: 9
-            Function evaluations: 50
-            Gradient evaluations: 7
-epoch = 11, i = 0,  development cost = 3.3443e+00 train cost = 3.3887e+00 
-epoch = 11 ,  best_epoch = 6 , best_cost = 1.3988e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.05087818182375997
-            Iterations: 20
-            Function evaluations: 68
-            Gradient evaluations: 20
-epoch = 12, i = 0,  development cost = 1.4920e-02 train cost = 5.0878e-02 
-epoch = 12 ,  best_epoch = 6 , best_cost = 1.3988e-05
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.03596626121837125
+            Current function value: 0.3893022476730548
             Iterations: 30
-            Function evaluations: 106
+            Function evaluations: 75
             Gradient evaluations: 30
-epoch = 13, i = 0,  development cost = 7.7905e-05 train cost = 3.5966e-02 
-epoch = 13 ,  best_epoch = 6 , best_cost = 1.3988e-05
+epoch = 0, i = 0,  development cost = 2.4358e-05 train cost = 2.4358e-05 
+epoch = 0 ,  best_epoch = 0 , best_cost = 2.4358e-05
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 6.447766243377214
-            Iterations: 10
-            Function evaluations: 35
-            Gradient evaluations: 10
-epoch = 14, i = 0,  development cost = 6.4111e+00 train cost = 6.4478e+00 
-epoch = 14 ,  best_epoch = 6 , best_cost = 1.3988e-05
+            Current function value: 0.433705432496784
+            Iterations: 34
+            Function evaluations: 116
+            Gradient evaluations: 34
+epoch = 1, i = 0,  development cost = 4.2097e-02 train cost = 4.2097e-02 
+epoch = 1 ,  best_epoch = 0 , best_cost = 2.4358e-05
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 6.308271895145529
-            Iterations: 11
-            Function evaluations: 66
-            Gradient evaluations: 11
-epoch = 15, i = 0,  development cost = 6.2701e+00 train cost = 6.3083e+00 
-epoch = 15 ,  best_epoch = 6 , best_cost = 1.3988e-05
+            Current function value: 0.4438300192649902
+            Iterations: 24
+            Function evaluations: 67
+            Gradient evaluations: 24
+epoch = 2, i = 0,  development cost = 2.6958e-05 train cost = 2.6958e-05 
+epoch = 2 ,  best_epoch = 0 , best_cost = 2.4358e-05
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 9.454221684571454
-            Iterations: 7
-            Function evaluations: 27
-            Gradient evaluations: 7
-epoch = 16, i = 0,  development cost = 9.4126e+00 train cost = 9.4542e+00 
-epoch = 16 ,  best_epoch = 6 , best_cost = 1.3988e-05
+            Current function value: 0.36407948342553376
+            Iterations: 33
+            Function evaluations: 87
+            Gradient evaluations: 33
+epoch = 3, i = 0,  development cost = 2.1777e-05 train cost = 2.1777e-05 
+epoch = 3 ,  best_epoch = 3 , best_cost = 2.1777e-05
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.9176527313825744
+            Current function value: 0.3576079472262936
+            Iterations: 33
+            Function evaluations: 81
+            Gradient evaluations: 33
+epoch = 4, i = 0,  development cost = 1.2550e-05 train cost = 1.2550e-05 
+epoch = 4 ,  best_epoch = 4 , best_cost = 1.2550e-05
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.37246338486860775
+            Iterations: 27
+            Function evaluations: 68
+            Gradient evaluations: 27
+epoch = 5, i = 0,  development cost = 1.1657e-04 train cost = 1.1657e-04 
+epoch = 5 ,  best_epoch = 4 , best_cost = 1.2550e-05
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.37564590252032604
+            Iterations: 25
+            Function evaluations: 77
+            Gradient evaluations: 25
+epoch = 6, i = 0,  development cost = 2.8535e-05 train cost = 2.8535e-05 
+epoch = 6 ,  best_epoch = 4 , best_cost = 1.2550e-05
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.39820556584886674
+            Iterations: 60
+            Function evaluations: 147
+            Gradient evaluations: 60
+epoch = 7, i = 0,  development cost = 4.8283e-02 train cost = 4.8283e-02 
+epoch = 7 ,  best_epoch = 4 , best_cost = 1.2550e-05
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.49976975380670524
+            Iterations: 23
+            Function evaluations: 67
+            Gradient evaluations: 23
+epoch = 8, i = 0,  development cost = 1.4982e-05 train cost = 1.4982e-05 
+epoch = 8 ,  best_epoch = 4 , best_cost = 1.2550e-05
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.5007350399222136
+            Iterations: 36
+            Function evaluations: 137
+            Gradient evaluations: 35
+epoch = 9, i = 0,  development cost = 1.9956e-05 train cost = 1.9956e-05 
+epoch = 9 ,  best_epoch = 4 , best_cost = 1.2550e-05
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.3398330638120681
+            Iterations: 23
+            Function evaluations: 68
+            Gradient evaluations: 23
+epoch = 10, i = 0,  development cost = 1.1286e-04 train cost = 1.1286e-04 
+epoch = 10 ,  best_epoch = 4 , best_cost = 1.2550e-05
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.3549634656285361
             Iterations: 32
-            Function evaluations: 123
+            Function evaluations: 81
             Gradient evaluations: 32
-epoch = 17, i = 0,  development cost = 1.8807e+00 train cost = 1.9177e+00 
-epoch = 17 ,  best_epoch = 6 , best_cost = 1.3988e-05
+epoch = 11, i = 0,  development cost = 1.8079e-05 train cost = 1.8079e-05 
+epoch = 11 ,  best_epoch = 4 , best_cost = 1.2550e-05
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.02924967275328866
-            Iterations: 27
-            Function evaluations: 99
+            Current function value: 0.35424776502655475
+            Iterations: 35
+            Function evaluations: 81
+            Gradient evaluations: 35
+epoch = 12, i = 0,  development cost = 4.3191e-05 train cost = 4.3191e-05 
+epoch = 12 ,  best_epoch = 4 , best_cost = 1.2550e-05
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.35410525114177455
+            Iterations: 28
+            Function evaluations: 107
             Gradient evaluations: 27
-epoch = 18, i = 0,  development cost = 3.5561e-06 train cost = 2.9250e-02 
-epoch = 18 ,  best_epoch = 18 , best_cost = 3.5561e-06
+epoch = 13, i = 0,  development cost = 1.2339e-04 train cost = 1.2339e-04 
+epoch = 13 ,  best_epoch = 4 , best_cost = 1.2550e-05
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.3522081861255271
-            Iterations: 16
-            Function evaluations: 101
-            Gradient evaluations: 16
-epoch = 19, i = 0,  development cost = 3.2496e-01 train cost = 3.5221e-01 
-epoch = 19 ,  best_epoch = 18 , best_cost = 3.5561e-06
+            Current function value: 0.37719416406160466
+            Iterations: 29
+            Function evaluations: 92
+            Gradient evaluations: 29
+epoch = 14, i = 0,  development cost = 7.3768e-05 train cost = 7.3768e-05 
+epoch = 14 ,  best_epoch = 4 , best_cost = 1.2550e-05
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.03527908227638351
-            Iterations: 27
-            Function evaluations: 98
-            Gradient evaluations: 27
-epoch = 20, i = 0,  development cost = 1.0746e-05 train cost = 3.5279e-02 
-epoch = 20 ,  best_epoch = 18 , best_cost = 3.5561e-06
-time elapsed = 5.175e+00 sec t/fev = 2.455e-03 sec/eval eval_time = 4.648e+00 , overhead = 5.274e-01 
-Final: best_epoch = 18 , best_cost = 3.5561e-06, time needed = 5.196e+00 sec
+            Current function value: 0.379005342941388
+            Iterations: 45
+            Function evaluations: 130
+            Gradient evaluations: 44
+epoch = 15, i = 0,  development cost = 7.2182e-06 train cost = 7.2182e-06 
+epoch = 15 ,  best_epoch = 15 , best_cost = 7.2182e-06
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.37278475360807667
+            Iterations: 38
+            Function evaluations: 130
+            Gradient evaluations: 37
+epoch = 16, i = 0,  development cost = 5.2011e-05 train cost = 5.2011e-05 
+epoch = 16 ,  best_epoch = 15 , best_cost = 7.2182e-06
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.4141876835999949
+            Iterations: 21
+            Function evaluations: 82
+            Gradient evaluations: 21
+epoch = 17, i = 0,  development cost = 9.3115e-02 train cost = 9.3115e-02 
+epoch = 17 ,  best_epoch = 15 , best_cost = 7.2182e-06
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.2978385851785953
+            Iterations: 33
+            Function evaluations: 97
+            Gradient evaluations: 32
+epoch = 18, i = 0,  development cost = 2.8461e-05 train cost = 2.8461e-05 
+epoch = 18 ,  best_epoch = 15 , best_cost = 7.2182e-06
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.2920416814014958
+            Iterations: 37
+            Function evaluations: 112
+            Gradient evaluations: 36
+epoch = 19, i = 0,  development cost = 3.5037e-05 train cost = 3.5037e-05 
+epoch = 19 ,  best_epoch = 15 , best_cost = 7.2182e-06
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.32733481650066304
+            Iterations: 33
+            Function evaluations: 84
+            Gradient evaluations: 33
+epoch = 20, i = 0,  development cost = 5.7909e-05 train cost = 5.7909e-05 
+epoch = 20 ,  best_epoch = 15 , best_cost = 7.2182e-06
+time elapsed = 6.182e+00 sec t/fev = 2.703e-03 sec/eval eval_time = 5.369e+00 , overhead = 8.130e-01 
+Final: best_epoch = 15 , best_cost = 7.2182e-06, time needed = 6.216e+00 sec
 STOCHASTIC SLSQP FINISHED
 Cost : value 
 --------------------
-MAE_train_energy : 0.00000010 
-MAE_train_forces : 0.00000345 
-MAE_train_cost_total : 0.02924967 
-MAE_train_reg : 2924.61166457 
-MAE_train_reg_scaled : 0.02924612 
-MAE_train_cost_unreg : 0.00000356 
-MAE_dev_energy : 0.00000010 
-MAE_dev_forces : 0.00000345 
-MAE_dev_cost : 0.00000356 
-MAE_all_energy : 0.00000010 
-MAE_all_forces : 0.00000345 
-MAE_all_cost : 0.00000356 
+MAE_train_energy : 0.00000086 
+MAE_train_forces : 0.00000044 
+MAE_train_reg : 3789.98124770 
+MAE_train_reg_scaled : 0.37899812 
+MAE_train_cost : 0.00000129 
+norm_MAE_train_energy : 0.00000086 
+norm_MAE_train_forces : 0.00000636 
+norm_MAE_train_cost_with_reg : 0.37900534 
+norm_MAE_train_cost : 0.00000722 
+MAE_dev_energy : 0.00000086 
+MAE_dev_forces : 0.00000044 
+MAE_dev_cost : 0.00000129 
+norm_MAE_dev_energy : 0.00000086 
+norm_MAE_dev_forces : 0.00000636 
+norm_MAE_dev_cost : 0.00000722 
+MAE_all_energy : 0.00000086 
+MAE_all_forces : 0.00000044 
+MAE_all_cost : 0.00000129 
+norm_MAE_all_energy : 0.00000086 
+norm_MAE_all_forces : 0.00000636 
+norm_MAE_all_cost : 0.00000722 
 MSE_train_energy : 0.00000000 
 MSE_train_forces : 0.00000000 
-MSE_train_cost_total : 0.02924612 
-MSE_train_reg : 2924.61166457 
-MSE_train_reg_scaled : 0.02924612 
-MSE_train_cost_unreg : 0.00000000 
+MSE_train_reg : 3789.98124770 
+MSE_train_reg_scaled : 0.37899812 
+MSE_train_cost : 0.00000000 
+norm_MSE_train_energy : 0.00000000 
+norm_MSE_train_forces : 0.00000000 
+norm_MSE_train_cost_with_reg : 0.37899812 
+norm_MSE_train_cost : 0.00000000 
 MSE_dev_energy : 0.00000000 
 MSE_dev_forces : 0.00000000 
 MSE_dev_cost : 0.00000000 
+norm_MSE_dev_energy : 0.00000000 
+norm_MSE_dev_forces : 0.00000000 
+norm_MSE_dev_cost : 0.00000000 
 MSE_all_energy : 0.00000000 
 MSE_all_forces : 0.00000000 
 MSE_all_cost : 0.00000000 
+norm_MSE_all_energy : 0.00000000 
+norm_MSE_all_forces : 0.00000000 
+norm_MSE_all_cost : 0.00000000 
 --------------------
 
 Time Cost : value 
 --------------------
-total_time : 0 h : 00 min :05 sec  + 1.749e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 2.455e+00 ms
-evaluation_time : 0 h : 00 min :04 sec  + 6.475e+02 ms
-overhead : 0 h : 00 min :00 sec  + 5.274e+02 ms
-time_per_point : 0 h : 00 min :04 sec  + 6.475e+02 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 2.455e+00 ms
+total_time : 0 h : 00 min :06 sec  + 1.820e+02 ms
+time_per_evaluation : 0 h : 00 min :00 sec  + 2.703e+00 ms
+evaluation_time : 0 h : 00 min :05 sec  + 3.690e+02 ms
+overhead : 0 h : 00 min :00 sec  + 8.130e+02 ms
+time_per_point : 0 h : 00 min :05 sec  + 3.690e+02 ms
+time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 2.703e+00 ms
 --------------------
 
-Time consumed for solving the model --> 1.589e-01 min
-solving time = 9.533e+00 
-evaluating in selection step with nld = 1
-selecting time = 5.700e-02 
-writing time = 3.985e-01 
-Made running directories
-Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3/data/R1
-/nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3
-Logs copied to L1
+Time consumed for solving the model --> 1.771e-01 min
+solving time = 1.063e+01 
+Iteration 1 not performing DFT since data already exist
 Logs copied to L1
 Evaluating for nld = 1 models
 prediction errors 
 ----------
-s       sys_name       MAE       MSE
-0          Ag4  0.069393  0.007764
-TOTAL      NaN  0.069393  0.007764
-FF development Prediction Evaluation Time --> 3.373e+00 sec
+s       sys_name      MAE       MSE
+0          Ag4  0.00683  0.000068
+TOTAL      NaN  0.00683  0.000068
+FF development Prediction Evaluation Time --> 3.372e+00 sec
 Sampling method is set to perturbation
 Reading iteration 0 
 Reading iteration 1 
 Kept 100.000 % of the  data
 STOCHASTIC SLSQP Began
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.885955031543007
-            Iterations: 43
-            Function evaluations: 101
-            Gradient evaluations: 43
-epoch = 0, i = 0,  development cost = 8.6213e-01 train cost = 8.8596e-01 
-epoch = 0 ,  best_epoch = 0 , best_cost = 8.6213e-01
+            Current function value: 0.683400732346545
+            Iterations: 48
+            Function evaluations: 103
+            Gradient evaluations: 48
+epoch = 0, i = 0,  development cost = 3.1261e-01 train cost = 3.1261e-01 
+epoch = 0 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8248524037392626
-            Iterations: 57
-            Function evaluations: 140
-            Gradient evaluations: 57
-epoch = 1, i = 0,  development cost = 8.0104e-01 train cost = 8.2485e-01 
-epoch = 1 ,  best_epoch = 1 , best_cost = 8.0104e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8390242844435072
-            Iterations: 17
-            Function evaluations: 58
-            Gradient evaluations: 17
-epoch = 2, i = 0,  development cost = 8.0664e-01 train cost = 8.3902e-01 
-epoch = 2 ,  best_epoch = 1 , best_cost = 8.0104e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.837486825158848
+            Current function value: 9.56087034411428
             Iterations: 24
-            Function evaluations: 65
+            Function evaluations: 113
             Gradient evaluations: 24
-epoch = 3, i = 0,  development cost = 8.0331e-01 train cost = 8.3749e-01 
-epoch = 3 ,  best_epoch = 1 , best_cost = 8.0104e-01
+epoch = 1, i = 0,  development cost = 9.2511e+00 train cost = 9.2511e+00 
+epoch = 1 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8415810663156867
-            Iterations: 2
-            Function evaluations: 17
-            Gradient evaluations: 2
-epoch = 4, i = 0,  development cost = 8.0318e-01 train cost = 8.4158e-01 
-epoch = 4 ,  best_epoch = 1 , best_cost = 8.0104e-01
+            Current function value: 0.7805596884950213
+            Iterations: 69
+            Function evaluations: 139
+            Gradient evaluations: 69
+epoch = 2, i = 0,  development cost = 5.0386e-01 train cost = 5.0386e-01 
+epoch = 2 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8613458634170312
-            Iterations: 21
-            Function evaluations: 63
-            Gradient evaluations: 21
-epoch = 5, i = 0,  development cost = 8.2247e-01 train cost = 8.6135e-01 
-epoch = 5 ,  best_epoch = 1 , best_cost = 8.0104e-01
+            Current function value: 0.7509944276383491
+            Iterations: 54
+            Function evaluations: 122
+            Gradient evaluations: 54
+epoch = 3, i = 0,  development cost = 4.4777e-01 train cost = 4.4777e-01 
+epoch = 3 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0270601203041194
-            Iterations: 20
-            Function evaluations: 84
-            Gradient evaluations: 20
-epoch = 6, i = 0,  development cost = 9.8857e-01 train cost = 1.0271e+00 
-epoch = 6 ,  best_epoch = 1 , best_cost = 8.0104e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.007896048640129
-            Iterations: 2
-            Function evaluations: 19
-            Gradient evaluations: 2
-epoch = 7, i = 0,  development cost = 9.6931e-01 train cost = 1.0079e+00 
-epoch = 7 ,  best_epoch = 1 , best_cost = 8.0104e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8688163719517701
-            Iterations: 40
-            Function evaluations: 100
-            Gradient evaluations: 40
-epoch = 8, i = 0,  development cost = 8.3077e-01 train cost = 8.6882e-01 
-epoch = 8 ,  best_epoch = 1 , best_cost = 8.0104e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8974348849672584
-            Iterations: 55
-            Function evaluations: 128
-            Gradient evaluations: 55
-epoch = 9, i = 0,  development cost = 8.6252e-01 train cost = 8.9743e-01 
-epoch = 9 ,  best_epoch = 1 , best_cost = 8.0104e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2924437934079105
-            Iterations: 10
-            Function evaluations: 38
-            Gradient evaluations: 10
-epoch = 10, i = 0,  development cost = 1.2666e+00 train cost = 1.2924e+00 
-epoch = 10 ,  best_epoch = 1 , best_cost = 8.0104e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.7592661385383173
-            Iterations: 59
-            Function evaluations: 130
-            Gradient evaluations: 59
-epoch = 11, i = 0,  development cost = 7.3676e-01 train cost = 7.5927e-01 
-epoch = 11 ,  best_epoch = 11 , best_cost = 7.3676e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.7649840969417152
-            Iterations: 61
-            Function evaluations: 124
-            Gradient evaluations: 61
-epoch = 12, i = 0,  development cost = 7.4654e-01 train cost = 7.6498e-01 
-epoch = 12 ,  best_epoch = 11 , best_cost = 7.3676e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9232824288256586
-            Iterations: 19
-            Function evaluations: 61
-            Gradient evaluations: 19
-epoch = 13, i = 0,  development cost = 9.0049e-01 train cost = 9.2328e-01 
-epoch = 13 ,  best_epoch = 11 , best_cost = 7.3676e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9009024875591245
-            Iterations: 24
-            Function evaluations: 61
-            Gradient evaluations: 24
-epoch = 14, i = 0,  development cost = 8.8013e-01 train cost = 9.0090e-01 
-epoch = 14 ,  best_epoch = 11 , best_cost = 7.3676e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9077781317640851
+            Current function value: 0.7564735457032066
             Iterations: 41
-            Function evaluations: 110
+            Function evaluations: 90
             Gradient evaluations: 41
-epoch = 15, i = 0,  development cost = 8.8713e-01 train cost = 9.0778e-01 
-epoch = 15 ,  best_epoch = 11 , best_cost = 7.3676e-01
+epoch = 4, i = 0,  development cost = 4.4824e-01 train cost = 4.4824e-01 
+epoch = 4 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8768312068862322
-            Iterations: 21
-            Function evaluations: 64
-            Gradient evaluations: 21
-epoch = 16, i = 0,  development cost = 8.5639e-01 train cost = 8.7683e-01 
-epoch = 16 ,  best_epoch = 11 , best_cost = 7.3676e-01
+            Current function value: 0.9492720376647631
+            Iterations: 86
+            Function evaluations: 179
+            Gradient evaluations: 85
+epoch = 5, i = 0,  development cost = 7.0045e-01 train cost = 7.0045e-01 
+epoch = 5 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8479739015210835
-            Iterations: 46
-            Function evaluations: 91
-            Gradient evaluations: 46
-epoch = 17, i = 0,  development cost = 8.2986e-01 train cost = 8.4797e-01 
-epoch = 17 ,  best_epoch = 11 , best_cost = 7.3676e-01
+            Current function value: 1.0336719712350912
+            Iterations: 34
+            Function evaluations: 88
+            Gradient evaluations: 34
+epoch = 6, i = 0,  development cost = 8.2084e-01 train cost = 8.2084e-01 
+epoch = 6 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8760878493827702
-            Iterations: 19
-            Function evaluations: 51
-            Gradient evaluations: 19
-epoch = 18, i = 0,  development cost = 8.5874e-01 train cost = 8.7609e-01 
-epoch = 18 ,  best_epoch = 11 , best_cost = 7.3676e-01
+            Current function value: 0.9439821230726342
+            Iterations: 24
+            Function evaluations: 62
+            Gradient evaluations: 24
+epoch = 7, i = 0,  development cost = 7.1187e-01 train cost = 7.1187e-01 
+epoch = 7 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8504934358458156
-            Iterations: 67
-            Function evaluations: 151
-            Gradient evaluations: 67
-epoch = 19, i = 0,  development cost = 8.2539e-01 train cost = 8.5049e-01 
-epoch = 19 ,  best_epoch = 11 , best_cost = 7.3676e-01
+            Current function value: 0.4637834055697626
+            Iterations: 119
+            Function evaluations: 199
+            Gradient evaluations: 119
+epoch = 8, i = 0,  development cost = 3.2286e-01 train cost = 3.2286e-01 
+epoch = 8 ,  best_epoch = 0 , best_cost = 3.1261e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.8706307132811694
-            Iterations: 43
+            Current function value: 0.5310200797870099
+            Iterations: 147
+            Function evaluations: 307
+            Gradient evaluations: 145
+epoch = 9, i = 0,  development cost = 3.4520e-01 train cost = 3.4520e-01 
+epoch = 9 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.5757148284005761
+            Iterations: 31
             Function evaluations: 98
-            Gradient evaluations: 43
-epoch = 20, i = 0,  development cost = 8.4662e-01 train cost = 8.7063e-01 
-epoch = 20 ,  best_epoch = 11 , best_cost = 7.3676e-01
-time elapsed = 6.376e+00 sec t/fev = 3.277e-03 sec/eval eval_time = 5.748e+00 , overhead = 6.287e-01 
-Final: best_epoch = 11 , best_cost = 7.3676e-01, time needed = 6.401e+00 sec
+            Gradient evaluations: 31
+epoch = 10, i = 0,  development cost = 3.1910e-01 train cost = 3.1910e-01 
+epoch = 10 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.945672158931457
+            Iterations: 57
+            Function evaluations: 136
+            Gradient evaluations: 56
+epoch = 11, i = 0,  development cost = 6.8501e-01 train cost = 6.8501e-01 
+epoch = 11 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.6396262050238319
+            Iterations: 42
+            Function evaluations: 109
+            Gradient evaluations: 42
+epoch = 12, i = 0,  development cost = 3.7712e-01 train cost = 3.7712e-01 
+epoch = 12 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.6913175935762805
+            Iterations: 31
+            Function evaluations: 83
+            Gradient evaluations: 31
+epoch = 13, i = 0,  development cost = 4.1448e-01 train cost = 4.1448e-01 
+epoch = 13 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.6152258495945674
+            Iterations: 74
+            Function evaluations: 142
+            Gradient evaluations: 74
+epoch = 14, i = 0,  development cost = 3.4578e-01 train cost = 3.4578e-01 
+epoch = 14 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.6813731983040394
+            Iterations: 26
+            Function evaluations: 65
+            Gradient evaluations: 26
+epoch = 15, i = 0,  development cost = 3.3041e-01 train cost = 3.3041e-01 
+epoch = 15 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.6739112448507576
+            Iterations: 24
+            Function evaluations: 69
+            Gradient evaluations: 24
+epoch = 16, i = 0,  development cost = 3.2693e-01 train cost = 3.2693e-01 
+epoch = 16 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.787922441988514
+            Iterations: 21
+            Function evaluations: 56
+            Gradient evaluations: 21
+epoch = 17, i = 0,  development cost = 4.2099e-01 train cost = 4.2099e-01 
+epoch = 17 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.7164996094150462
+            Iterations: 103
+            Function evaluations: 216
+            Gradient evaluations: 103
+epoch = 18, i = 0,  development cost = 4.0212e-01 train cost = 4.0212e-01 
+epoch = 18 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 1.4247612268432535
+            Iterations: 34
+            Function evaluations: 101
+            Gradient evaluations: 34
+epoch = 19, i = 0,  development cost = 1.0388e+00 train cost = 1.0388e+00 
+epoch = 19 ,  best_epoch = 0 , best_cost = 3.1261e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.5442180219538256
+            Iterations: 146
+            Function evaluations: 253
+            Gradient evaluations: 146
+epoch = 20, i = 0,  development cost = 3.8794e-01 train cost = 3.8794e-01 
+epoch = 20 ,  best_epoch = 0 , best_cost = 3.1261e-01
+time elapsed = 1.000e+01 sec t/fev = 3.315e-03 sec/eval eval_time = 9.049e+00 , overhead = 9.509e-01 
+Final: best_epoch = 0 , best_cost = 3.1261e-01, time needed = 1.004e+01 sec
 STOCHASTIC SLSQP FINISHED
 Cost : value 
 --------------------
-MAE_train_energy : 0.07389458 
-MAE_train_forces : 0.66286691 
-MAE_train_cost_total : 0.75926614 
-MAE_train_reg : 2250.46468107 
-MAE_train_reg_scaled : 0.02250465 
-MAE_train_cost_unreg : 0.73676149 
-MAE_dev_energy : 0.07389458 
-MAE_dev_forces : 0.66286691 
-MAE_dev_cost : 0.73676149 
-MAE_all_energy : 0.07389458 
-MAE_all_forces : 0.66286691 
-MAE_all_cost : 0.73676149 
-MSE_train_energy : 0.00945862 
-MSE_train_forces : 1.10482958 
-MSE_train_cost_total : 1.13679284 
-MSE_train_reg : 2250.46468107 
-MSE_train_reg_scaled : 0.02250465 
-MSE_train_cost_unreg : 1.11428819 
-MSE_dev_energy : 0.00945862 
-MSE_dev_forces : 1.10482958 
-MSE_dev_cost : 1.11428819 
-MSE_all_energy : 0.00945862 
-MSE_all_forces : 1.10482958 
-MSE_all_cost : 1.11428819 
+MAE_train_energy : 0.00319714 
+MAE_train_forces : 0.27919350 
+MAE_train_reg : 3707.90678464 
+MAE_train_reg_scaled : 0.37079068 
+MAE_train_cost : 0.28239064 
+norm_MAE_train_energy : 0.12302998 
+norm_MAE_train_forces : 0.18958007 
+norm_MAE_train_cost_with_reg : 0.68340073 
+norm_MAE_train_cost : 0.31261005 
+MAE_dev_energy : 0.00319714 
+MAE_dev_forces : 0.27919350 
+MAE_dev_cost : 0.28239064 
+norm_MAE_dev_energy : 0.12302998 
+norm_MAE_dev_forces : 0.18958007 
+norm_MAE_dev_cost : 0.31261005 
+MAE_all_energy : 0.00319714 
+MAE_all_forces : 0.27919350 
+MAE_all_cost : 0.28239064 
+norm_MAE_all_energy : 0.12302998 
+norm_MAE_all_forces : 0.18958007 
+norm_MAE_all_cost : 0.31261005 
+MSE_train_energy : 0.00002362 
+MSE_train_forces : 0.27840613 
+MSE_train_reg : 3707.90678464 
+MSE_train_reg_scaled : 0.37079068 
+MSE_train_cost : 0.27842976 
+norm_MSE_train_energy : 0.03498093 
+norm_MSE_train_forces : 0.12836705 
+norm_MSE_train_cost_with_reg : 0.53413866 
+norm_MSE_train_cost : 0.16334798 
+MSE_dev_energy : 0.00002362 
+MSE_dev_forces : 0.27840613 
+MSE_dev_cost : 0.27842976 
+norm_MSE_dev_energy : 0.03498093 
+norm_MSE_dev_forces : 0.12836705 
+norm_MSE_dev_cost : 0.16334798 
+MSE_all_energy : 0.00002362 
+MSE_all_forces : 0.27840613 
+MSE_all_cost : 0.27842976 
+norm_MSE_all_energy : 0.03498093 
+norm_MSE_all_forces : 0.12836705 
+norm_MSE_all_cost : 0.16334798 
 --------------------
 
 Time Cost : value 
 --------------------
-total_time : 0 h : 00 min :06 sec  + 3.762e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 3.277e+00 ms
-evaluation_time : 0 h : 00 min :05 sec  + 7.475e+02 ms
-overhead : 0 h : 00 min :00 sec  + 6.287e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 5.225e+02 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 2.979e-01 ms
+total_time : 0 h : 00 min :10 sec  + 3.646e-01 ms
+time_per_evaluation : 0 h : 00 min :00 sec  + 3.315e+00 ms
+evaluation_time : 0 h : 00 min :09 sec  + 4.942e+01 ms
+overhead : 0 h : 00 min :00 sec  + 9.509e+02 ms
+time_per_point : 0 h : 00 min :00 sec  + 8.227e+02 ms
+time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 3.013e-01 ms
 --------------------
 
-Time consumed for solving the model --> 1.724e-01 min
-solving time = 1.034e+01 
-evaluating in selection step with nld = 1
-system selection Ag4 --> Made 287 tries, selected  100/110 data
-selecting time = 2.988e-01 
-writing time = 4.970e-01 
-Made running directories
-Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3/data/R2
-/nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3
-Logs copied to L2
+Time consumed for solving the model --> 2.421e-01 min
+solving time = 1.453e+01 
+Iteration 2 not performing DFT since data already exist
 Logs copied to L2
 Evaluating for nld = 1 models
 prediction errors 
 ----------
 s       sys_name       MAE       MSE
-0          Ag4  0.178971  0.058749
-TOTAL      NaN  0.178971  0.058749
-FF development Prediction Evaluation Time --> 6.671e+00 sec
+0          Ag4  0.009341  0.000155
+TOTAL      NaN  0.009341  0.000155
+FF development Prediction Evaluation Time --> 7.285e+00 sec
 Sampling method is set to perturbation
 Reading iteration 0 
 Reading iteration 1 
@@ -425,199 +448,217 @@ Reading iteration 2
 Kept 100.000 % of the  data
 STOCHASTIC SLSQP Began
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9890829277651826
-            Iterations: 14
-            Function evaluations: 44
-            Gradient evaluations: 14
-epoch = 0, i = 0,  development cost = 9.6658e-01 train cost = 9.8908e-01 
-epoch = 0 ,  best_epoch = 0 , best_cost = 9.6658e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9646212212880446
-            Iterations: 29
-            Function evaluations: 71
-            Gradient evaluations: 29
-epoch = 1, i = 0,  development cost = 9.3713e-01 train cost = 9.6462e-01 
-epoch = 1 ,  best_epoch = 1 , best_cost = 9.3713e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0066018533714574
-            Iterations: 24
-            Function evaluations: 70
-            Gradient evaluations: 24
-epoch = 2, i = 0,  development cost = 9.7642e-01 train cost = 1.0066e+00 
-epoch = 2 ,  best_epoch = 1 , best_cost = 9.3713e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9477446269561145
-            Iterations: 32
-            Function evaluations: 81
-            Gradient evaluations: 32
-epoch = 3, i = 0,  development cost = 9.1695e-01 train cost = 9.4774e-01 
-epoch = 3 ,  best_epoch = 3 , best_cost = 9.1695e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9127490943920318
-            Iterations: 80
-            Function evaluations: 148
-            Gradient evaluations: 80
-epoch = 4, i = 0,  development cost = 8.8469e-01 train cost = 9.1275e-01 
-epoch = 4 ,  best_epoch = 4 , best_cost = 8.8469e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9384741083817482
-            Iterations: 56
-            Function evaluations: 117
-            Gradient evaluations: 56
-epoch = 5, i = 0,  development cost = 9.0282e-01 train cost = 9.3847e-01 
-epoch = 5 ,  best_epoch = 4 , best_cost = 8.8469e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9813753404517743
-            Iterations: 18
-            Function evaluations: 44
-            Gradient evaluations: 18
-epoch = 6, i = 0,  development cost = 9.4301e-01 train cost = 9.8138e-01 
-epoch = 6 ,  best_epoch = 4 , best_cost = 8.8469e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.054330771024376
-            Iterations: 25
-            Function evaluations: 136
-            Gradient evaluations: 24
-epoch = 7, i = 0,  development cost = 1.0239e+00 train cost = 1.0543e+00 
-epoch = 7 ,  best_epoch = 4 , best_cost = 8.8469e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9086655996567046
-            Iterations: 25
-            Function evaluations: 67
-            Gradient evaluations: 25
-epoch = 8, i = 0,  development cost = 8.7704e-01 train cost = 9.0867e-01 
-epoch = 8 ,  best_epoch = 8 , best_cost = 8.7704e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9545688897419293
-            Iterations: 56
-            Function evaluations: 166
-            Gradient evaluations: 55
-epoch = 9, i = 0,  development cost = 9.2693e-01 train cost = 9.5457e-01 
-epoch = 9 ,  best_epoch = 8 , best_cost = 8.7704e-01
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9458290300211255
-            Iterations: 34
+            Current function value: 0.719358860941469
+            Iterations: 45
             Function evaluations: 84
-            Gradient evaluations: 34
-epoch = 10, i = 0,  development cost = 9.2173e-01 train cost = 9.4583e-01 
-epoch = 10 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Gradient evaluations: 45
+epoch = 0, i = 0,  development cost = 3.1065e-01 train cost = 3.4282e-01 
+epoch = 0 ,  best_epoch = 0 , best_cost = 3.1065e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 4.302459045803205
-            Iterations: 8
-            Function evaluations: 66
-            Gradient evaluations: 8
-epoch = 11, i = 0,  development cost = 4.2711e+00 train cost = 4.3025e+00 
-epoch = 11 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Current function value: 0.6443399076782123
+            Iterations: 46
+            Function evaluations: 88
+            Gradient evaluations: 46
+epoch = 1, i = 0,  development cost = 3.1893e-01 train cost = 3.3707e-01 
+epoch = 1 ,  best_epoch = 0 , best_cost = 3.1065e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0912692345606458
-            Iterations: 19
-            Function evaluations: 58
-            Gradient evaluations: 19
-epoch = 12, i = 0,  development cost = 1.0617e+00 train cost = 1.0913e+00 
-epoch = 12 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Current function value: 0.8532221796523167
+            Iterations: 61
+            Function evaluations: 108
+            Gradient evaluations: 61
+epoch = 2, i = 0,  development cost = 5.8328e-01 train cost = 5.7653e-01 
+epoch = 2 ,  best_epoch = 0 , best_cost = 3.1065e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 2.2407860158851287
-            Iterations: 16
-            Function evaluations: 124
-            Gradient evaluations: 16
-epoch = 13, i = 0,  development cost = 2.2085e+00 train cost = 2.2408e+00 
-epoch = 13 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Current function value: 0.6086351310129177
+            Iterations: 163
+            Function evaluations: 246
+            Gradient evaluations: 163
+epoch = 3, i = 0,  development cost = 3.3076e-01 train cost = 3.7646e-01 
+epoch = 3 ,  best_epoch = 0 , best_cost = 3.1065e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0464868920174983
-            Iterations: 23
-            Function evaluations: 59
-            Gradient evaluations: 23
-epoch = 14, i = 0,  development cost = 1.0151e+00 train cost = 1.0465e+00 
-epoch = 14 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Current function value: 0.5662026415176007
+            Iterations: 107
+            Function evaluations: 171
+            Gradient evaluations: 107
+epoch = 4, i = 0,  development cost = 3.0549e-01 train cost = 3.3653e-01 
+epoch = 4 ,  best_epoch = 4 , best_cost = 3.0549e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0690636942600953
-            Iterations: 30
-            Function evaluations: 67
-            Gradient evaluations: 30
-epoch = 15, i = 0,  development cost = 1.0336e+00 train cost = 1.0691e+00 
-epoch = 15 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Current function value: 0.44324440214584176
+            Iterations: 172
+            Function evaluations: 262
+            Gradient evaluations: 172
+epoch = 5, i = 0,  development cost = 2.9363e-01 train cost = 3.5604e-01 
+epoch = 5 ,  best_epoch = 5 , best_cost = 2.9363e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0720170094244243
-            Iterations: 14
-            Function evaluations: 46
-            Gradient evaluations: 14
-epoch = 16, i = 0,  development cost = 1.0374e+00 train cost = 1.0720e+00 
-epoch = 16 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Current function value: 0.4235883464904102
+            Iterations: 69
+            Function evaluations: 126
+            Gradient evaluations: 68
+epoch = 6, i = 0,  development cost = 2.9388e-01 train cost = 3.4201e-01 
+epoch = 6 ,  best_epoch = 5 , best_cost = 2.9363e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 279250.03204047907
+            Current function value: 0.5196555078108509
+            Iterations: 36
+            Function evaluations: 78
+            Gradient evaluations: 36
+epoch = 7, i = 0,  development cost = 3.3799e-01 train cost = 3.7030e-01 
+epoch = 7 ,  best_epoch = 5 , best_cost = 2.9363e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.46564695640922743
+            Iterations: 236
+            Function evaluations: 353
+            Gradient evaluations: 235
+epoch = 8, i = 0,  development cost = 3.1407e-01 train cost = 3.6345e-01 
+epoch = 8 ,  best_epoch = 5 , best_cost = 2.9363e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.6146034308502865
+            Iterations: 43
+            Function evaluations: 83
+            Gradient evaluations: 43
+epoch = 9, i = 0,  development cost = 4.9906e-01 train cost = 5.1900e-01 
+epoch = 9 ,  best_epoch = 5 , best_cost = 2.9363e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.39952209558861856
+            Iterations: 199
+            Function evaluations: 292
+            Gradient evaluations: 199
+epoch = 10, i = 0,  development cost = 3.0996e-01 train cost = 3.3663e-01 
+epoch = 10 ,  best_epoch = 5 , best_cost = 2.9363e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.5361655741384217
+            Iterations: 47
+            Function evaluations: 85
+            Gradient evaluations: 47
+epoch = 11, i = 0,  development cost = 3.8158e-01 train cost = 3.8036e-01 
+epoch = 11 ,  best_epoch = 5 , best_cost = 2.9363e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.45140038775371094
+            Iterations: 150
+            Function evaluations: 224
+            Gradient evaluations: 150
+epoch = 12, i = 0,  development cost = 3.1756e-01 train cost = 3.5362e-01 
+epoch = 12 ,  best_epoch = 5 , best_cost = 2.9363e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.4512669596316382
+            Iterations: 49
+            Function evaluations: 91
+            Gradient evaluations: 49
+epoch = 13, i = 0,  development cost = 2.8869e-01 train cost = 3.4266e-01 
+epoch = 13 ,  best_epoch = 13 , best_cost = 2.8869e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.7461454556352187
+            Iterations: 46
+            Function evaluations: 83
+            Gradient evaluations: 46
+epoch = 14, i = 0,  development cost = 5.7655e-01 train cost = 6.2620e-01 
+epoch = 14 ,  best_epoch = 13 , best_cost = 2.8869e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.47128249376831277
+            Iterations: 163
+            Function evaluations: 247
+            Gradient evaluations: 163
+epoch = 15, i = 0,  development cost = 3.5250e-01 train cost = 3.7656e-01 
+epoch = 15 ,  best_epoch = 13 , best_cost = 2.8869e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.38609169590802056
+            Iterations: 167
+            Function evaluations: 241
+            Gradient evaluations: 167
+epoch = 16, i = 0,  development cost = 3.0037e-01 train cost = 3.2894e-01 
+epoch = 16 ,  best_epoch = 13 , best_cost = 2.8869e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 458676.5141667019
             Iterations: 5
             Function evaluations: 1
             Gradient evaluations: 1
-epoch = 17, i = 0,  development cost = 2.7925e+05 train cost = 2.7925e+05 
-epoch = 17 ,  best_epoch = 8 , best_cost = 8.7704e-01
+epoch = 17, i = 0,  development cost = 5.6116e+05 train cost = 4.5868e+05 
+epoch = 17 ,  best_epoch = 13 , best_cost = 2.8869e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0087340799376803
-            Iterations: 118
-            Function evaluations: 278
-            Gradient evaluations: 117
-epoch = 18, i = 0,  development cost = 9.7839e-01 train cost = 1.0087e+00 
-epoch = 18 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Current function value: 507876.1263943092
+            Iterations: 5
+            Function evaluations: 1
+            Gradient evaluations: 1
+epoch = 18, i = 0,  development cost = 6.2135e+05 train cost = 5.0788e+05 
+epoch = 18 ,  best_epoch = 13 , best_cost = 2.8869e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9293099983487147
-            Iterations: 50
-            Function evaluations: 117
-            Gradient evaluations: 50
-epoch = 19, i = 0,  development cost = 9.0395e-01 train cost = 9.2931e-01 
-epoch = 19 ,  best_epoch = 8 , best_cost = 8.7704e-01
+            Current function value: 0.4453008348662132
+            Iterations: 122
+            Function evaluations: 200
+            Gradient evaluations: 122
+epoch = 19, i = 0,  development cost = 3.0536e-01 train cost = 3.3353e-01 
+epoch = 19 ,  best_epoch = 13 , best_cost = 2.8869e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 0.9254316985473289
-            Iterations: 18
-            Function evaluations: 61
-            Gradient evaluations: 18
-epoch = 20, i = 0,  development cost = 9.0306e-01 train cost = 9.2543e-01 
-epoch = 20 ,  best_epoch = 8 , best_cost = 8.7704e-01
-time elapsed = 1.134e+01 sec t/fev = 5.313e-03 sec/eval eval_time = 1.012e+01 , overhead = 1.216e+00 
-Final: best_epoch = 8 , best_cost = 8.7704e-01, time needed = 1.139e+01 sec
+            Current function value: 0.4441245167609381
+            Iterations: 27
+            Function evaluations: 56
+            Gradient evaluations: 27
+epoch = 20, i = 0,  development cost = 3.0183e-01 train cost = 3.3389e-01 
+epoch = 20 ,  best_epoch = 13 , best_cost = 2.8869e-01
+time elapsed = 2.523e+01 sec t/fev = 7.498e-03 sec/eval eval_time = 2.339e+01 , overhead = 1.837e+00 
+Final: best_epoch = 13 , best_cost = 2.8869e-01, time needed = 2.531e+01 sec
 STOCHASTIC SLSQP FINISHED
 Cost : value 
 --------------------
-MAE_train_energy : 0.13235103 
-MAE_train_forces : 0.74468779 
-MAE_train_cost_total : 0.90866560 
-MAE_train_reg : 3162.67790303 
-MAE_train_reg_scaled : 0.03162678 
-MAE_train_cost_unreg : 0.87703882 
-MAE_dev_energy : 0.13235103 
-MAE_dev_forces : 0.74468779 
-MAE_dev_cost : 0.87703882 
-MAE_all_energy : 0.13235103 
-MAE_all_forces : 0.74468779 
-MAE_all_cost : 0.87703882 
-MSE_train_energy : 0.03485667 
-MSE_train_forces : 2.03139160 
-MSE_train_cost_total : 2.09787505 
-MSE_train_reg : 3162.67790303 
-MSE_train_reg_scaled : 0.03162678 
-MSE_train_cost_unreg : 2.06624827 
-MSE_dev_energy : 0.03485667 
-MSE_dev_forces : 2.03139160 
-MSE_dev_cost : 2.06624827 
-MSE_all_energy : 0.03485667 
-MSE_all_forces : 2.03139160 
-MSE_all_cost : 2.06624827 
+MAE_train_energy : 0.00912906 
+MAE_train_forces : 0.30221516 
+MAE_train_reg : 1086.03248001 
+MAE_train_reg_scaled : 0.10860325 
+MAE_train_cost : 0.31134422 
+norm_MAE_train_energy : 0.17513028 
+norm_MAE_train_forces : 0.16753343 
+norm_MAE_train_cost_with_reg : 0.45126696 
+norm_MAE_train_cost : 0.34266371 
+MAE_dev_energy : 0.00523154 
+MAE_dev_forces : 0.27771915 
+MAE_dev_cost : 0.28295068 
+norm_MAE_dev_energy : 0.12470842 
+norm_MAE_dev_forces : 0.16398094 
+norm_MAE_dev_cost : 0.28868936 
+MAE_all_energy : 0.00832147 
+MAE_all_forces : 0.29713941 
+MAE_all_cost : 0.30546087 
+norm_MAE_all_energy : 0.16554048 
+norm_MAE_all_forces : 0.16678094 
+norm_MAE_all_cost : 0.33232142 
+MSE_train_energy : 0.00016624 
+MSE_train_forces : 0.26202412 
+MSE_train_reg : 1086.03248001 
+MSE_train_reg_scaled : 0.10860325 
+MSE_train_cost : 0.26219036 
+norm_MSE_train_energy : 0.06117991 
+norm_MSE_train_forces : 0.08052148 
+norm_MSE_train_cost_with_reg : 0.25030464 
+norm_MSE_train_cost : 0.14170139 
+MSE_dev_energy : 0.00005429 
+MSE_dev_forces : 0.20328342 
+MSE_dev_cost : 0.20333770 
+norm_MSE_dev_energy : 0.03084760 
+norm_MSE_dev_forces : 0.07087239 
+norm_MSE_dev_cost : 0.10171999 
+MSE_all_energy : 0.00014304 
+MSE_all_forces : 0.24985262 
+MSE_all_cost : 0.24999566 
+norm_MSE_all_energy : 0.05660778 
+norm_MSE_all_forces : 0.07871477 
+norm_MSE_all_cost : 0.13532255 
 --------------------
 
 Time Cost : value 
 --------------------
-total_time : 0 h : 00 min :11 sec  + 3.376e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 5.313e+00 ms
-evaluation_time : 0 h : 00 min :10 sec  + 1.211e+02 ms
-overhead : 0 h : 00 min :01 sec  + 2.165e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 1.150e+02 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 6.037e-02 ms
+total_time : 0 h : 00 min :25 sec  + 2.294e+02 ms
+time_per_evaluation : 0 h : 00 min :00 sec  + 7.498e+00 ms
+evaluation_time : 0 h : 00 min :23 sec  + 3.925e+02 ms
+overhead : 0 h : 00 min :01 sec  + 8.369e+02 ms
+time_per_point : 0 h : 00 min :00 sec  + 2.658e+02 ms
+time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 8.520e-02 ms
 --------------------
 
-Time consumed for solving the model --> 2.557e-01 min
-solving time = 1.534e+01 
+Time consumed for solving the model --> 4.996e-01 min
+solving time = 2.998e+01 
 evaluating in selection step with nld = 1
-system selection Ag4 --> Made 114 tries, selected  100/1110 data
-selecting time = 9.906e+00 
-writing time = 5.210e-01 
+system selection Ag4 --> Made 111 tries, selected  100/1110 data
+selecting time = 8.724e+00 
+writing time = 5.818e-01 
 Made running directories
 Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3/data/R3
 /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3
@@ -626,10 +667,10 @@ Logs copied to L3
 Evaluating for nld = 1 models
 prediction errors 
 ----------
-s       sys_name      MAE       MSE
-0          Ag4  0.34519  0.256336
-TOTAL      NaN  0.34519  0.256336
-FF development Prediction Evaluation Time --> 8.158e+00 sec
+s       sys_name       MAE       MSE
+0          Ag4  0.009547  0.000199
+TOTAL      NaN  0.009547  0.000199
+FF development Prediction Evaluation Time --> 6.861e+00 sec
 Sampling method is set to perturbation
 Reading iteration 0 
 Reading iteration 1 
@@ -638,199 +679,217 @@ Reading iteration 3
 Kept 100.000 % of the  data
 STOCHASTIC SLSQP Began
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2061061861708653
-            Iterations: 6
-            Function evaluations: 35
-            Gradient evaluations: 6
-epoch = 0, i = 0,  development cost = 1.1745e+00 train cost = 1.2061e+00 
-epoch = 0 ,  best_epoch = 0 , best_cost = 1.1745e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.047477092940472
-            Iterations: 27
-            Function evaluations: 74
-            Gradient evaluations: 27
-epoch = 1, i = 0,  development cost = 1.0158e+00 train cost = 1.0475e+00 
-epoch = 1 ,  best_epoch = 1 , best_cost = 1.0158e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0416217336760512
-            Iterations: 18
-            Function evaluations: 60
-            Gradient evaluations: 18
-epoch = 2, i = 0,  development cost = 1.0043e+00 train cost = 1.0416e+00 
-epoch = 2 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.1273403318298523
-            Iterations: 59
-            Function evaluations: 119
-            Gradient evaluations: 59
-epoch = 3, i = 0,  development cost = 1.0885e+00 train cost = 1.1273e+00 
-epoch = 3 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0558004539671733
-            Iterations: 29
-            Function evaluations: 133
-            Gradient evaluations: 28
-epoch = 4, i = 0,  development cost = 1.0164e+00 train cost = 1.0558e+00 
-epoch = 4 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.1317257886575915
-            Iterations: 19
-            Function evaluations: 48
-            Gradient evaluations: 19
-epoch = 5, i = 0,  development cost = 1.0954e+00 train cost = 1.1317e+00 
-epoch = 5 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.1851981851535507
-            Iterations: 31
-            Function evaluations: 62
-            Gradient evaluations: 31
-epoch = 6, i = 0,  development cost = 1.1487e+00 train cost = 1.1852e+00 
-epoch = 6 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2846124041325475
-            Iterations: 23
-            Function evaluations: 52
-            Gradient evaluations: 23
-epoch = 7, i = 0,  development cost = 1.2461e+00 train cost = 1.2846e+00 
-epoch = 7 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2748735128238853
-            Iterations: 26
-            Function evaluations: 118
-            Gradient evaluations: 25
-epoch = 8, i = 0,  development cost = 1.2334e+00 train cost = 1.2749e+00 
-epoch = 8 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2712882098692357
-            Iterations: 21
-            Function evaluations: 91
-            Gradient evaluations: 20
-epoch = 9, i = 0,  development cost = 1.2298e+00 train cost = 1.2713e+00 
-epoch = 9 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2681691575356553
-            Iterations: 27
-            Function evaluations: 69
-            Gradient evaluations: 27
-epoch = 10, i = 0,  development cost = 1.2345e+00 train cost = 1.2682e+00 
-epoch = 10 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2217497775902104
-            Iterations: 31
-            Function evaluations: 78
-            Gradient evaluations: 31
-epoch = 11, i = 0,  development cost = 1.1883e+00 train cost = 1.2217e+00 
-epoch = 11 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.232726010045181
-            Iterations: 24
-            Function evaluations: 55
-            Gradient evaluations: 24
-epoch = 12, i = 0,  development cost = 1.1991e+00 train cost = 1.2327e+00 
-epoch = 12 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2148860307878817
-            Iterations: 20
-            Function evaluations: 61
-            Gradient evaluations: 20
-epoch = 13, i = 0,  development cost = 1.1846e+00 train cost = 1.2149e+00 
-epoch = 13 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.1049288757800912
-            Iterations: 25
-            Function evaluations: 59
-            Gradient evaluations: 25
-epoch = 14, i = 0,  development cost = 1.0766e+00 train cost = 1.1049e+00 
-epoch = 14 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3259242968165665
-            Iterations: 21
-            Function evaluations: 96
-            Gradient evaluations: 20
-epoch = 15, i = 0,  development cost = 1.2965e+00 train cost = 1.3259e+00 
-epoch = 15 ,  best_epoch = 2 , best_cost = 1.0043e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2283964411170614
-            Iterations: 43
+            Current function value: 0.3991869000364435
+            Iterations: 55
             Function evaluations: 99
-            Gradient evaluations: 43
-epoch = 16, i = 0,  development cost = 1.1932e+00 train cost = 1.2284e+00 
-epoch = 16 ,  best_epoch = 2 , best_cost = 1.0043e+00
+            Gradient evaluations: 55
+epoch = 0, i = 0,  development cost = 2.7904e-01 train cost = 2.9237e-01 
+epoch = 0 ,  best_epoch = 0 , best_cost = 2.7904e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0747184622061718
-            Iterations: 80
-            Function evaluations: 173
-            Gradient evaluations: 80
-epoch = 17, i = 0,  development cost = 1.0478e+00 train cost = 1.0747e+00 
-epoch = 17 ,  best_epoch = 2 , best_cost = 1.0043e+00
+            Current function value: 0.4196596225417353
+            Iterations: 41
+            Function evaluations: 74
+            Gradient evaluations: 41
+epoch = 1, i = 0,  development cost = 2.8680e-01 train cost = 2.9433e-01 
+epoch = 1 ,  best_epoch = 0 , best_cost = 2.7904e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.0884653332732317
-            Iterations: 28
-            Function evaluations: 76
-            Gradient evaluations: 28
-epoch = 18, i = 0,  development cost = 1.0627e+00 train cost = 1.0885e+00 
-epoch = 18 ,  best_epoch = 2 , best_cost = 1.0043e+00
+            Current function value: 0.3750122756210009
+            Iterations: 158
+            Function evaluations: 221
+            Gradient evaluations: 158
+epoch = 2, i = 0,  development cost = 2.8819e-01 train cost = 2.9497e-01 
+epoch = 2 ,  best_epoch = 0 , best_cost = 2.7904e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.42609916628112
-            Iterations: 31
-            Function evaluations: 75
-            Gradient evaluations: 31
-epoch = 19, i = 0,  development cost = 1.3962e+00 train cost = 1.4261e+00 
-epoch = 19 ,  best_epoch = 2 , best_cost = 1.0043e+00
+            Current function value: 0.5212627029265118
+            Iterations: 70
+            Function evaluations: 122
+            Gradient evaluations: 70
+epoch = 3, i = 0,  development cost = 4.1898e-01 train cost = 4.6664e-01 
+epoch = 3 ,  best_epoch = 0 , best_cost = 2.7904e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2875727491554079
-            Iterations: 39
-            Function evaluations: 78
-            Gradient evaluations: 39
-epoch = 20, i = 0,  development cost = 1.2557e+00 train cost = 1.2876e+00 
-epoch = 20 ,  best_epoch = 2 , best_cost = 1.0043e+00
-time elapsed = 1.818e+01 sec t/fev = 9.275e-03 sec/eval eval_time = 1.587e+01 , overhead = 2.313e+00 
-Final: best_epoch = 2 , best_cost = 1.0043e+00, time needed = 1.828e+01 sec
+            Current function value: 0.3429213688620306
+            Iterations: 124
+            Function evaluations: 178
+            Gradient evaluations: 124
+epoch = 4, i = 0,  development cost = 2.8742e-01 train cost = 2.9120e-01 
+epoch = 4 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.3564833616303101
+            Iterations: 116
+            Function evaluations: 183
+            Gradient evaluations: 116
+epoch = 5, i = 0,  development cost = 2.8386e-01 train cost = 2.8911e-01 
+epoch = 5 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.35726313104590846
+            Iterations: 49
+            Function evaluations: 88
+            Gradient evaluations: 49
+epoch = 6, i = 0,  development cost = 2.9491e-01 train cost = 3.0044e-01 
+epoch = 6 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.3860325892817778
+            Iterations: 56
+            Function evaluations: 94
+            Gradient evaluations: 56
+epoch = 7, i = 0,  development cost = 2.9452e-01 train cost = 2.9441e-01 
+epoch = 7 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.45149752179487207
+            Iterations: 50
+            Function evaluations: 89
+            Gradient evaluations: 50
+epoch = 8, i = 0,  development cost = 3.2608e-01 train cost = 3.4402e-01 
+epoch = 8 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.4578401939022627
+            Iterations: 52
+            Function evaluations: 98
+            Gradient evaluations: 52
+epoch = 9, i = 0,  development cost = 3.4287e-01 train cost = 3.5312e-01 
+epoch = 9 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.35518613504685526
+            Iterations: 171
+            Function evaluations: 245
+            Gradient evaluations: 171
+epoch = 10, i = 0,  development cost = 3.1228e-01 train cost = 3.2433e-01 
+epoch = 10 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.33059151863810143
+            Iterations: 42
+            Function evaluations: 77
+            Gradient evaluations: 42
+epoch = 11, i = 0,  development cost = 2.8460e-01 train cost = 2.9176e-01 
+epoch = 11 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.32754347235425874
+            Iterations: 40
+            Function evaluations: 77
+            Gradient evaluations: 40
+epoch = 12, i = 0,  development cost = 2.9095e-01 train cost = 2.9436e-01 
+epoch = 12 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.4769307900362961
+            Iterations: 71
+            Function evaluations: 116
+            Gradient evaluations: 71
+epoch = 13, i = 0,  development cost = 3.6000e-01 train cost = 4.1641e-01 
+epoch = 13 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.48142607059825776
+            Iterations: 22
+            Function evaluations: 47
+            Gradient evaluations: 22
+epoch = 14, i = 0,  development cost = 3.5565e-01 train cost = 4.1655e-01 
+epoch = 14 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.3593597373634829
+            Iterations: 78
+            Function evaluations: 128
+            Gradient evaluations: 78
+epoch = 15, i = 0,  development cost = 2.8720e-01 train cost = 2.9136e-01 
+epoch = 15 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 90246.24871474812
+            Iterations: 5
+            Function evaluations: 1
+            Gradient evaluations: 1
+epoch = 16, i = 0,  development cost = 8.6421e+04 train cost = 9.0246e+04 
+epoch = 16 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 807787.6326028387
+            Iterations: 5
+            Function evaluations: 1
+            Gradient evaluations: 1
+epoch = 17, i = 0,  development cost = 7.7343e+05 train cost = 8.0779e+05 
+epoch = 17 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 807497.7805791986
+            Iterations: 5
+            Function evaluations: 1
+            Gradient evaluations: 1
+epoch = 18, i = 0,  development cost = 7.7315e+05 train cost = 8.0750e+05 
+epoch = 18 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 807908.2623036206
+            Iterations: 5
+            Function evaluations: 1
+            Gradient evaluations: 1
+epoch = 19, i = 0,  development cost = 7.7354e+05 train cost = 8.0791e+05 
+epoch = 19 ,  best_epoch = 0 , best_cost = 2.7904e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 807185.8310761722
+            Iterations: 5
+            Function evaluations: 1
+            Gradient evaluations: 1
+epoch = 20, i = 0,  development cost = 7.7285e+05 train cost = 8.0719e+05 
+epoch = 20 ,  best_epoch = 0 , best_cost = 2.7904e-01
+time elapsed = 2.934e+01 sec t/fev = 1.342e-02 sec/eval eval_time = 2.606e+01 , overhead = 3.282e+00 
+Final: best_epoch = 0 , best_cost = 2.7904e-01, time needed = 2.948e+01 sec
 STOCHASTIC SLSQP FINISHED
 Cost : value 
 --------------------
-MAE_train_energy : 0.24668648 
-MAE_train_forces : 0.75762457 
-MAE_train_cost_total : 1.04162173 
-MAE_train_reg : 3731.06771232 
-MAE_train_reg_scaled : 0.03731068 
-MAE_train_cost_unreg : 1.00431106 
-MAE_dev_energy : 0.24668648 
-MAE_dev_forces : 0.75762457 
-MAE_dev_cost : 1.00431106 
-MAE_all_energy : 0.24668648 
-MAE_all_forces : 0.75762457 
-MAE_all_cost : 1.00431106 
-MSE_train_energy : 0.15247517 
-MSE_train_forces : 2.83387765 
-MSE_train_cost_total : 3.02366350 
-MSE_train_reg : 3731.06771232 
-MSE_train_reg_scaled : 0.03731068 
-MSE_train_cost_unreg : 2.98635282 
-MSE_dev_energy : 0.15247517 
-MSE_dev_forces : 2.83387765 
-MSE_dev_cost : 2.98635282 
-MSE_all_energy : 0.15247517 
-MSE_all_forces : 2.83387765 
-MSE_all_cost : 2.98635282 
+MAE_train_energy : 0.00924169 
+MAE_train_forces : 0.30990505 
+MAE_train_reg : 1068.14093281 
+MAE_train_reg_scaled : 0.10681409 
+MAE_train_cost : 0.31914674 
+norm_MAE_train_energy : 0.14078866 
+norm_MAE_train_forces : 0.15158415 
+norm_MAE_train_cost_with_reg : 0.39918690 
+norm_MAE_train_cost : 0.29237281 
+MAE_dev_energy : 0.00906141 
+MAE_dev_forces : 0.27209368 
+MAE_dev_cost : 0.28115509 
+norm_MAE_dev_energy : 0.13167072 
+norm_MAE_dev_forces : 0.14736856 
+norm_MAE_dev_cost : 0.27903928 
+MAE_all_energy : 0.00920495 
+MAE_all_forces : 0.30219941 
+MAE_all_cost : 0.31140437 
+norm_MAE_all_energy : 0.13816397 
+norm_MAE_all_forces : 0.15067327 
+norm_MAE_all_cost : 0.28883724 
+MSE_train_energy : 0.00016775 
+MSE_train_forces : 0.25265495 
+MSE_train_reg : 1068.14093281 
+MSE_train_reg_scaled : 0.10681409 
+MSE_train_cost : 0.25282270 
+norm_MSE_train_energy : 0.03893033 
+norm_MSE_train_forces : 0.06044746 
+norm_MSE_train_cost_with_reg : 0.20619189 
+norm_MSE_train_cost : 0.09937779 
+MSE_dev_energy : 0.00015750 
+MSE_dev_forces : 0.20017673 
+MSE_dev_cost : 0.20033423 
+norm_MSE_dev_energy : 0.03325502 
+norm_MSE_dev_forces : 0.05872005 
+norm_MSE_dev_cost : 0.09197506 
+MSE_all_energy : 0.00016566 
+MSE_all_forces : 0.24196034 
+MSE_all_cost : 0.24212600 
+norm_MSE_all_energy : 0.03732155 
+norm_MSE_all_forces : 0.06014913 
+norm_MSE_all_cost : 0.09747069 
 --------------------
 
 Time Cost : value 
 --------------------
-total_time : 0 h : 00 min :18 sec  + 1.820e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 9.275e+00 ms
-evaluation_time : 0 h : 00 min :15 sec  + 8.691e+02 ms
-overhead : 0 h : 00 min :02 sec  + 3.129e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 9.446e+01 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 5.521e-02 ms
+total_time : 0 h : 00 min :29 sec  + 3.382e+02 ms
+time_per_evaluation : 0 h : 00 min :00 sec  + 1.342e+01 ms
+evaluation_time : 0 h : 00 min :26 sec  + 5.580e+01 ms
+overhead : 0 h : 00 min :03 sec  + 2.824e+02 ms
+time_per_point : 0 h : 00 min :00 sec  + 1.551e+02 ms
+time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 7.990e-02 ms
 --------------------
 
-Time consumed for solving the model --> 3.883e-01 min
-solving time = 2.330e+01 
+Time consumed for solving the model --> 5.949e-01 min
+solving time = 3.569e+01 
 evaluating in selection step with nld = 1
-system selection Ag4 --> Made 109 tries, selected  100/2110 data
-selecting time = 2.786e+01 
-writing time = 7.280e-01 
+system selection Ag4 --> Made 104 tries, selected  100/2110 data
+selecting time = 2.747e+01 
+writing time = 7.235e-01 
 Made running directories
 Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3/data/R4
 /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3
@@ -840,211 +899,229 @@ Evaluating for nld = 1 models
 prediction errors 
 ----------
 s       sys_name       MAE       MSE
-0          Ag4  0.525609  0.644858
-TOTAL      NaN  0.525609  0.644858
-FF development Prediction Evaluation Time --> 8.984e+00 sec
+0          Ag4  0.011699  0.000293
+TOTAL      NaN  0.011699  0.000293
+FF development Prediction Evaluation Time --> 8.276e+00 sec
 Sampling method is set to perturbation
 Reading iteration 0 
 Reading iteration 1 
 Reading iteration 2 
 Reading iteration 3 
 Reading iteration 4 
-Kept 98.714 % of the  data
+Kept 99.357 % of the  data
 STOCHASTIC SLSQP Began
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2104154440979178
-            Iterations: 9
-            Function evaluations: 34
-            Gradient evaluations: 9
-epoch = 0, i = 0,  development cost = 1.1731e+00 train cost = 1.2104e+00 
-epoch = 0 ,  best_epoch = 0 , best_cost = 1.1731e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3604082066399044
-            Iterations: 34
-            Function evaluations: 69
-            Gradient evaluations: 34
-epoch = 1, i = 0,  development cost = 1.3277e+00 train cost = 1.3604e+00 
-epoch = 1 ,  best_epoch = 0 , best_cost = 1.1731e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3793361141709333
-            Iterations: 36
+            Current function value: 0.3591381310137874
+            Iterations: 39
             Function evaluations: 71
-            Gradient evaluations: 36
-epoch = 2, i = 0,  development cost = 1.3472e+00 train cost = 1.3793e+00 
-epoch = 2 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Gradient evaluations: 39
+epoch = 0, i = 0,  development cost = 3.2138e-01 train cost = 2.5241e-01 
+epoch = 0 ,  best_epoch = 0 , best_cost = 3.2138e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3369571590112181
-            Iterations: 57
-            Function evaluations: 103
-            Gradient evaluations: 57
-epoch = 3, i = 0,  development cost = 1.3097e+00 train cost = 1.3370e+00 
-epoch = 3 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.6100334109951928
+            Iterations: 176
+            Function evaluations: 242
+            Gradient evaluations: 176
+epoch = 1, i = 0,  development cost = 5.8564e-01 train cost = 4.5236e-01 
+epoch = 1 ,  best_epoch = 0 , best_cost = 3.2138e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.359606114500579
-            Iterations: 27
-            Function evaluations: 89
-            Gradient evaluations: 27
-epoch = 4, i = 0,  development cost = 1.3328e+00 train cost = 1.3596e+00 
-epoch = 4 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.44269004002888723
+            Iterations: 149
+            Function evaluations: 212
+            Gradient evaluations: 149
+epoch = 2, i = 0,  development cost = 4.0046e-01 train cost = 3.2001e-01 
+epoch = 2 ,  best_epoch = 0 , best_cost = 3.2138e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.559515125588431
-            Iterations: 12
-            Function evaluations: 35
-            Gradient evaluations: 12
-epoch = 5, i = 0,  development cost = 1.5288e+00 train cost = 1.5595e+00 
-epoch = 5 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.44651500000949157
+            Iterations: 114
+            Function evaluations: 173
+            Gradient evaluations: 114
+epoch = 3, i = 0,  development cost = 3.3995e-01 train cost = 2.8412e-01 
+epoch = 3 ,  best_epoch = 0 , best_cost = 3.2138e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3093051805019942
-            Iterations: 56
-            Function evaluations: 124
-            Gradient evaluations: 56
-epoch = 6, i = 0,  development cost = 1.2726e+00 train cost = 1.3093e+00 
-epoch = 6 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.3739182801857437
+            Iterations: 187
+            Function evaluations: 269
+            Gradient evaluations: 187
+epoch = 4, i = 0,  development cost = 3.0088e-01 train cost = 2.5085e-01 
+epoch = 4 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2973474667872735
-            Iterations: 57
-            Function evaluations: 113
-            Gradient evaluations: 57
-epoch = 7, i = 0,  development cost = 1.2648e+00 train cost = 1.2973e+00 
-epoch = 7 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.43552387650698215
+            Iterations: 196
+            Function evaluations: 274
+            Gradient evaluations: 196
+epoch = 5, i = 0,  development cost = 3.6106e-01 train cost = 3.0772e-01 
+epoch = 5 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3183696469896602
-            Iterations: 54
-            Function evaluations: 99
-            Gradient evaluations: 54
-epoch = 8, i = 0,  development cost = 1.2890e+00 train cost = 1.3184e+00 
-epoch = 8 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.4228906428018436
+            Iterations: 130
+            Function evaluations: 199
+            Gradient evaluations: 130
+epoch = 6, i = 0,  development cost = 3.6394e-01 train cost = 3.0683e-01 
+epoch = 6 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3236104287568682
-            Iterations: 34
-            Function evaluations: 101
+            Current function value: 0.37286744742530276
+            Iterations: 35
+            Function evaluations: 80
             Gradient evaluations: 34
-epoch = 9, i = 0,  development cost = 1.2965e+00 train cost = 1.3236e+00 
-epoch = 9 ,  best_epoch = 0 , best_cost = 1.1731e+00
+epoch = 7, i = 0,  development cost = 3.2518e-01 train cost = 2.5963e-01 
+epoch = 7 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3175988677635022
-            Iterations: 21
-            Function evaluations: 43
-            Gradient evaluations: 21
-epoch = 10, i = 0,  development cost = 1.2868e+00 train cost = 1.3176e+00 
-epoch = 10 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.4412536835699394
+            Iterations: 53
+            Function evaluations: 91
+            Gradient evaluations: 53
+epoch = 8, i = 0,  development cost = 3.8847e-01 train cost = 3.3600e-01 
+epoch = 8 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3701999735674821
-            Iterations: 25
-            Function evaluations: 58
-            Gradient evaluations: 25
-epoch = 11, i = 0,  development cost = 1.3378e+00 train cost = 1.3702e+00 
-epoch = 11 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.48269435527299365
+            Iterations: 68
+            Function evaluations: 109
+            Gradient evaluations: 68
+epoch = 9, i = 0,  development cost = 4.1544e-01 train cost = 3.5500e-01 
+epoch = 9 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3034622551722745
-            Iterations: 50
-            Function evaluations: 116
-            Gradient evaluations: 50
-epoch = 12, i = 0,  development cost = 1.2740e+00 train cost = 1.3035e+00 
-epoch = 12 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.4907583118993386
+            Iterations: 14
+            Function evaluations: 37
+            Gradient evaluations: 14
+epoch = 10, i = 0,  development cost = 4.1387e-01 train cost = 3.5352e-01 
+epoch = 10 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.29431327349603
-            Iterations: 16
-            Function evaluations: 41
-            Gradient evaluations: 16
-epoch = 13, i = 0,  development cost = 1.2657e+00 train cost = 1.2943e+00 
-epoch = 13 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.48044432345014954
+            Iterations: 69
+            Function evaluations: 106
+            Gradient evaluations: 69
+epoch = 11, i = 0,  development cost = 4.3412e-01 train cost = 3.7014e-01 
+epoch = 11 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 2.226363996047177
-            Iterations: 22
-            Function evaluations: 57
-            Gradient evaluations: 22
-epoch = 14, i = 0,  development cost = 2.1838e+00 train cost = 2.2264e+00 
-epoch = 14 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.6014192024516178
+            Iterations: 82
+            Function evaluations: 120
+            Gradient evaluations: 82
+epoch = 12, i = 0,  development cost = 4.8247e-01 train cost = 4.1939e-01 
+epoch = 12 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.6002499530568035
+            Current function value: 0.585474854089872
+            Iterations: 85
+            Function evaluations: 139
+            Gradient evaluations: 85
+epoch = 13, i = 0,  development cost = 4.8929e-01 train cost = 4.2116e-01 
+epoch = 13 ,  best_epoch = 4 , best_cost = 3.0088e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.40391103609247114
+            Iterations: 168
+            Function evaluations: 242
+            Gradient evaluations: 168
+epoch = 14, i = 0,  development cost = 3.7410e-01 train cost = 3.2957e-01 
+epoch = 14 ,  best_epoch = 4 , best_cost = 3.0088e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.4095609109308102
             Iterations: 32
-            Function evaluations: 73
+            Function evaluations: 62
             Gradient evaluations: 32
-epoch = 15, i = 0,  development cost = 1.5588e+00 train cost = 1.6002e+00 
-epoch = 15 ,  best_epoch = 0 , best_cost = 1.1731e+00
+epoch = 15, i = 0,  development cost = 3.6583e-01 train cost = 3.0716e-01 
+epoch = 15 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 4.730896234828409
-            Iterations: 3
-            Function evaluations: 16
-            Gradient evaluations: 3
-epoch = 16, i = 0,  development cost = 4.6935e+00 train cost = 4.7309e+00 
-epoch = 16 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.41001949343577715
+            Iterations: 165
+            Function evaluations: 238
+            Gradient evaluations: 165
+epoch = 16, i = 0,  development cost = 4.5384e-01 train cost = 3.3807e-01 
+epoch = 16 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 4.054123059470793
-            Iterations: 8
-            Function evaluations: 61
-            Gradient evaluations: 7
-epoch = 17, i = 0,  development cost = 4.0235e+00 train cost = 4.0541e+00 
-epoch = 17 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.5765769472691357
+            Iterations: 48
+            Function evaluations: 88
+            Gradient evaluations: 48
+epoch = 17, i = 0,  development cost = 6.4766e-01 train cost = 4.6728e-01 
+epoch = 17 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3140813934770377
-            Iterations: 73
-            Function evaluations: 138
-            Gradient evaluations: 73
-epoch = 18, i = 0,  development cost = 1.2832e+00 train cost = 1.3141e+00 
-epoch = 18 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.5148279288356726
+            Iterations: 66
+            Function evaluations: 109
+            Gradient evaluations: 66
+epoch = 18, i = 0,  development cost = 4.4917e-01 train cost = 3.8062e-01 
+epoch = 18 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.4328113050781945
-            Iterations: 31
-            Function evaluations: 72
-            Gradient evaluations: 30
-epoch = 19, i = 0,  development cost = 1.3951e+00 train cost = 1.4328e+00 
-epoch = 19 ,  best_epoch = 0 , best_cost = 1.1731e+00
+            Current function value: 0.4050902463069831
+            Iterations: 90
+            Function evaluations: 139
+            Gradient evaluations: 90
+epoch = 19, i = 0,  development cost = 3.0871e-01 train cost = 2.6459e-01 
+epoch = 19 ,  best_epoch = 4 , best_cost = 3.0088e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3415228387383367
-            Iterations: 44
-            Function evaluations: 94
-            Gradient evaluations: 44
-epoch = 20, i = 0,  development cost = 1.3148e+00 train cost = 1.3415e+00 
-epoch = 20 ,  best_epoch = 0 , best_cost = 1.1731e+00
-time elapsed = 2.516e+01 sec t/fev = 1.378e-02 sec/eval eval_time = 2.215e+01 , overhead = 3.008e+00 
-Final: best_epoch = 0 , best_cost = 1.1731e+00, time needed = 2.528e+01 sec
+            Current function value: 0.37092691875083517
+            Iterations: 150
+            Function evaluations: 220
+            Gradient evaluations: 150
+epoch = 20, i = 0,  development cost = 3.1073e-01 train cost = 2.5452e-01 
+epoch = 20 ,  best_epoch = 4 , best_cost = 3.0088e-01
+time elapsed = 6.338e+01 sec t/fev = 1.833e-02 sec/eval eval_time = 5.902e+01 , overhead = 4.355e+00 
+Final: best_epoch = 4 , best_cost = 3.0088e-01, time needed = 6.357e+01 sec
 STOCHASTIC SLSQP FINISHED
 Cost : value 
 --------------------
-MAE_train_energy : 0.32772685 
-MAE_train_forces : 0.84538589 
-MAE_train_cost_total : 1.21041544 
-MAE_train_reg : 3730.27050705 
-MAE_train_reg_scaled : 0.03730271 
-MAE_train_cost_unreg : 1.17311274 
-MAE_dev_energy : 0.32772685 
-MAE_dev_forces : 0.84538589 
-MAE_dev_cost : 1.17311274 
-MAE_all_energy : 0.32772685 
-MAE_all_forces : 0.84538589 
-MAE_all_cost : 1.17311274 
-MSE_train_energy : 0.27924913 
-MSE_train_forces : 3.72528868 
-MSE_train_cost_total : 4.04184051 
-MSE_train_reg : 3730.27050705 
-MSE_train_reg_scaled : 0.03730271 
-MSE_train_cost_unreg : 4.00453780 
-MSE_dev_energy : 0.27924913 
-MSE_dev_forces : 3.72528868 
-MSE_dev_cost : 4.00453780 
-MSE_all_energy : 0.27924913 
-MSE_all_forces : 3.72528868 
-MSE_all_cost : 4.00453780 
+MAE_train_energy : 0.01031560 
+MAE_train_forces : 0.28173559 
+MAE_train_reg : 1230.68160447 
+MAE_train_reg_scaled : 0.12306816 
+MAE_train_cost : 0.29205118 
+norm_MAE_train_energy : 0.11855436 
+norm_MAE_train_forces : 0.13229576 
+norm_MAE_train_cost_with_reg : 0.37391828 
+norm_MAE_train_cost : 0.25085012 
+MAE_dev_energy : 0.01310202 
+MAE_dev_forces : 0.30679711 
+MAE_dev_cost : 0.31989913 
+norm_MAE_dev_energy : 0.16067570 
+norm_MAE_dev_forces : 0.14020676 
+norm_MAE_dev_cost : 0.30088247 
+MAE_all_energy : 0.01087469 
+MAE_all_forces : 0.28676411 
+MAE_all_cost : 0.29763880 
+norm_MAE_all_energy : 0.12641017 
+norm_MAE_all_forces : 0.13390976 
+norm_MAE_all_cost : 0.26031992 
+MSE_train_energy : 0.00018524 
+MSE_train_forces : 0.20081150 
+MSE_train_reg : 1230.68160447 
+MSE_train_reg_scaled : 0.12306816 
+MSE_train_cost : 0.20099674 
+norm_MSE_train_energy : 0.02446716 
+norm_MSE_train_forces : 0.04427892 
+norm_MSE_train_cost_with_reg : 0.19181424 
+norm_MSE_train_cost : 0.06874608 
+MSE_dev_energy : 0.00034501 
+MSE_dev_forces : 0.22916133 
+MSE_dev_cost : 0.22950634 
+norm_MSE_dev_energy : 0.05188644 
+norm_MSE_dev_forces : 0.04786044 
+norm_MSE_dev_cost : 0.09974688 
+MSE_all_energy : 0.00021730 
+MSE_all_forces : 0.20649981 
+MSE_all_cost : 0.20671711 
+norm_MSE_all_energy : 0.02936204 
+norm_MSE_all_forces : 0.04502923 
+norm_MSE_all_cost : 0.07439127 
 --------------------
 
 Time Cost : value 
 --------------------
-total_time : 0 h : 00 min :25 sec  + 1.551e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 1.378e+01 ms
-evaluation_time : 0 h : 00 min :22 sec  + 1.470e+02 ms
-overhead : 0 h : 00 min :03 sec  + 8.137e+00 ms
-time_per_point : 0 h : 00 min :00 sec  + 9.040e+01 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 5.625e-02 ms
+total_time : 0 h : 01 min :03 sec  + 3.789e+02 ms
+time_per_evaluation : 0 h : 00 min :00 sec  + 1.833e+01 ms
+evaluation_time : 0 h : 00 min :59 sec  + 2.402e+01 ms
+overhead : 0 h : 00 min :04 sec  + 3.548e+02 ms
+time_per_point : 0 h : 00 min :00 sec  + 2.390e+02 ms
+time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 7.421e-02 ms
 --------------------
 
-Time consumed for solving the model --> 4.984e-01 min
-solving time = 2.990e+01 
+Time consumed for solving the model --> 1.152e+00 min
+solving time = 6.915e+01 
 evaluating in selection step with nld = 1
-system selection Ag4 --> Made 122 tries, selected  100/3070 data
-selecting time = 5.700e+01 
-writing time = 6.604e-01 
+system selection Ag4 --> Made 103 tries, selected  100/3090 data
+selecting time = 5.839e+01 
+writing time = 1.093e+00 
 Made running directories
 Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3/data/R5
 /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3
@@ -1053,10 +1130,10 @@ Logs copied to L5
 Evaluating for nld = 1 models
 prediction errors 
 ----------
-s       sys_name      MAE      MSE
-0          Ag4  0.44098  0.45735
-TOTAL      NaN  0.44098  0.45735
-FF development Prediction Evaluation Time --> 6.546e+00 sec
+s       sys_name       MAE       MSE
+0          Ag4  0.015215  0.000519
+TOTAL      NaN  0.015215  0.000519
+FF development Prediction Evaluation Time --> 8.513e+00 sec
 Sampling method is set to perturbation
 Reading iteration 0 
 Reading iteration 1 
@@ -1064,202 +1141,220 @@ Reading iteration 2
 Reading iteration 3 
 Reading iteration 4 
 Reading iteration 5 
-Kept 99.270 % of the  data
+Kept 100.000 % of the  data
 STOCHASTIC SLSQP Began
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2548969765514928
-            Iterations: 12
-            Function evaluations: 58
-            Gradient evaluations: 12
-epoch = 0, i = 0,  development cost = 1.2176e+00 train cost = 1.2549e+00 
-epoch = 0 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.3817894482118189
+            Iterations: 22
+            Function evaluations: 42
+            Gradient evaluations: 22
+epoch = 0, i = 0,  development cost = 2.4516e-01 train cost = 2.5909e-01 
+epoch = 0 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2921503280283722
-            Iterations: 45
-            Function evaluations: 97
-            Gradient evaluations: 45
-epoch = 1, i = 0,  development cost = 1.2574e+00 train cost = 1.2922e+00 
-epoch = 1 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.3119383990282293
+            Iterations: 306
+            Function evaluations: 401
+            Gradient evaluations: 306
+epoch = 1, i = 0,  development cost = 2.7303e-01 train cost = 2.7757e-01 
+epoch = 1 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.4023164255774392
-            Iterations: 71
-            Function evaluations: 166
-            Gradient evaluations: 71
-epoch = 2, i = 0,  development cost = 1.3669e+00 train cost = 1.4023e+00 
-epoch = 2 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.393556632112056
+            Iterations: 75
+            Function evaluations: 115
+            Gradient evaluations: 75
+epoch = 2, i = 0,  development cost = 3.2174e-01 train cost = 3.2609e-01 
+epoch = 2 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3433364384081226
-            Iterations: 18
-            Function evaluations: 47
-            Gradient evaluations: 18
-epoch = 3, i = 0,  development cost = 1.3020e+00 train cost = 1.3433e+00 
-epoch = 3 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.4174854313001368
+            Iterations: 68
+            Function evaluations: 100
+            Gradient evaluations: 68
+epoch = 3, i = 0,  development cost = 3.0556e-01 train cost = 3.1004e-01 
+epoch = 3 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.292211207565513
-            Iterations: 39
-            Function evaluations: 91
-            Gradient evaluations: 39
-epoch = 4, i = 0,  development cost = 1.2509e+00 train cost = 1.2922e+00 
-epoch = 4 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.3534957285700201
+            Iterations: 125
+            Function evaluations: 175
+            Gradient evaluations: 125
+epoch = 4, i = 0,  development cost = 2.7878e-01 train cost = 2.8107e-01 
+epoch = 4 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3110811476889197
-            Iterations: 57
-            Function evaluations: 135
-            Gradient evaluations: 57
-epoch = 5, i = 0,  development cost = 1.2668e+00 train cost = 1.3111e+00 
-epoch = 5 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.3525808039512326
+            Iterations: 55
+            Function evaluations: 86
+            Gradient evaluations: 55
+epoch = 5, i = 0,  development cost = 2.7705e-01 train cost = 2.7932e-01 
+epoch = 5 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.4440532299539437
-            Iterations: 38
-            Function evaluations: 93
-            Gradient evaluations: 38
-epoch = 6, i = 0,  development cost = 1.4048e+00 train cost = 1.4441e+00 
-epoch = 6 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.3410652824544481
+            Iterations: 79
+            Function evaluations: 124
+            Gradient evaluations: 79
+epoch = 6, i = 0,  development cost = 2.6797e-01 train cost = 2.7299e-01 
+epoch = 6 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.263734508404124
-            Iterations: 91
-            Function evaluations: 180
-            Gradient evaluations: 91
-epoch = 7, i = 0,  development cost = 1.2205e+00 train cost = 1.2637e+00 
-epoch = 7 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.3443506578505613
+            Iterations: 82
+            Function evaluations: 122
+            Gradient evaluations: 82
+epoch = 7, i = 0,  development cost = 2.7867e-01 train cost = 2.7405e-01 
+epoch = 7 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2934202252010634
-            Iterations: 18
-            Function evaluations: 50
-            Gradient evaluations: 18
-epoch = 8, i = 0,  development cost = 1.2517e+00 train cost = 1.2934e+00 
-epoch = 8 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.3566089825376878
+            Iterations: 69
+            Function evaluations: 107
+            Gradient evaluations: 69
+epoch = 8, i = 0,  development cost = 2.8005e-01 train cost = 2.8709e-01 
+epoch = 8 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 10.254600989888328
-            Iterations: 8
-            Function evaluations: 47
-            Gradient evaluations: 8
-epoch = 9, i = 0,  development cost = 1.0210e+01 train cost = 1.0255e+01 
-epoch = 9 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.37378954087472005
+            Iterations: 108
+            Function evaluations: 161
+            Gradient evaluations: 108
+epoch = 9, i = 0,  development cost = 2.6489e-01 train cost = 2.6855e-01 
+epoch = 9 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3757713828809544
-            Iterations: 70
-            Function evaluations: 136
-            Gradient evaluations: 70
-epoch = 10, i = 0,  development cost = 1.3315e+00 train cost = 1.3758e+00 
-epoch = 10 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.2917945481816755
+            Iterations: 141
+            Function evaluations: 192
+            Gradient evaluations: 141
+epoch = 10, i = 0,  development cost = 2.6764e-01 train cost = 2.6680e-01 
+epoch = 10 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.371226322762828
-            Iterations: 16
-            Function evaluations: 33
-            Gradient evaluations: 16
-epoch = 11, i = 0,  development cost = 1.3278e+00 train cost = 1.3712e+00 
-epoch = 11 ,  best_epoch = 0 , best_cost = 1.2176e+00
+            Current function value: 0.29339244172624684
+            Iterations: 36
+            Function evaluations: 68
+            Gradient evaluations: 36
+epoch = 11, i = 0,  development cost = 2.5323e-01 train cost = 2.6872e-01 
+epoch = 11 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.6669135173194698
-            Iterations: 14
-            Function evaluations: 43
-            Gradient evaluations: 14
-epoch = 12, i = 0,  development cost = 1.6278e+00 train cost = 1.6669e+00 
-epoch = 12 ,  best_epoch = 0 , best_cost = 1.2176e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.7466196584431704
-            Iterations: 29
-            Function evaluations: 63
-            Gradient evaluations: 29
-epoch = 13, i = 0,  development cost = 1.7049e+00 train cost = 1.7466e+00 
-epoch = 13 ,  best_epoch = 0 , best_cost = 1.2176e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 4.5115342629073725
-            Iterations: 8
-            Function evaluations: 28
-            Gradient evaluations: 8
-epoch = 14, i = 0,  development cost = 4.4632e+00 train cost = 4.5115e+00 
-epoch = 14 ,  best_epoch = 0 , best_cost = 1.2176e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2308513261921132
-            Iterations: 41
-            Function evaluations: 91
-            Gradient evaluations: 41
-epoch = 15, i = 0,  development cost = 1.1874e+00 train cost = 1.2309e+00 
-epoch = 15 ,  best_epoch = 15 , best_cost = 1.1874e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2864824937972634
-            Iterations: 40
-            Function evaluations: 186
-            Gradient evaluations: 38
-epoch = 16, i = 0,  development cost = 1.2474e+00 train cost = 1.2865e+00 
-epoch = 16 ,  best_epoch = 15 , best_cost = 1.1874e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2344021687117945
-            Iterations: 37
+            Current function value: 0.48282794911286686
+            Iterations: 49
             Function evaluations: 80
-            Gradient evaluations: 37
-epoch = 17, i = 0,  development cost = 1.1956e+00 train cost = 1.2344e+00 
-epoch = 17 ,  best_epoch = 15 , best_cost = 1.1874e+00
+            Gradient evaluations: 49
+epoch = 12, i = 0,  development cost = 3.9813e-01 train cost = 4.0575e-01 
+epoch = 12 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2336459129996846
-            Iterations: 7
-            Function evaluations: 35
-            Gradient evaluations: 7
-epoch = 18, i = 0,  development cost = 1.1948e+00 train cost = 1.2336e+00 
-epoch = 18 ,  best_epoch = 15 , best_cost = 1.1874e+00
+            Current function value: 0.3883156889401688
+            Iterations: 102
+            Function evaluations: 139
+            Gradient evaluations: 102
+epoch = 13, i = 0,  development cost = 3.2340e-01 train cost = 3.3402e-01 
+epoch = 13 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2377479240134375
-            Iterations: 53
-            Function evaluations: 125
-            Gradient evaluations: 53
-epoch = 19, i = 0,  development cost = 1.1956e+00 train cost = 1.2377e+00 
-epoch = 19 ,  best_epoch = 15 , best_cost = 1.1874e+00
+            Current function value: 0.3783142746290955
+            Iterations: 94
+            Function evaluations: 133
+            Gradient evaluations: 94
+epoch = 14, i = 0,  development cost = 3.0494e-01 train cost = 3.1450e-01 
+epoch = 14 ,  best_epoch = 0 , best_cost = 2.4516e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.2559673815252579
-            Iterations: 21
-            Function evaluations: 63
-            Gradient evaluations: 21
-epoch = 20, i = 0,  development cost = 1.2201e+00 train cost = 1.2560e+00 
-epoch = 20 ,  best_epoch = 15 , best_cost = 1.1874e+00
-time elapsed = 3.264e+01 sec t/fev = 1.561e-02 sec/eval eval_time = 2.883e+01 , overhead = 3.819e+00 
-Final: best_epoch = 15 , best_cost = 1.1874e+00, time needed = 3.280e+01 sec
+            Current function value: 0.398011728907001
+            Iterations: 56
+            Function evaluations: 92
+            Gradient evaluations: 56
+epoch = 15, i = 0,  development cost = 3.1799e-01 train cost = 3.2581e-01 
+epoch = 15 ,  best_epoch = 0 , best_cost = 2.4516e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.3977673932632735
+            Iterations: 124
+            Function evaluations: 187
+            Gradient evaluations: 124
+epoch = 16, i = 0,  development cost = 2.8156e-01 train cost = 2.9050e-01 
+epoch = 16 ,  best_epoch = 0 , best_cost = 2.4516e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.4019224301611243
+            Iterations: 66
+            Function evaluations: 98
+            Gradient evaluations: 66
+epoch = 17, i = 0,  development cost = 2.7801e-01 train cost = 2.8784e-01 
+epoch = 17 ,  best_epoch = 0 , best_cost = 2.4516e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.5141726958685162
+            Iterations: 199
+            Function evaluations: 284
+            Gradient evaluations: 199
+epoch = 18, i = 0,  development cost = 3.9561e-01 train cost = 3.7677e-01 
+epoch = 18 ,  best_epoch = 0 , best_cost = 2.4516e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.36084717573790365
+            Iterations: 295
+            Function evaluations: 400
+            Gradient evaluations: 295
+epoch = 19, i = 0,  development cost = 2.6958e-01 train cost = 2.8263e-01 
+epoch = 19 ,  best_epoch = 0 , best_cost = 2.4516e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.4473863408344596
+            Iterations: 132
+            Function evaluations: 193
+            Gradient evaluations: 132
+epoch = 20, i = 0,  development cost = 3.7868e-01 train cost = 3.7272e-01 
+epoch = 20 ,  best_epoch = 0 , best_cost = 2.4516e-01
+time elapsed = 8.569e+01 sec t/fev = 2.426e-02 sec/eval eval_time = 8.003e+01 , overhead = 5.665e+00 
+Final: best_epoch = 0 , best_cost = 2.4516e-01, time needed = 8.593e+01 sec
 STOCHASTIC SLSQP FINISHED
 Cost : value 
 --------------------
-MAE_train_energy : 0.35788904 
-MAE_train_forces : 0.82950563 
-MAE_train_cost_total : 1.23085133 
-MAE_train_reg : 4345.66542596 
-MAE_train_reg_scaled : 0.04345665 
-MAE_train_cost_unreg : 1.18739467 
-MAE_dev_energy : 0.35788904 
-MAE_dev_forces : 0.82950563 
-MAE_dev_cost : 1.18739467 
-MAE_all_energy : 0.35788904 
-MAE_all_forces : 0.82950563 
-MAE_all_cost : 1.18739467 
-MSE_train_energy : 0.29112046 
-MSE_train_forces : 3.93990448 
-MSE_train_cost_total : 4.27448159 
-MSE_train_reg : 4345.66542596 
-MSE_train_reg_scaled : 0.04345665 
-MSE_train_cost_unreg : 4.23102494 
-MSE_dev_energy : 0.29112046 
-MSE_dev_forces : 3.93990448 
-MSE_dev_cost : 4.23102494 
-MSE_all_energy : 0.29112046 
-MSE_all_forces : 3.93990448 
-MSE_all_cost : 4.23102494 
+MAE_train_energy : 0.01241236 
+MAE_train_forces : 0.27597538 
+MAE_train_reg : 1227.03072364 
+MAE_train_reg_scaled : 0.12270307 
+MAE_train_cost : 0.28838773 
+norm_MAE_train_energy : 0.13282917 
+norm_MAE_train_forces : 0.12625721 
+norm_MAE_train_cost_with_reg : 0.38178945 
+norm_MAE_train_cost : 0.25908638 
+MAE_dev_energy : 0.01247834 
+MAE_dev_forces : 0.30691644 
+MAE_dev_cost : 0.31939479 
+norm_MAE_dev_energy : 0.11459327 
+norm_MAE_dev_forces : 0.13056867 
+norm_MAE_dev_cost : 0.24516193 
+MAE_all_energy : 0.01242568 
+MAE_all_forces : 0.28222382 
+MAE_all_cost : 0.29464950 
+norm_MAE_all_energy : 0.12809352 
+norm_MAE_all_forces : 0.12712301 
+norm_MAE_all_cost : 0.25521653 
+MSE_train_energy : 0.00028586 
+MSE_train_forces : 0.18664780 
+MSE_train_reg : 1227.03072364 
+MSE_train_reg_scaled : 0.12270307 
+MSE_train_cost : 0.18693367 
+norm_MSE_train_energy : 0.03273693 
+norm_MSE_train_forces : 0.03906561 
+norm_MSE_train_cost_with_reg : 0.19450561 
+norm_MSE_train_cost : 0.07180254 
+MSE_dev_energy : 0.00027799 
+MSE_dev_forces : 0.23313394 
+MSE_dev_cost : 0.23341193 
+norm_MSE_dev_energy : 0.02344390 
+norm_MSE_dev_forces : 0.04219326 
+norm_MSE_dev_cost : 0.06563716 
+MSE_all_energy : 0.00028427 
+MSE_all_forces : 0.19603552 
+MSE_all_cost : 0.19631979 
+norm_MSE_all_energy : 0.03020996 
+norm_MSE_all_forces : 0.03977368 
+norm_MSE_all_cost : 0.06998364 
 --------------------
 
 Time Cost : value 
 --------------------
-total_time : 0 h : 00 min :32 sec  + 6.450e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 1.561e+01 ms
-evaluation_time : 0 h : 00 min :28 sec  + 8.256e+02 ms
-overhead : 0 h : 00 min :03 sec  + 8.194e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 8.842e+01 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 4.787e-02 ms
+total_time : 0 h : 01 min :25 sec  + 6.932e+02 ms
+time_per_evaluation : 0 h : 00 min :00 sec  + 2.426e+01 ms
+evaluation_time : 0 h : 01 min :20 sec  + 2.851e+01 ms
+overhead : 0 h : 00 min :05 sec  + 6.647e+02 ms
+time_per_point : 0 h : 00 min :00 sec  + 2.440e+02 ms
+time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 7.396e-02 ms
 --------------------
 
-Time consumed for solving the model --> 6.286e-01 min
-solving time = 3.772e+01 
+Time consumed for solving the model --> 1.523e+00 min
+solving time = 9.137e+01 
 evaluating in selection step with nld = 1
-system selection Ag4 --> Made 117 tries, selected  100/4080 data
-selecting time = 9.588e+01 
-writing time = 6.765e-01 
+system selection Ag4 --> Made 105 tries, selected  100/4110 data
+selecting time = 9.844e+01 
+writing time = 1.099e+00 
 Made running directories
 Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3/data/R6
 /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3
@@ -1269,9 +1364,9 @@ Evaluating for nld = 1 models
 prediction errors 
 ----------
 s       sys_name      MAE       MSE
-0          Ag4  0.54524  0.719799
-TOTAL      NaN  0.54524  0.719799
-FF development Prediction Evaluation Time --> 6.930e+00 sec
+0          Ag4  0.01694  0.000543
+TOTAL      NaN  0.01694  0.000543
+FF development Prediction Evaluation Time --> 1.184e+01 sec
 Sampling method is set to md via lammps
 Reading iteration 0 
 Reading iteration 1 
@@ -1280,198 +1375,217 @@ Reading iteration 3
 Reading iteration 4 
 Reading iteration 5 
 Reading iteration 6 
-Kept 99.413 % of the  data
+Kept 99.804 % of the  data
 STOCHASTIC SLSQP Began
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.266552333280878
-            Iterations: 17
-            Function evaluations: 45
-            Gradient evaluations: 17
-epoch = 0, i = 0,  development cost = 1.2231e+00 train cost = 1.2666e+00 
-epoch = 0 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.38252234202037694
+            Iterations: 10
+            Function evaluations: 29
+            Gradient evaluations: 10
+epoch = 0, i = 0,  development cost = 2.4213e-01 train cost = 2.5983e-01 
+epoch = 0 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.276726754078446
-            Iterations: 23
-            Function evaluations: 66
-            Gradient evaluations: 23
-epoch = 1, i = 0,  development cost = 1.2360e+00 train cost = 1.2767e+00 
-epoch = 1 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.4471030787087249
+            Iterations: 80
+            Function evaluations: 127
+            Gradient evaluations: 80
+epoch = 1, i = 0,  development cost = 2.5676e-01 train cost = 2.6527e-01 
+epoch = 1 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3200708114984496
-            Iterations: 30
-            Function evaluations: 64
-            Gradient evaluations: 30
-epoch = 2, i = 0,  development cost = 1.2792e+00 train cost = 1.3201e+00 
-epoch = 2 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.2976107146399642
+            Iterations: 255
+            Function evaluations: 353
+            Gradient evaluations: 255
+epoch = 2, i = 0,  development cost = 2.7105e-01 train cost = 2.7337e-01 
+epoch = 2 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.6654212947075897
-            Iterations: 33
-            Function evaluations: 83
-            Gradient evaluations: 33
-epoch = 3, i = 0,  development cost = 1.6218e+00 train cost = 1.6654e+00 
-epoch = 3 ,  best_epoch = 0 , best_cost = 1.2231e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3714460594942404
-            Iterations: 76
-            Function evaluations: 150
-            Gradient evaluations: 76
-epoch = 4, i = 0,  development cost = 1.3312e+00 train cost = 1.3714e+00 
-epoch = 4 ,  best_epoch = 0 , best_cost = 1.2231e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 2.0506134723674614
-            Iterations: 14
-            Function evaluations: 58
-            Gradient evaluations: 14
-epoch = 5, i = 0,  development cost = 2.0033e+00 train cost = 2.0506e+00 
-epoch = 5 ,  best_epoch = 0 , best_cost = 1.2231e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.5128203053683704
-            Iterations: 51
-            Function evaluations: 113
-            Gradient evaluations: 51
-epoch = 6, i = 0,  development cost = 1.4729e+00 train cost = 1.5128e+00 
-epoch = 6 ,  best_epoch = 0 , best_cost = 1.2231e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.393375726218363
-            Iterations: 42
-            Function evaluations: 89
-            Gradient evaluations: 42
-epoch = 7, i = 0,  development cost = 1.3612e+00 train cost = 1.3934e+00 
-epoch = 7 ,  best_epoch = 0 , best_cost = 1.2231e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 2.266573759099433
-            Iterations: 38
+            Current function value: 0.35573972581795377
+            Iterations: 85
             Function evaluations: 132
-            Gradient evaluations: 38
-epoch = 8, i = 0,  development cost = 2.2414e+00 train cost = 2.2666e+00 
-epoch = 8 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Gradient evaluations: 85
+epoch = 3, i = 0,  development cost = 2.9611e-01 train cost = 3.0859e-01 
+epoch = 3 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 3.9807660696101395
-            Iterations: 8
-            Function evaluations: 43
-            Gradient evaluations: 8
-epoch = 9, i = 0,  development cost = 3.9556e+00 train cost = 3.9808e+00 
-epoch = 9 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.4421923836210634
+            Iterations: 101
+            Function evaluations: 149
+            Gradient evaluations: 101
+epoch = 4, i = 0,  development cost = 3.6323e-01 train cost = 3.7754e-01 
+epoch = 4 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 2.1362978844324045
-            Iterations: 14
-            Function evaluations: 48
-            Gradient evaluations: 14
-epoch = 10, i = 0,  development cost = 2.1154e+00 train cost = 2.1363e+00 
-epoch = 10 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.43024029149618215
+            Iterations: 22
+            Function evaluations: 37
+            Gradient evaluations: 22
+epoch = 5, i = 0,  development cost = 3.4984e-01 train cost = 3.5775e-01 
+epoch = 5 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 2.041010255336259
-            Iterations: 13
-            Function evaluations: 48
-            Gradient evaluations: 13
-epoch = 11, i = 0,  development cost = 2.0216e+00 train cost = 2.0410e+00 
-epoch = 11 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.3346464090879593
+            Iterations: 242
+            Function evaluations: 327
+            Gradient evaluations: 242
+epoch = 6, i = 0,  development cost = 2.4891e-01 train cost = 2.6354e-01 
+epoch = 6 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3979189993118593
-            Iterations: 47
-            Function evaluations: 94
-            Gradient evaluations: 47
-epoch = 12, i = 0,  development cost = 1.3721e+00 train cost = 1.3979e+00 
-epoch = 12 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.4065682589036613
+            Iterations: 166
+            Function evaluations: 246
+            Gradient evaluations: 166
+epoch = 7, i = 0,  development cost = 3.4013e-01 train cost = 3.5204e-01 
+epoch = 7 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3408023732820944
-            Iterations: 55
-            Function evaluations: 154
-            Gradient evaluations: 54
-epoch = 13, i = 0,  development cost = 1.3056e+00 train cost = 1.3408e+00 
-epoch = 13 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.40933750960903603
+            Iterations: 35
+            Function evaluations: 59
+            Gradient evaluations: 35
+epoch = 8, i = 0,  development cost = 3.4679e-01 train cost = 3.5611e-01 
+epoch = 8 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.330850781933185
-            Iterations: 15
-            Function evaluations: 57
-            Gradient evaluations: 15
-epoch = 14, i = 0,  development cost = 1.3003e+00 train cost = 1.3309e+00 
-epoch = 14 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.42233754649673416
+            Iterations: 76
+            Function evaluations: 120
+            Gradient evaluations: 75
+epoch = 9, i = 0,  development cost = 3.2788e-01 train cost = 3.3961e-01 
+epoch = 9 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3127604782721731
-            Iterations: 18
-            Function evaluations: 48
-            Gradient evaluations: 18
-epoch = 15, i = 0,  development cost = 1.2779e+00 train cost = 1.3128e+00 
-epoch = 15 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.3179477115280257
+            Iterations: 108
+            Function evaluations: 160
+            Gradient evaluations: 108
+epoch = 10, i = 0,  development cost = 2.5629e-01 train cost = 2.6857e-01 
+epoch = 10 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.3227304385324397
-            Iterations: 25
+            Current function value: 0.3197492516593988
+            Iterations: 44
+            Function evaluations: 75
+            Gradient evaluations: 44
+epoch = 11, i = 0,  development cost = 2.5790e-01 train cost = 2.6868e-01 
+epoch = 11 ,  best_epoch = 0 , best_cost = 2.4213e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.3152304339595402
+            Iterations: 124
+            Function evaluations: 186
+            Gradient evaluations: 124
+epoch = 12, i = 0,  development cost = 2.4847e-01 train cost = 2.6094e-01 
+epoch = 12 ,  best_epoch = 0 , best_cost = 2.4213e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.5002682521991825
+            Iterations: 50
+            Function evaluations: 75
+            Gradient evaluations: 50
+epoch = 13, i = 0,  development cost = 3.4786e-01 train cost = 3.7082e-01 
+epoch = 13 ,  best_epoch = 0 , best_cost = 2.4213e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.41230447031047335
+            Iterations: 148
+            Function evaluations: 211
+            Gradient evaluations: 148
+epoch = 14, i = 0,  development cost = 3.0737e-01 train cost = 3.1931e-01 
+epoch = 14 ,  best_epoch = 0 , best_cost = 2.4213e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.27597719315517233
+            Iterations: 308
+            Function evaluations: 430
+            Gradient evaluations: 308
+epoch = 15, i = 0,  development cost = 2.5189e-01 train cost = 2.6120e-01 
+epoch = 15 ,  best_epoch = 0 , best_cost = 2.4213e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.2995181101492962
+            Iterations: 139
+            Function evaluations: 207
+            Gradient evaluations: 139
+epoch = 16, i = 0,  development cost = 2.5725e-01 train cost = 2.6744e-01 
+epoch = 16 ,  best_epoch = 0 , best_cost = 2.4213e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.3010222442643682
+            Iterations: 155
+            Function evaluations: 226
+            Gradient evaluations: 155
+epoch = 17, i = 0,  development cost = 2.5462e-01 train cost = 2.6219e-01 
+epoch = 17 ,  best_epoch = 0 , best_cost = 2.4213e-01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 0.28553312913271306
+            Iterations: 31
             Function evaluations: 62
-            Gradient evaluations: 25
-epoch = 16, i = 0,  development cost = 1.2882e+00 train cost = 1.3227e+00 
-epoch = 16 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Gradient evaluations: 31
+epoch = 18, i = 0,  development cost = 2.4415e-01 train cost = 2.5515e-01 
+epoch = 18 ,  best_epoch = 0 , best_cost = 2.4213e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.374198768460991
-            Iterations: 21
-            Function evaluations: 55
-            Gradient evaluations: 21
-epoch = 17, i = 0,  development cost = 1.3360e+00 train cost = 1.3742e+00 
-epoch = 17 ,  best_epoch = 0 , best_cost = 1.2231e+00
+            Current function value: 0.33971997739302334
+            Iterations: 74
+            Function evaluations: 115
+            Gradient evaluations: 74
+epoch = 19, i = 0,  development cost = 2.3896e-01 train cost = 2.5288e-01 
+epoch = 19 ,  best_epoch = 19 , best_cost = 2.3896e-01
 Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.4346875381312438
-            Iterations: 37
-            Function evaluations: 80
-            Gradient evaluations: 37
-epoch = 18, i = 0,  development cost = 1.3975e+00 train cost = 1.4347e+00 
-epoch = 18 ,  best_epoch = 0 , best_cost = 1.2231e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.491170915173787
-            Iterations: 17
-            Function evaluations: 51
-            Gradient evaluations: 17
-epoch = 19, i = 0,  development cost = 1.4537e+00 train cost = 1.4912e+00 
-epoch = 19 ,  best_epoch = 0 , best_cost = 1.2231e+00
-Optimization terminated successfully    (Exit mode 0)
-            Current function value: 1.4660352018441034
-            Iterations: 9
-            Function evaluations: 42
-            Gradient evaluations: 9
-epoch = 20, i = 0,  development cost = 1.4285e+00 train cost = 1.4660e+00 
-epoch = 20 ,  best_epoch = 0 , best_cost = 1.2231e+00
-time elapsed = 3.447e+01 sec t/fev = 1.881e-02 sec/eval eval_time = 2.977e+01 , overhead = 4.702e+00 
-Final: best_epoch = 0 , best_cost = 1.2231e+00, time needed = 3.466e+01 sec
+            Current function value: 0.3280208610717116
+            Iterations: 89
+            Function evaluations: 136
+            Gradient evaluations: 89
+epoch = 20, i = 0,  development cost = 2.4046e-01 train cost = 2.5736e-01 
+epoch = 20 ,  best_epoch = 19 , best_cost = 2.3896e-01
+time elapsed = 1.141e+02 sec t/fev = 3.098e-02 sec/eval eval_time = 1.072e+02 , overhead = 6.826e+00 
+Final: best_epoch = 19 , best_cost = 2.3896e-01, time needed = 1.144e+02 sec
 STOCHASTIC SLSQP FINISHED
 Cost : value 
 --------------------
-MAE_train_energy : 0.38005233 
-MAE_train_forces : 0.84304859 
-MAE_train_cost_total : 1.26655233 
-MAE_train_reg : 4345.14124364 
-MAE_train_reg_scaled : 0.04345141 
-MAE_train_cost_unreg : 1.22310092 
-MAE_dev_energy : 0.38005233 
-MAE_dev_forces : 0.84304859 
-MAE_dev_cost : 1.22310092 
-MAE_all_energy : 0.38005233 
-MAE_all_forces : 0.84304859 
-MAE_all_cost : 1.22310092 
-MSE_train_energy : 0.33259959 
-MSE_train_forces : 3.73053164 
-MSE_train_cost_total : 4.10658264 
-MSE_train_reg : 4345.14124364 
-MSE_train_reg_scaled : 0.04345141 
-MSE_train_cost_unreg : 4.06313123 
-MSE_dev_energy : 0.33259959 
-MSE_dev_forces : 3.73053164 
-MSE_dev_cost : 4.06313123 
-MSE_all_energy : 0.33259959 
-MSE_all_forces : 3.73053164 
-MSE_all_cost : 4.06313123 
+MAE_train_energy : 0.01138386 
+MAE_train_forces : 0.30831245 
+MAE_train_reg : 868.40678062 
+MAE_train_reg_scaled : 0.08684068 
+MAE_train_cost : 0.31969631 
+norm_MAE_train_energy : 0.11693418 
+norm_MAE_train_forces : 0.13594512 
+norm_MAE_train_cost_with_reg : 0.33971998 
+norm_MAE_train_cost : 0.25287930 
+MAE_dev_energy : 0.01206049 
+MAE_dev_forces : 0.34750200 
+MAE_dev_cost : 0.35956249 
+norm_MAE_dev_energy : 0.10164024 
+norm_MAE_dev_forces : 0.13732191 
+norm_MAE_dev_cost : 0.23896214 
+MAE_all_energy : 0.01151918 
+MAE_all_forces : 0.31615036 
+MAE_all_cost : 0.32766954 
+norm_MAE_all_energy : 0.11224626 
+norm_MAE_all_forces : 0.13610598 
+norm_MAE_all_cost : 0.24835224 
+MSE_train_energy : 0.00025239 
+MSE_train_forces : 0.23621207 
+MSE_train_reg : 868.40678062 
+MSE_train_reg_scaled : 0.08684068 
+MSE_train_cost : 0.23646447 
+norm_MSE_train_energy : 0.02663062 
+norm_MSE_train_forces : 0.04592479 
+norm_MSE_train_cost_with_reg : 0.15939609 
+norm_MSE_train_cost : 0.07255541 
+MSE_dev_energy : 0.00025261 
+MSE_dev_forces : 0.30266020 
+MSE_dev_cost : 0.30291281 
+norm_MSE_dev_energy : 0.01794117 
+norm_MSE_dev_forces : 0.04726290 
+norm_MSE_dev_cost : 0.06520407 
+MSE_all_energy : 0.00025244 
+MSE_all_forces : 0.24950170 
+MSE_all_cost : 0.24975414 
+norm_MSE_all_energy : 0.02396912 
+norm_MSE_all_forces : 0.04624242 
+norm_MSE_all_cost : 0.07021154 
 --------------------
 
 Time Cost : value 
 --------------------
-total_time : 0 h : 00 min :34 sec  + 4.675e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 1.881e+01 ms
-evaluation_time : 0 h : 00 min :29 sec  + 7.651e+02 ms
-overhead : 0 h : 00 min :04 sec  + 7.024e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 7.331e+01 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 4.634e-02 ms
+total_time : 0 h : 01 min :54 sec  + 7.449e+01 ms
+time_per_evaluation : 0 h : 00 min :00 sec  + 3.098e+01 ms
+evaluation_time : 0 h : 01 min :47 sec  + 2.481e+02 ms
+overhead : 0 h : 00 min :06 sec  + 8.264e+02 ms
+time_per_point : 0 h : 00 min :00 sec  + 2.629e+02 ms
+time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 7.593e-02 ms
 --------------------
 
-Time consumed for solving the model --> 6.602e-01 min
-solving time = 3.961e+01 
+Time consumed for solving the model --> 2.001e+00 min
+solving time = 1.200e+02 
 Choosing initial configuration for Ag4
-Choice complete time --> 1.208e-04 sec
+Choice complete time --> 1.244e-04 sec
+/nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearn3
 Error: Fitting algorithm did not execute successfully.

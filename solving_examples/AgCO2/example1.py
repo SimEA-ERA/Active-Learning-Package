@@ -35,9 +35,7 @@ al.make_absolute_Energy_to_interaction(data,setup)
 # 4 clean the data
 data = al.clean_data(data,setup)
 
-data = al.make_Forces_based_on_potential(data,setup)
-#0ff.Data_Manager(data,setup).distribution('Energy')
-# 4 end
+
 
 # 5 solve the model
 t1 = perf_counter()    

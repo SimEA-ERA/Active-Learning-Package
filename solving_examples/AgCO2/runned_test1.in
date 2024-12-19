@@ -27,7 +27,6 @@ tolerance       = 0.000010
 sampling_method = random 
 seed            = 111 
 train_perc      = 0.800000 
-validation_set  = sys_name:Ag10,Ag16 
 
 regularization_method = ridge 
 increased_stochasticity = 0.200000 

@@ -2,881 +2,150 @@ Sampling method is set to perturbation
 Reading iteration 0 
 Kept 100.000 % of the  data
 STOCHASTIC SLSQP Began
-epoch = 0, i = 0,  development cost = 5.0331e+04 train cost = 5.0331e+04 
-epoch = 0 ,  best_epoch = 0 , best_cost = 5.0331e+04
-epoch = 1, i = 0,  development cost = 1.8469e+10 train cost = 1.8469e+10 
-epoch = 1 ,  best_epoch = 0 , best_cost = 5.0331e+04
-epoch = 2, i = 0,  development cost = 1.8579e+10 train cost = 1.8579e+10 
-epoch = 2 ,  best_epoch = 0 , best_cost = 5.0331e+04
-epoch = 3, i = 0,  development cost = 4.4075e-02 train cost = 4.4075e-02 
-epoch = 3 ,  best_epoch = 3 , best_cost = 4.4075e-02
-epoch = 4, i = 0,  development cost = 5.7378e-02 train cost = 5.7378e-02 
-epoch = 4 ,  best_epoch = 3 , best_cost = 4.4075e-02
-epoch = 5, i = 0,  development cost = 5.6386e-02 train cost = 5.6386e-02 
-epoch = 5 ,  best_epoch = 3 , best_cost = 4.4075e-02
-epoch = 6, i = 0,  development cost = 3.9412e-02 train cost = 3.9412e-02 
-epoch = 6 ,  best_epoch = 6 , best_cost = 3.9412e-02
-epoch = 7, i = 0,  development cost = 4.4486e-02 train cost = 4.4486e-02 
-epoch = 7 ,  best_epoch = 6 , best_cost = 3.9412e-02
-epoch = 8, i = 0,  development cost = 3.8097e-02 train cost = 3.8097e-02 
-epoch = 8 ,  best_epoch = 8 , best_cost = 3.8097e-02
-epoch = 9, i = 0,  development cost = 1.2911e+08 train cost = 1.2911e+08 
-epoch = 9 ,  best_epoch = 8 , best_cost = 3.8097e-02
-epoch = 10, i = 0,  development cost = 1.2801e+08 train cost = 1.2801e+08 
-epoch = 10 ,  best_epoch = 8 , best_cost = 3.8097e-02
-epoch = 11, i = 0,  development cost = 5.6470e+12 train cost = 5.6470e+12 
-epoch = 11 ,  best_epoch = 8 , best_cost = 3.8097e-02
-epoch = 12, i = 0,  development cost = 6.8867e+13 train cost = 6.8867e+13 
-epoch = 12 ,  best_epoch = 8 , best_cost = 3.8097e-02
-epoch = 13, i = 0,  development cost = 6.8868e+13 train cost = 6.8868e+13 
-epoch = 13 ,  best_epoch = 8 , best_cost = 3.8097e-02
-epoch = 14, i = 0,  development cost = 6.8870e+13 train cost = 6.8870e+13 
-epoch = 14 ,  best_epoch = 8 , best_cost = 3.8097e-02
-epoch = 15, i = 0,  development cost = 2.8192e-02 train cost = 2.8192e-02 
-epoch = 15 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 16, i = 0,  development cost = 8.1179e+14 train cost = 8.1179e+14 
-epoch = 16 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 17, i = 0,  development cost = 4.2264e+10 train cost = 4.2264e+10 
-epoch = 17 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 18, i = 0,  development cost = 2.6744e+14 train cost = 2.6744e+14 
-epoch = 18 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 19, i = 0,  development cost = 3.9943e+15 train cost = 3.9943e+15 
-epoch = 19 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 20, i = 0,  development cost = 2.9887e+16 train cost = 2.9887e+16 
-epoch = 20 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 21, i = 0,  development cost = 2.5273e+18 train cost = 2.5273e+18 
-epoch = 21 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 22, i = 0,  development cost = 7.6041e+15 train cost = 7.6041e+15 
-epoch = 22 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 23, i = 0,  development cost = 1.3613e+17 train cost = 1.3613e+17 
-epoch = 23 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 24, i = 0,  development cost = 7.7457e+13 train cost = 7.7457e+13 
-epoch = 24 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 25, i = 0,  development cost = 8.9648e+08 train cost = 8.9648e+08 
-epoch = 25 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 26, i = 0,  development cost = 2.9098e+07 train cost = 2.9098e+07 
-epoch = 26 ,  best_epoch = 15 , best_cost = 2.8192e-02
-epoch = 27, i = 0,  development cost = 2.6170e-02 train cost = 2.6170e-02 
-epoch = 27 ,  best_epoch = 27 , best_cost = 2.6170e-02
-epoch = 28, i = 0,  development cost = 3.2236e-02 train cost = 3.2236e-02 
-epoch = 28 ,  best_epoch = 27 , best_cost = 2.6170e-02
-epoch = 29, i = 0,  development cost = 4.8284e-02 train cost = 4.8284e-02 
-epoch = 29 ,  best_epoch = 27 , best_cost = 2.6170e-02
-epoch = 30, i = 0,  development cost = 4.8313e-02 train cost = 4.8313e-02 
-epoch = 30 ,  best_epoch = 27 , best_cost = 2.6170e-02
-time elapsed = 1.549e+00 sec t/fev = 2.980e-03 sec/eval eval_time = 9.567e-01 , overhead = 5.924e-01 
-Final: best_epoch = 27 , best_cost = 2.6170e-02, time needed = 1.565e+00 sec
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 190.5937934911264
+            Iterations: 14
+            Function evaluations: 61
+            Gradient evaluations: 12
+epoch = 0, i = 0,  development cost = 1.9059e+02 train cost = 1.9059e+02 
+epoch = 0 ,  best_epoch = 0 , best_cost = 1.9059e+02
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 15.061615397368783
+            Iterations: 28
+            Function evaluations: 121
+            Gradient evaluations: 25
+epoch = 1, i = 0,  development cost = 1.5062e+01 train cost = 1.5062e+01 
+epoch = 1 ,  best_epoch = 1 , best_cost = 1.5062e+01
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 9.37401550271531
+            Iterations: 15
+            Function evaluations: 50
+            Gradient evaluations: 15
+epoch = 2, i = 0,  development cost = 9.3740e+00 train cost = 9.3740e+00 
+epoch = 2 ,  best_epoch = 2 , best_cost = 9.3740e+00
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 90.79516207167319
+            Iterations: 21
+            Function evaluations: 85
+            Gradient evaluations: 21
+epoch = 3, i = 0,  development cost = 9.0795e+01 train cost = 9.0795e+01 
+epoch = 3 ,  best_epoch = 2 , best_cost = 9.3740e+00
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 84.9329494087165
+            Iterations: 17
+            Function evaluations: 68
+            Gradient evaluations: 14
+epoch = 4, i = 0,  development cost = 8.4933e+01 train cost = 8.4933e+01 
+epoch = 4 ,  best_epoch = 2 , best_cost = 9.3740e+00
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 1.6920197828422374
+            Iterations: 22
+            Function evaluations: 92
+            Gradient evaluations: 21
+epoch = 5, i = 0,  development cost = 1.6920e+00 train cost = 1.6920e+00 
+epoch = 5 ,  best_epoch = 5 , best_cost = 1.6920e+00
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 254.09005292131712
+            Iterations: 14
+            Function evaluations: 41
+            Gradient evaluations: 11
+epoch = 6, i = 0,  development cost = 2.5409e+02 train cost = 2.5409e+02 
+epoch = 6 ,  best_epoch = 5 , best_cost = 1.6920e+00
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 91.28997859792983
+            Iterations: 24
+            Function evaluations: 103
+            Gradient evaluations: 22
+epoch = 7, i = 0,  development cost = 9.1290e+01 train cost = 9.1290e+01 
+epoch = 7 ,  best_epoch = 5 , best_cost = 1.6920e+00
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 82.31669593172256
+            Iterations: 18
+            Function evaluations: 71
+            Gradient evaluations: 16
+epoch = 8, i = 0,  development cost = 8.2317e+01 train cost = 8.2317e+01 
+epoch = 8 ,  best_epoch = 5 , best_cost = 1.6920e+00
+Optimization terminated successfully    (Exit mode 0)
+            Current function value: 2.266666329425222
+            Iterations: 21
+            Function evaluations: 84
+            Gradient evaluations: 20
+epoch = 9, i = 0,  development cost = 2.2667e+00 train cost = 2.2667e+00 
+epoch = 9 ,  best_epoch = 5 , best_cost = 1.6920e+00
+Inequality constraints incompatible    (Exit mode 4)
+            Current function value: 34.84379559920431
+            Iterations: 35
+            Function evaluations: 162
+            Gradient evaluations: 35
+epoch = 10, i = 0,  development cost = 3.4844e+01 train cost = 3.4844e+01 
+epoch = 10 ,  best_epoch = 5 , best_cost = 1.6920e+00
+time elapsed = 1.842e+00 sec t/fev = 1.600e-03 sec/eval eval_time = 1.500e+00 , overhead = 3.419e-01 
+Final: best_epoch = 5 , best_cost = 1.6920e+00, time needed = 1.871e+00 sec
 STOCHASTIC SLSQP FINISHED
 Cost : value 
 --------------------
-MAE_train_energy : 0.00003118 
-MAE_train_forces : 0.10356779 
-MAE_train_cost_total : 0.10359897 
-MAE_train_reg : 286.44401074 
+MAE_train_energy : 0.00176284 
+MAE_train_forces : 1.61584566 
+MAE_train_reg : 3.49553417 
 MAE_train_reg_scaled : 0.00000000 
-MAE_train_cost_unreg : 0.10359897 
-MAE_dev_energy : 0.00003118 
-MAE_dev_forces : 0.10356779 
-MAE_dev_cost : 0.10359897 
-MAE_all_energy : 0.00003118 
-MAE_all_forces : 0.10356779 
-MAE_all_cost : 0.10359897 
-MSE_train_energy : 0.00000000 
-MSE_train_forces : 0.02616978 
-MSE_train_cost_total : 0.02616978 
-MSE_train_reg : 286.44401074 
+MAE_train_cost : 1.61760849 
+norm_MAE_train_energy : 0.54479941 
+norm_MAE_train_forces : 1.14722037 
+norm_MAE_train_cost_with_reg : 1.69201978 
+norm_MAE_train_cost : 1.69201978 
+MAE_dev_energy : 0.00176284 
+MAE_dev_forces : 1.61584566 
+MAE_dev_cost : 1.61760849 
+norm_MAE_dev_energy : 0.54479941 
+norm_MAE_dev_forces : 1.14722037 
+norm_MAE_dev_cost : 1.69201978 
+MAE_all_energy : 0.00176284 
+MAE_all_forces : 1.61584566 
+MAE_all_cost : 1.61760849 
+norm_MAE_all_energy : 0.54479941 
+norm_MAE_all_forces : 1.14722037 
+norm_MAE_all_cost : 1.69201978 
+MSE_train_energy : 0.00000578 
+MSE_train_forces : 7.14708431 
+MSE_train_reg : 3.49553417 
 MSE_train_reg_scaled : 0.00000000 
-MSE_train_cost_unreg : 0.02616978 
-MSE_dev_energy : 0.00000000 
-MSE_dev_forces : 0.02616978 
-MSE_dev_cost : 0.02616978 
-MSE_all_energy : 0.00000000 
-MSE_all_forces : 0.02616978 
-MSE_all_cost : 0.02616978 
+MSE_train_cost : 7.14709009 
+norm_MSE_train_energy : 0.55190832 
+norm_MSE_train_forces : 3.60265650 
+norm_MSE_train_cost_with_reg : 4.15456482 
+norm_MSE_train_cost : 4.15456482 
+MSE_dev_energy : 0.00000578 
+MSE_dev_forces : 7.14708431 
+MSE_dev_cost : 7.14709009 
+norm_MSE_dev_energy : 0.55190832 
+norm_MSE_dev_forces : 3.60265650 
+norm_MSE_dev_cost : 4.15456482 
+MSE_all_energy : 0.00000578 
+MSE_all_forces : 7.14708431 
+MSE_all_cost : 7.14709009 
+norm_MSE_all_energy : 0.55190832 
+norm_MSE_all_forces : 3.60265650 
+norm_MSE_all_cost : 4.15456482 
 --------------------
 
 Time Cost : value 
 --------------------
-total_time : 0 h : 00 min :01 sec  + 5.491e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 2.980e+00 ms
-evaluation_time : 0 h : 00 min :00 sec  + 9.567e+02 ms
-overhead : 0 h : 00 min :00 sec  + 5.924e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 9.567e+02 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 2.980e+00 ms
+total_time : 0 h : 00 min :01 sec  + 8.423e+02 ms
+time_per_evaluation : 0 h : 00 min :00 sec  + 1.600e+00 ms
+evaluation_time : 0 h : 00 min :01 sec  + 5.004e+02 ms
+overhead : 0 h : 00 min :00 sec  + 3.419e+02 ms
+time_per_point : 0 h : 00 min :00 sec  + 7.502e+02 ms
+time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 7.998e-01 ms
 --------------------
 
-Time consumed for solving the model --> 1.137e-01 min
-solving time = 6.820e+00 
+Time consumed for solving the model --> 1.279e-01 min
+solving time = 7.672e+00 
 evaluating in selection step with nld = 1
-selecting time = 5.752e-02 
-writing time = 2.915e-01 
+selecting time = 1.658e-01 
+writing time = 4.770e-01 
 Made running directories
 Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2/data/R1
 /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2
 Logs copied to L1
 Logs copied to L1
-Evaluating for nld = 1 models
-prediction errors 
-----------
-s       sys_name       MAE       MSE
-0       NO2(2)  1.213841  2.264142
-TOTAL      NaN  1.213841  2.264142
-FF development Prediction Evaluation Time --> 3.943e+00 sec
-Sampling method is set to perturbation
-Reading iteration 0 
-Reading iteration 1 
-Kept 100.000 % of the  data
-STOCHASTIC SLSQP Began
-epoch = 0, i = 0,  development cost = 3.3810e+01 train cost = 3.3810e+01 
-epoch = 0 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 1, i = 0,  development cost = 4.4589e+01 train cost = 4.4589e+01 
-epoch = 1 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 2, i = 0,  development cost = 7.2614e+02 train cost = 7.2614e+02 
-epoch = 2 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 3, i = 0,  development cost = 7.2614e+02 train cost = 7.2614e+02 
-epoch = 3 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 4, i = 0,  development cost = 7.3243e+02 train cost = 7.3243e+02 
-epoch = 4 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 5, i = 0,  development cost = 7.3243e+02 train cost = 7.3243e+02 
-epoch = 5 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 6, i = 0,  development cost = 3.4144e+01 train cost = 3.4144e+01 
-epoch = 6 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 7, i = 0,  development cost = 2.1063e+06 train cost = 2.1063e+06 
-epoch = 7 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 8, i = 0,  development cost = 3.4074e+01 train cost = 3.4074e+01 
-epoch = 8 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 9, i = 0,  development cost = 1.6918e+06 train cost = 1.6918e+06 
-epoch = 9 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 10, i = 0,  development cost = 1.3877e+11 train cost = 1.3877e+11 
-epoch = 10 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 11, i = 0,  development cost = 1.1669e+10 train cost = 1.1669e+10 
-epoch = 11 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 12, i = 0,  development cost = 1.7296e+11 train cost = 1.7296e+11 
-epoch = 12 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 13, i = 0,  development cost = 4.6020e+14 train cost = 4.6020e+14 
-epoch = 13 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 14, i = 0,  development cost = 2.7283e+07 train cost = 2.7283e+07 
-epoch = 14 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 15, i = 0,  development cost = 1.4614e+13 train cost = 1.4614e+13 
-epoch = 15 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 16, i = 0,  development cost = 1.4787e+15 train cost = 1.4787e+15 
-epoch = 16 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 17, i = 0,  development cost = 1.4787e+15 train cost = 1.4787e+15 
-epoch = 17 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 18, i = 0,  development cost = 3.4138e+01 train cost = 3.4138e+01 
-epoch = 18 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 19, i = 0,  development cost = 3.4145e+01 train cost = 3.4145e+01 
-epoch = 19 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 20, i = 0,  development cost = 7.2614e+02 train cost = 7.2614e+02 
-epoch = 20 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 21, i = 0,  development cost = 8.2371e+02 train cost = 8.2371e+02 
-epoch = 21 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 22, i = 0,  development cost = 8.2371e+02 train cost = 8.2371e+02 
-epoch = 22 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 23, i = 0,  development cost = 3.4165e+01 train cost = 3.4165e+01 
-epoch = 23 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 24, i = 0,  development cost = 7.2614e+02 train cost = 7.2614e+02 
-epoch = 24 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 25, i = 0,  development cost = 7.2614e+02 train cost = 7.2614e+02 
-epoch = 25 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 26, i = 0,  development cost = 3.3867e+01 train cost = 3.3867e+01 
-epoch = 26 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 27, i = 0,  development cost = 3.3845e+01 train cost = 3.3845e+01 
-epoch = 27 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 28, i = 0,  development cost = 5.3959e+01 train cost = 5.3959e+01 
-epoch = 28 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 29, i = 0,  development cost = 5.3959e+01 train cost = 5.3959e+01 
-epoch = 29 ,  best_epoch = 0 , best_cost = 3.3810e+01
-epoch = 30, i = 0,  development cost = 3.5444e+04 train cost = 3.5444e+04 
-epoch = 30 ,  best_epoch = 0 , best_cost = 3.3810e+01
-time elapsed = 7.665e+00 sec t/fev = 2.475e-03 sec/eval eval_time = 6.948e+00 , overhead = 7.174e-01 
-Final: best_epoch = 0 , best_cost = 3.3810e+01, time needed = 7.684e+00 sec
-STOCHASTIC SLSQP FINISHED
-Cost : value 
---------------------
-MAE_train_energy : 1.45628516 
-MAE_train_forces : 3.58199966 
-MAE_train_cost_total : 5.03828482 
-MAE_train_reg : 0.21797119 
-MAE_train_reg_scaled : 0.00000000 
-MAE_train_cost_unreg : 5.03828482 
-MAE_dev_energy : 1.45628516 
-MAE_dev_forces : 3.58199966 
-MAE_dev_cost : 5.03828482 
-MAE_all_energy : 1.45628516 
-MAE_all_forces : 3.58199966 
-MAE_all_cost : 5.03828482 
-MSE_train_energy : 3.26482303 
-MSE_train_forces : 30.54562672 
-MSE_train_cost_total : 33.81044975 
-MSE_train_reg : 0.21797119 
-MSE_train_reg_scaled : 0.00000000 
-MSE_train_cost_unreg : 33.81044975 
-MSE_dev_energy : 3.26482303 
-MSE_dev_forces : 30.54562672 
-MSE_dev_cost : 33.81044975 
-MSE_all_energy : 3.26482303 
-MSE_all_forces : 30.54562672 
-MSE_all_cost : 33.81044975 
---------------------
-
-Time Cost : value 
---------------------
-total_time : 0 h : 00 min :07 sec  + 6.652e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 2.475e+00 ms
-evaluation_time : 0 h : 00 min :06 sec  + 9.478e+02 ms
-overhead : 0 h : 00 min :00 sec  + 7.174e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 6.316e+02 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 2.250e-01 ms
---------------------
-
-Time consumed for solving the model --> 2.051e-01 min
-solving time = 1.231e+01 
-evaluating in selection step with nld = 1
-system selection NO2(2) --> Made 1085 tries, selected  100/110 data
-selecting time = 3.445e-01 
-writing time = 6.435e-01 
-Made running directories
-Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2/data/R2
-/nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2
-Logs copied to L2
-Logs copied to L2
-Evaluating for nld = 1 models
-prediction errors 
-----------
-s       sys_name       MAE        MSE
-0       NO2(2)  3.018904  33.394524
-TOTAL      NaN  3.018904  33.394524
-FF development Prediction Evaluation Time --> 5.804e+00 sec
-Sampling method is set to perturbation
-Reading iteration 0 
-Reading iteration 1 
-Reading iteration 2 
-Kept 100.000 % of the  data
-STOCHASTIC SLSQP Began
-epoch = 0, i = 0,  development cost = 1.3317e+02 train cost = 1.3317e+02 
-epoch = 0 ,  best_epoch = 0 , best_cost = 1.3317e+02
-epoch = 1, i = 0,  development cost = 1.3292e+02 train cost = 1.3292e+02 
-epoch = 1 ,  best_epoch = 1 , best_cost = 1.3292e+02
-epoch = 2, i = 0,  development cost = 3.4748e+04 train cost = 3.4748e+04 
-epoch = 2 ,  best_epoch = 1 , best_cost = 1.3292e+02
-epoch = 3, i = 0,  development cost = 1.3290e+02 train cost = 1.3290e+02 
-epoch = 3 ,  best_epoch = 3 , best_cost = 1.3290e+02
-epoch = 4, i = 0,  development cost = 1.3290e+02 train cost = 1.3290e+02 
-epoch = 4 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 5, i = 0,  development cost = 1.3290e+02 train cost = 1.3290e+02 
-epoch = 5 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 6, i = 0,  development cost = 3.5843e+04 train cost = 3.5843e+04 
-epoch = 6 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 7, i = 0,  development cost = 2.5715e+04 train cost = 2.5715e+04 
-epoch = 7 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 8, i = 0,  development cost = 1.3292e+02 train cost = 1.3292e+02 
-epoch = 8 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 9, i = 0,  development cost = 6.5509e+04 train cost = 6.5509e+04 
-epoch = 9 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 10, i = 0,  development cost = 1.3305e+02 train cost = 1.3305e+02 
-epoch = 10 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 11, i = 0,  development cost = 8.0657e+09 train cost = 8.0657e+09 
-epoch = 11 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 12, i = 0,  development cost = 8.0487e+09 train cost = 8.0487e+09 
-epoch = 12 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 13, i = 0,  development cost = 1.3313e+02 train cost = 1.3313e+02 
-epoch = 13 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 14, i = 0,  development cost = 1.6131e+10 train cost = 1.6131e+10 
-epoch = 14 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 15, i = 0,  development cost = 2.7218e+04 train cost = 2.7218e+04 
-epoch = 15 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 16, i = 0,  development cost = 1.3326e+02 train cost = 1.3326e+02 
-epoch = 16 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 17, i = 0,  development cost = 1.3308e+02 train cost = 1.3308e+02 
-epoch = 17 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 18, i = 0,  development cost = 1.3307e+02 train cost = 1.3307e+02 
-epoch = 18 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 19, i = 0,  development cost = 1.3291e+02 train cost = 1.3291e+02 
-epoch = 19 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 20, i = 0,  development cost = 1.3298e+02 train cost = 1.3298e+02 
-epoch = 20 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 21, i = 0,  development cost = 5.6857e+12 train cost = 5.6857e+12 
-epoch = 21 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 22, i = 0,  development cost = 5.6857e+12 train cost = 5.6857e+12 
-epoch = 22 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 23, i = 0,  development cost = 6.0677e+16 train cost = 6.0677e+16 
-epoch = 23 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 24, i = 0,  development cost = 8.0402e+16 train cost = 8.0402e+16 
-epoch = 24 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 25, i = 0,  development cost = 3.0517e+14 train cost = 3.0517e+14 
-epoch = 25 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 26, i = 0,  development cost = 6.9955e+11 train cost = 6.9955e+11 
-epoch = 26 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 27, i = 0,  development cost = 6.9940e+11 train cost = 6.9940e+11 
-epoch = 27 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 28, i = 0,  development cost = 6.0397e+11 train cost = 6.0397e+11 
-epoch = 28 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 29, i = 0,  development cost = 1.4119e+15 train cost = 1.4119e+15 
-epoch = 29 ,  best_epoch = 4 , best_cost = 1.3290e+02
-epoch = 30, i = 0,  development cost = 6.7797e+09 train cost = 6.7797e+09 
-epoch = 30 ,  best_epoch = 4 , best_cost = 1.3290e+02
-time elapsed = 1.500e+01 sec t/fev = 5.175e-03 sec/eval eval_time = 1.366e+01 , overhead = 1.347e+00 
-Final: best_epoch = 4 , best_cost = 1.3290e+02, time needed = 1.504e+01 sec
-STOCHASTIC SLSQP FINISHED
-Cost : value 
---------------------
-MAE_train_energy : 3.37397006 
-MAE_train_forces : 6.02814340 
-MAE_train_cost_total : 9.40211345 
-MAE_train_reg : 0.17500645 
-MAE_train_reg_scaled : 0.00000000 
-MAE_train_cost_unreg : 9.40211345 
-MAE_dev_energy : 3.37397006 
-MAE_dev_forces : 6.02814340 
-MAE_dev_cost : 9.40211345 
-MAE_all_energy : 3.37397006 
-MAE_all_forces : 6.02814340 
-MAE_all_cost : 9.40211345 
-MSE_train_energy : 31.15728880 
-MSE_train_forces : 101.73998537 
-MSE_train_cost_total : 132.89727418 
-MSE_train_reg : 0.17500645 
-MSE_train_reg_scaled : 0.00000000 
-MSE_train_cost_unreg : 132.89727418 
-MSE_dev_energy : 31.15728880 
-MSE_dev_forces : 101.73998537 
-MSE_dev_cost : 132.89727418 
-MSE_all_energy : 31.15728880 
-MSE_all_forces : 101.73998537 
-MSE_all_cost : 132.89727418 
---------------------
-
-Time Cost : value 
---------------------
-total_time : 0 h : 00 min :15 sec  + 3.737e+00 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 5.175e+00 ms
-evaluation_time : 0 h : 00 min :13 sec  + 6.565e+02 ms
-overhead : 0 h : 00 min :01 sec  + 3.472e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 1.552e+02 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 5.881e-02 ms
---------------------
-
-Time consumed for solving the model --> 3.336e-01 min
-solving time = 2.001e+01 
-evaluating in selection step with nld = 1
-system selection NO2(2) --> Made 1044 tries, selected  100/1110 data
-selecting time = 9.167e+00 
-writing time = 6.787e-01 
-Made running directories
-Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2/data/R3
-/nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2
-Logs copied to L3
-Logs copied to L3
-Evaluating for nld = 1 models
-prediction errors 
-----------
-s       sys_name       MAE         MSE
-0       NO2(2)  7.940761  192.949963
-TOTAL      NaN  7.940761  192.949963
-FF development Prediction Evaluation Time --> 5.749e+00 sec
-Sampling method is set to perturbation
-Reading iteration 0 
-Reading iteration 1 
-Reading iteration 2 
-Reading iteration 3 
-Kept 100.000 % of the  data
-STOCHASTIC SLSQP Began
-epoch = 0, i = 0,  development cost = 2.5303e+02 train cost = 2.5303e+02 
-epoch = 0 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 1, i = 0,  development cost = 2.5012e+03 train cost = 2.5012e+03 
-epoch = 1 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 2, i = 0,  development cost = 2.5673e+03 train cost = 2.5673e+03 
-epoch = 2 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 3, i = 0,  development cost = 2.5673e+03 train cost = 2.5673e+03 
-epoch = 3 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 4, i = 0,  development cost = 2.5012e+03 train cost = 2.5012e+03 
-epoch = 4 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 5, i = 0,  development cost = 3.6643e+03 train cost = 3.6643e+03 
-epoch = 5 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 6, i = 0,  development cost = 3.6643e+03 train cost = 3.6643e+03 
-epoch = 6 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 7, i = 0,  development cost = 6.0543e+04 train cost = 6.0543e+04 
-epoch = 7 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 8, i = 0,  development cost = 6.0531e+04 train cost = 6.0531e+04 
-epoch = 8 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 9, i = 0,  development cost = 7.5233e+07 train cost = 7.5233e+07 
-epoch = 9 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 10, i = 0,  development cost = 1.0071e+18 train cost = 1.0071e+18 
-epoch = 10 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 11, i = 0,  development cost = 1.0071e+18 train cost = 1.0071e+18 
-epoch = 11 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 12, i = 0,  development cost = 5.3456e+14 train cost = 5.3456e+14 
-epoch = 12 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 13, i = 0,  development cost = 1.5039e+17 train cost = 1.5039e+17 
-epoch = 13 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 14, i = 0,  development cost = 1.4994e+19 train cost = 1.4994e+19 
-epoch = 14 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 15, i = 0,  development cost = 5.7295e+09 train cost = 5.7295e+09 
-epoch = 15 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 16, i = 0,  development cost = 5.7195e+09 train cost = 5.7195e+09 
-epoch = 16 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 17, i = 0,  development cost = 1.0076e+10 train cost = 1.0076e+10 
-epoch = 17 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 18, i = 0,  development cost = 1.4287e+07 train cost = 1.4287e+07 
-epoch = 18 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 19, i = 0,  development cost = 1.2563e+07 train cost = 1.2563e+07 
-epoch = 19 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 20, i = 0,  development cost = 9.6350e+11 train cost = 9.6350e+11 
-epoch = 20 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 21, i = 0,  development cost = 3.6618e+03 train cost = 3.6618e+03 
-epoch = 21 ,  best_epoch = 0 , best_cost = 2.5303e+02
-epoch = 22, i = 0,  development cost = 2.5302e+02 train cost = 2.5302e+02 
-epoch = 22 ,  best_epoch = 22 , best_cost = 2.5302e+02
-epoch = 23, i = 0,  development cost = 3.1793e+05 train cost = 3.1793e+05 
-epoch = 23 ,  best_epoch = 22 , best_cost = 2.5302e+02
-epoch = 24, i = 0,  development cost = 2.5302e+02 train cost = 2.5302e+02 
-epoch = 24 ,  best_epoch = 24 , best_cost = 2.5302e+02
-epoch = 25, i = 0,  development cost = 2.5673e+03 train cost = 2.5673e+03 
-epoch = 25 ,  best_epoch = 24 , best_cost = 2.5302e+02
-epoch = 26, i = 0,  development cost = 2.5673e+03 train cost = 2.5673e+03 
-epoch = 26 ,  best_epoch = 24 , best_cost = 2.5302e+02
-epoch = 27, i = 0,  development cost = 4.2248e+04 train cost = 4.2248e+04 
-epoch = 27 ,  best_epoch = 24 , best_cost = 2.5302e+02
-epoch = 28, i = 0,  development cost = 2.5302e+02 train cost = 2.5302e+02 
-epoch = 28 ,  best_epoch = 28 , best_cost = 2.5302e+02
-epoch = 29, i = 0,  development cost = 2.6334e+17 train cost = 2.6334e+17 
-epoch = 29 ,  best_epoch = 28 , best_cost = 2.5302e+02
-epoch = 30, i = 0,  development cost = 4.8531e+15 train cost = 4.8531e+15 
-epoch = 30 ,  best_epoch = 28 , best_cost = 2.5302e+02
-time elapsed = 1.019e+01 sec t/fev = 7.842e-03 sec/eval eval_time = 8.093e+00 , overhead = 2.093e+00 
-Final: best_epoch = 28 , best_cost = 2.5302e+02, time needed = 1.024e+01 sec
-STOCHASTIC SLSQP FINISHED
-Cost : value 
---------------------
-MAE_train_energy : 5.82681649 
-MAE_train_forces : 7.99238834 
-MAE_train_cost_total : 13.81920483 
-MAE_train_reg : 0.17722281 
-MAE_train_reg_scaled : 0.00000000 
-MAE_train_cost_unreg : 13.81920483 
-MAE_dev_energy : 5.82681649 
-MAE_dev_forces : 7.99238834 
-MAE_dev_cost : 13.81920483 
-MAE_all_energy : 5.82681649 
-MAE_all_forces : 7.99238834 
-MAE_all_cost : 13.81920483 
-MSE_train_energy : 91.12440065 
-MSE_train_forces : 161.89900376 
-MSE_train_cost_total : 253.02340441 
-MSE_train_reg : 0.17722281 
-MSE_train_reg_scaled : 0.00000000 
-MSE_train_cost_unreg : 253.02340441 
-MSE_dev_energy : 91.12440065 
-MSE_dev_forces : 161.89900376 
-MSE_dev_cost : 253.02340441 
-MSE_all_energy : 91.12440065 
-MSE_all_forces : 161.89900376 
-MSE_all_cost : 253.02340441 
---------------------
-
-Time Cost : value 
---------------------
-total_time : 0 h : 00 min :10 sec  + 1.859e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 7.842e+00 ms
-evaluation_time : 0 h : 00 min :08 sec  + 9.336e+01 ms
-overhead : 0 h : 00 min :02 sec  + 9.258e+01 ms
-time_per_point : 0 h : 00 min :00 sec  + 4.817e+01 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 4.668e-02 ms
---------------------
-
-Time consumed for solving the model --> 2.710e-01 min
-solving time = 1.626e+01 
-evaluating in selection step with nld = 1
-system selection NO2(2) --> Made 2636 tries, selected  100/2110 data
-selecting time = 3.150e+01 
-writing time = 1.043e+00 
-Made running directories
-Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2/data/R4
-/nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2
-Logs copied to L4
-Logs copied to L4
-Evaluating for nld = 1 models
-prediction errors 
-----------
-s       sys_name        MAE          MSE
-0       NO2(2)  22.366286  1155.563493
-TOTAL      NaN  22.366286  1155.563493
-FF development Prediction Evaluation Time --> 5.517e+00 sec
-Sampling method is set to perturbation
-Reading iteration 0 
-Reading iteration 1 
-Reading iteration 2 
-Reading iteration 3 
-Reading iteration 4 
-Kept 74.920 % of the  data
-STOCHASTIC SLSQP Began
-epoch = 0, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 0 ,  best_epoch = 0 , best_cost = 2.3870e+02
-epoch = 1, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 1 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 2, i = 0,  development cost = 2.5129e+10 train cost = 2.5129e+10 
-epoch = 2 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 3, i = 0,  development cost = 2.5146e+10 train cost = 2.5146e+10 
-epoch = 3 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 4, i = 0,  development cost = 5.6157e+07 train cost = 5.6157e+07 
-epoch = 4 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 5, i = 0,  development cost = 5.6665e+05 train cost = 5.6665e+05 
-epoch = 5 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 6, i = 0,  development cost = 5.3557e+05 train cost = 5.3557e+05 
-epoch = 6 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 7, i = 0,  development cost = 3.1399e+11 train cost = 3.1399e+11 
-epoch = 7 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 8, i = 0,  development cost = 9.5821e+04 train cost = 9.5821e+04 
-epoch = 8 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 9, i = 0,  development cost = 9.3990e+04 train cost = 9.3990e+04 
-epoch = 9 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 10, i = 0,  development cost = 2.8246e+08 train cost = 2.8246e+08 
-epoch = 10 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 11, i = 0,  development cost = 2.1575e+13 train cost = 2.1575e+13 
-epoch = 11 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 12, i = 0,  development cost = 4.3823e+08 train cost = 4.3823e+08 
-epoch = 12 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 13, i = 0,  development cost = 5.4378e+11 train cost = 5.4378e+11 
-epoch = 13 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 14, i = 0,  development cost = 1.5916e+09 train cost = 1.5916e+09 
-epoch = 14 ,  best_epoch = 1 , best_cost = 2.3870e+02
-epoch = 15, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 15 ,  best_epoch = 15 , best_cost = 2.3870e+02
-epoch = 16, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 16 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 17, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 17 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 18, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 18 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 19, i = 0,  development cost = 2.3871e+02 train cost = 2.3871e+02 
-epoch = 19 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 20, i = 0,  development cost = 1.0159e+05 train cost = 1.0159e+05 
-epoch = 20 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 21, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 21 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 22, i = 0,  development cost = 4.1102e+06 train cost = 4.1102e+06 
-epoch = 22 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 23, i = 0,  development cost = 1.8507e+06 train cost = 1.8507e+06 
-epoch = 23 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 24, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 24 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 25, i = 0,  development cost = 7.9221e+04 train cost = 7.9221e+04 
-epoch = 25 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 26, i = 0,  development cost = 7.2934e+04 train cost = 7.2934e+04 
-epoch = 26 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 27, i = 0,  development cost = 2.3870e+02 train cost = 2.3870e+02 
-epoch = 27 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 28, i = 0,  development cost = 3.1876e+07 train cost = 3.1876e+07 
-epoch = 28 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 29, i = 0,  development cost = 5.0243e+10 train cost = 5.0243e+10 
-epoch = 29 ,  best_epoch = 16 , best_cost = 2.3870e+02
-epoch = 30, i = 0,  development cost = 6.0418e+17 train cost = 6.0418e+17 
-epoch = 30 ,  best_epoch = 16 , best_cost = 2.3870e+02
-time elapsed = 1.868e+01 sec t/fev = 8.533e-03 sec/eval eval_time = 1.648e+01 , overhead = 2.206e+00 
-Final: best_epoch = 16 , best_cost = 2.3870e+02, time needed = 1.874e+01 sec
-STOCHASTIC SLSQP FINISHED
-Cost : value 
---------------------
-MAE_train_energy : 5.81838429 
-MAE_train_forces : 8.32710864 
-MAE_train_cost_total : 14.14549293 
-MAE_train_reg : 0.18053127 
-MAE_train_reg_scaled : 0.00000000 
-MAE_train_cost_unreg : 14.14549293 
-MAE_dev_energy : 5.81838429 
-MAE_dev_forces : 8.32710864 
-MAE_dev_cost : 14.14549293 
-MAE_all_energy : 5.81838429 
-MAE_all_forces : 8.32710864 
-MAE_all_cost : 14.14549293 
-MSE_train_energy : 72.52970961 
-MSE_train_forces : 166.16662853 
-MSE_train_cost_total : 238.69633814 
-MSE_train_reg : 0.18053127 
-MSE_train_reg_scaled : 0.00000000 
-MSE_train_cost_unreg : 238.69633814 
-MSE_dev_energy : 72.52970961 
-MSE_dev_forces : 166.16662853 
-MSE_dev_cost : 238.69633814 
-MSE_all_energy : 72.52970961 
-MSE_all_forces : 166.16662853 
-MSE_all_cost : 238.69633814 
---------------------
-
-Time Cost : value 
---------------------
-total_time : 0 h : 00 min :18 sec  + 6.829e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 8.533e+00 ms
-evaluation_time : 0 h : 00 min :16 sec  + 4.769e+02 ms
-overhead : 0 h : 00 min :02 sec  + 2.060e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 8.859e+01 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 4.588e-02 ms
---------------------
-
-Time consumed for solving the model --> 3.990e-01 min
-solving time = 2.394e+01 
-evaluating in selection step with nld = 1
-system selection NO2(2) --> Made 6836 tries, selected  100/2330 data
-selecting time = 4.440e+01 
-writing time = 1.451e+00 
-Made running directories
-Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2/data/R5
-/nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2
-Logs copied to L5
-Logs copied to L5
-Evaluating for nld = 1 models
-prediction errors 
-----------
-s       sys_name        MAE          MSE
-0       NO2(2)  21.355732  1290.775757
-TOTAL      NaN  21.355732  1290.775757
-FF development Prediction Evaluation Time --> 5.844e+00 sec
-Sampling method is set to perturbation
-Reading iteration 0 
-Reading iteration 1 
-Reading iteration 2 
-Reading iteration 3 
-Reading iteration 4 
-Reading iteration 5 
-Kept 78.589 % of the  data
-STOCHASTIC SLSQP Began
-epoch = 0, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 0 ,  best_epoch = 0 , best_cost = 4.5039e+02
-epoch = 1, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 1 ,  best_epoch = 1 , best_cost = 4.5039e+02
-epoch = 2, i = 0,  development cost = 1.0268e+03 train cost = 1.0268e+03 
-epoch = 2 ,  best_epoch = 1 , best_cost = 4.5039e+02
-epoch = 3, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 3 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 4, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 4 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 5, i = 0,  development cost = 2.5907e+08 train cost = 2.5907e+08 
-epoch = 5 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 6, i = 0,  development cost = 1.0961e+07 train cost = 1.0961e+07 
-epoch = 6 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 7, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 7 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 8, i = 0,  development cost = 1.8395e+04 train cost = 1.8395e+04 
-epoch = 8 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 9, i = 0,  development cost = 3.4117e+03 train cost = 3.4117e+03 
-epoch = 9 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 10, i = 0,  development cost = 5.3145e+06 train cost = 5.3145e+06 
-epoch = 10 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 11, i = 0,  development cost = 1.7257e+09 train cost = 1.7257e+09 
-epoch = 11 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 12, i = 0,  development cost = 3.4975e+03 train cost = 3.4975e+03 
-epoch = 12 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 13, i = 0,  development cost = 3.4975e+03 train cost = 3.4975e+03 
-epoch = 13 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 14, i = 0,  development cost = 7.3975e+05 train cost = 7.3975e+05 
-epoch = 14 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 15, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 15 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 16, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 16 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 17, i = 0,  development cost = 1.0122e+03 train cost = 1.0122e+03 
-epoch = 17 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 18, i = 0,  development cost = 1.0122e+03 train cost = 1.0122e+03 
-epoch = 18 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 19, i = 0,  development cost = 1.0122e+03 train cost = 1.0122e+03 
-epoch = 19 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 20, i = 0,  development cost = 1.2565e+05 train cost = 1.2565e+05 
-epoch = 20 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 21, i = 0,  development cost = 9.4298e+02 train cost = 9.4298e+02 
-epoch = 21 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 22, i = 0,  development cost = 2.7220e+08 train cost = 2.7220e+08 
-epoch = 22 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 23, i = 0,  development cost = 1.8296e+07 train cost = 1.8296e+07 
-epoch = 23 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 24, i = 0,  development cost = 6.2174e+02 train cost = 6.2174e+02 
-epoch = 24 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 25, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 25 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 26, i = 0,  development cost = 4.8794e+04 train cost = 4.8794e+04 
-epoch = 26 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 27, i = 0,  development cost = 3.4975e+03 train cost = 3.4975e+03 
-epoch = 27 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 28, i = 0,  development cost = 3.4975e+03 train cost = 3.4975e+03 
-epoch = 28 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 29, i = 0,  development cost = 4.5039e+02 train cost = 4.5039e+02 
-epoch = 29 ,  best_epoch = 3 , best_cost = 4.5039e+02
-epoch = 30, i = 0,  development cost = 3.4117e+03 train cost = 3.4117e+03 
-epoch = 30 ,  best_epoch = 3 , best_cost = 4.5039e+02
-time elapsed = 2.378e+01 sec t/fev = 1.104e-02 sec/eval eval_time = 2.078e+01 , overhead = 3.000e+00 
-Final: best_epoch = 3 , best_cost = 4.5039e+02, time needed = 2.386e+01 sec
-STOCHASTIC SLSQP FINISHED
-Cost : value 
---------------------
-MAE_train_energy : 9.46092656 
-MAE_train_forces : 9.53989770 
-MAE_train_cost_total : 19.00082425 
-MAE_train_reg : 0.17825349 
-MAE_train_reg_scaled : 0.00000000 
-MAE_train_cost_unreg : 19.00082425 
-MAE_dev_energy : 9.46092656 
-MAE_dev_forces : 9.53989770 
-MAE_dev_cost : 19.00082425 
-MAE_all_energy : 9.46092656 
-MAE_all_forces : 9.53989770 
-MAE_all_cost : 19.00082425 
-MSE_train_energy : 206.51031986 
-MSE_train_forces : 243.87880661 
-MSE_train_cost_total : 450.38912647 
-MSE_train_reg : 0.17825349 
-MSE_train_reg_scaled : 0.00000000 
-MSE_train_cost_unreg : 450.38912647 
-MSE_dev_energy : 206.51031986 
-MSE_dev_forces : 243.87880661 
-MSE_dev_cost : 450.38912647 
-MSE_all_energy : 206.51031986 
-MSE_all_forces : 243.87880661 
-MSE_all_cost : 450.38912647 
---------------------
-
-Time Cost : value 
---------------------
-total_time : 0 h : 00 min :23 sec  + 7.788e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 1.104e+01 ms
-evaluation_time : 0 h : 00 min :20 sec  + 7.789e+02 ms
-overhead : 0 h : 00 min :02 sec  + 9.999e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 8.054e+01 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 4.277e-02 ms
---------------------
-
-Time consumed for solving the model --> 4.914e-01 min
-solving time = 2.949e+01 
-evaluating in selection step with nld = 1
-system selection NO2(2) --> Made 7631 tries, selected  100/3230 data
-selecting time = 7.076e+01 
-writing time = 6.837e-01 
-Made running directories
-Working in directory: /nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2/data/R6
-/nvme/h/npatsalidis/data_simea/nikolas/postDoc/Active-Learning-Package/test_actlearnNO2
-Logs copied to L6
-Logs copied to L6
-Evaluating for nld = 1 models
-prediction errors 
-----------
-s       sys_name        MAE          MSE
-0       NO2(2)  38.802068  3424.142636
-TOTAL      NaN  38.802068  3424.142636
-FF development Prediction Evaluation Time --> 5.542e+00 sec
-Sampling method is set to md via lammps
-Reading iteration 0 
-Reading iteration 1 
-Reading iteration 2 
-Reading iteration 3 
-Reading iteration 4 
-Reading iteration 5 
-Reading iteration 6 
-Kept 75.342 % of the  data
-STOCHASTIC SLSQP Began
-epoch = 0, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 0 ,  best_epoch = 0 , best_cost = 6.1700e+02
-epoch = 1, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 1 ,  best_epoch = 0 , best_cost = 6.1700e+02
-epoch = 2, i = 0,  development cost = 3.8994e+03 train cost = 3.8994e+03 
-epoch = 2 ,  best_epoch = 0 , best_cost = 6.1700e+02
-epoch = 3, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 3 ,  best_epoch = 0 , best_cost = 6.1700e+02
-epoch = 4, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 4 ,  best_epoch = 4 , best_cost = 6.1700e+02
-epoch = 5, i = 0,  development cost = 2.4138e+04 train cost = 2.4138e+04 
-epoch = 5 ,  best_epoch = 4 , best_cost = 6.1700e+02
-epoch = 6, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 6 ,  best_epoch = 4 , best_cost = 6.1700e+02
-epoch = 7, i = 0,  development cost = 5.5717e+07 train cost = 5.5717e+07 
-epoch = 7 ,  best_epoch = 4 , best_cost = 6.1700e+02
-epoch = 8, i = 0,  development cost = 1.6177e+16 train cost = 1.6177e+16 
-epoch = 8 ,  best_epoch = 4 , best_cost = 6.1700e+02
-epoch = 9, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 9 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 10, i = 0,  development cost = 1.2635e+13 train cost = 1.2635e+13 
-epoch = 10 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 11, i = 0,  development cost = 1.5442e+19 train cost = 1.5442e+19 
-epoch = 11 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 12, i = 0,  development cost = 6.0162e+18 train cost = 6.0162e+18 
-epoch = 12 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 13, i = 0,  development cost = 7.9977e+12 train cost = 7.9977e+12 
-epoch = 13 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 14, i = 0,  development cost = 7.4085e+13 train cost = 7.4085e+13 
-epoch = 14 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 15, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 15 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 16, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 16 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 17, i = 0,  development cost = 2.8030e+15 train cost = 2.8030e+15 
-epoch = 17 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 18, i = 0,  development cost = 2.8030e+15 train cost = 2.8030e+15 
-epoch = 18 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 19, i = 0,  development cost = 2.0647e+13 train cost = 2.0647e+13 
-epoch = 19 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 20, i = 0,  development cost = 9.0212e+18 train cost = 9.0212e+18 
-epoch = 20 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 21, i = 0,  development cost = 8.9830e+03 train cost = 8.9830e+03 
-epoch = 21 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 22, i = 0,  development cost = 2.1901e+04 train cost = 2.1901e+04 
-epoch = 22 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 23, i = 0,  development cost = 5.0075e+04 train cost = 5.0075e+04 
-epoch = 23 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 24, i = 0,  development cost = 5.7482e+04 train cost = 5.7482e+04 
-epoch = 24 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 25, i = 0,  development cost = 6.6013e+04 train cost = 6.6013e+04 
-epoch = 25 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 26, i = 0,  development cost = 6.5430e+04 train cost = 6.5430e+04 
-epoch = 26 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 27, i = 0,  development cost = 4.3095e+16 train cost = 4.3095e+16 
-epoch = 27 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 28, i = 0,  development cost = 6.6204e+14 train cost = 6.6204e+14 
-epoch = 28 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 29, i = 0,  development cost = 9.8117e+02 train cost = 9.8117e+02 
-epoch = 29 ,  best_epoch = 9 , best_cost = 6.1700e+02
-epoch = 30, i = 0,  development cost = 6.1700e+02 train cost = 6.1700e+02 
-epoch = 30 ,  best_epoch = 9 , best_cost = 6.1700e+02
-time elapsed = 2.389e+01 sec t/fev = 1.307e-02 sec/eval eval_time = 2.056e+01 , overhead = 3.331e+00 
-Final: best_epoch = 9 , best_cost = 6.1700e+02, time needed = 2.398e+01 sec
-STOCHASTIC SLSQP FINISHED
-Cost : value 
---------------------
-MAE_train_energy : 11.49268708 
-MAE_train_forces : 10.36274923 
-MAE_train_cost_total : 21.85543631 
-MAE_train_reg : 0.17511292 
-MAE_train_reg_scaled : 0.00000000 
-MAE_train_cost_unreg : 21.85543631 
-MAE_dev_energy : 11.49268708 
-MAE_dev_forces : 10.36274923 
-MAE_dev_cost : 21.85543631 
-MAE_all_energy : 11.49268708 
-MAE_all_forces : 10.36274923 
-MAE_all_cost : 21.85543631 
-MSE_train_energy : 314.10380953 
-MSE_train_forces : 302.89628796 
-MSE_train_cost_total : 617.00009749 
-MSE_train_reg : 0.17511292 
-MSE_train_reg_scaled : 0.00000000 
-MSE_train_cost_unreg : 617.00009749 
-MSE_dev_energy : 314.10380953 
-MSE_dev_forces : 302.89628796 
-MSE_dev_cost : 617.00009749 
-MSE_all_energy : 314.10380953 
-MSE_all_forces : 302.89628796 
-MSE_all_cost : 617.00009749 
---------------------
-
-Time Cost : value 
---------------------
-total_time : 0 h : 00 min :23 sec  + 8.881e+02 ms
-time_per_evaluation : 0 h : 00 min :00 sec  + 1.307e+01 ms
-evaluation_time : 0 h : 00 min :20 sec  + 5.570e+02 ms
-overhead : 0 h : 00 min :03 sec  + 3.311e+02 ms
-time_per_point : 0 h : 00 min :00 sec  + 6.674e+01 ms
-time_per_point_per_evaluation : 0 h : 00 min :00 sec  + 4.243e-02 ms
---------------------
-
-Time consumed for solving the model --> 5.005e-01 min
-solving time = 3.003e+01 
-Choosing initial configuration for NO2(2)
-Choice complete time --> 1.190e-04 sec
-Error: Fitting algorithm did not execute successfully.
+Error: Evaluating algorithm did not execute successfully.
