@@ -728,9 +728,28 @@ class al_help():
         al_help.set_L_toRhoMax(dataMan, setup)
                
         optimizer = FF_Optimizer(data,train_indexes, dev_indexes,setup)
-         
-        optimizer.optimize_params()
+        lfs = [0, *np.logspace(-1,2,10) ]
+        min_metric = 1e16
+        metrics = []
+        for lf in lfs:
+            setup.lambda_force = lf
+            optimizer.optimize_params()
+            optimizer.epoch = 0
+            se = optimizer.current_costs.selection_metric
+            metrics.append(se)
+            if se <min_metric:
+                min_metric = se
+                best_setup = copy.deepcopy( optimizer.setup )
+        _ = plt.figure( figsize=(3.5,3.5) , dpi = 300)
+        plt.xscale('log')
+        plt.plot( lfs, metrics,marker ='s', label=None, color='blue' )
+        plt.plot(lfs[np.argmin(metrics)], np.min(metrics) , ls='none',marker='o', color='red')
+        plt.xlabel('lambda force')
+        plt.ylabel('cost')
         
+        plt.legend(frameon=False)
+        plt.show()
+        optimizer.setup = best_setup
         optimizer.report()
         #print('evaluations')
         #results
@@ -5541,9 +5560,7 @@ class FF_Optimizer(Optimizer):
         #    self.checkedGrads = True
         normalize_data = self.setup.normalize_data
         if normalize_data:
-            Energy, Forces = args[0], args[1]
-            
-            mu_e, std_e, mu_f, std_f = self.get_normalized_data(Energy,Forces)
+            mu_e, std_e, mu_f, std_f = self.get_normalized_data('train')
 
             args = (*args, mu_e, std_e, mu_f,std_f ) 
         try:
@@ -5624,7 +5641,7 @@ class FF_Optimizer(Optimizer):
 
                         self.set_models('opt','init')
                         norm = 'norm_' if normalize_data else ''
-                        dev_cost = getattr(self.current_costs, norm + self.setup.costf+'_dev_cost')
+                        dev_cost = getattr(self.current_costs, 'selection_metric')
                         #
                         if dev_cost <= best_cost:
                             best_epoch = self.epoch
@@ -5699,16 +5716,45 @@ class FF_Optimizer(Optimizer):
             self.set_results()
 
         return 
-    def get_normalized_data(self,Energy,Forces):
-        mu_e = Energy.mean()
-        std_e = Energy.std()
+    
+    def get_normalized_data(self,dataset):
+        
+        Energy = self.get_Energy('train')
+        Forces = self.get_true_Forces('train')
+        sysname_train = self.data_train['sys_name'].to_numpy()
+        
+        if dataset == 'train':
+            sysname_dataset = sysname_train
+        else:
+            sysname_dataset = np.array( list(self.get_dataDict(dataset, 'sys_name').values()) )
+       
+        unsys = np.unique(sysname_dataset)
+        
+        if len(unsys) == 1:
+            mu_e = Energy.mean()
+            std_e = Energy.std()
+            if std_e ==0 : 
+                std_e = 1.0 ;
+        else:
+            #assert sysn.shape[0] == Energy.shape[0], 'array of sys names and Energies is different'
+            shape = sysname_dataset.shape 
+            mu_e = np.empty(shape, dtype=float)
+            std_e =np.empty(shape, dtype=float)
+            for us in unsys:
+                itr = np.where( sysname_train == us )[0] 
+                ids = np.where( sysname_dataset == us )[0]
+                mu_e[ids] = Energy[itr].mean()
+                std_e[ids] = Energy[itr].std()
+            std_e[ std_e == 0 ] = 1.0
+        
         mu_f = Forces.mean()
         std_f = Forces.std()
-        if std_e ==0 : 
-            std_e = 1.0 ; 
-        if std_f ==0 : 
+ 
+        if std_f == 0: 
             std_f = 1.0 ;
+        
         return mu_e, std_e , mu_f ,std_f
+    
     def set_results(self):
         
         params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt','train')
@@ -5722,8 +5768,10 @@ class FF_Optimizer(Optimizer):
                  measure,
                  measure_reg ) = args
         
-        normalize = self.setup.normalize_data
         
+        normalize = self.setup.normalize_data
+        if normalize:
+            train_mu_e, train_std_e, train_mu_f, train_std_f = self.get_normalized_data('train')
         
         for meas in np.unique(['MAE','MSE',measure]):
             for dataname in ['train','dev', 'all']:
@@ -5735,7 +5783,7 @@ class FF_Optimizer(Optimizer):
                      measure,
                      measure_reg ) = args
                     if normalize and norm =='norm_':
-                        mu_e, std_e, mu_f, std_f = self.get_normalized_data(Energy,Forces)
+                        mu_e, std_e, mu_f, std_f = self.get_normalized_data(dataname)
                     else:
                         mu_e, std_e, mu_f, std_f = 0.0, 1.0, 0.0, 1.0
                     
@@ -5754,7 +5802,8 @@ class FF_Optimizer(Optimizer):
                             setattr(costs,prefix + 'reg', creg) 
                             setattr(costs,prefix + 'reg_scaled', reg_par*creg) 
                     setattr(costs,prefix + 'cost', ce + lambda_force*cf) 
-        
+                    if dataname == 'dev' and meas == measure and norm =='norm_':
+                        costs.selection_metric = 0.5*(ce + cf)
         self.current_costs = costs
         #Get the new params and give to vdw_dataframe
         return

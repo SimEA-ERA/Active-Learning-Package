@@ -12,15 +12,15 @@ import pandas as pd
 from time import perf_counter
 
 # 1 end
-gas='CO2'
+
 # 2 read the setup file
-setup = ff.Setup_Interfacial_Optimization(f'{gas}.in')
+setup = ff.Setup_Interfacial_Optimization('AgCO2.in')
 # 2 end 
 
 # 3  Let's read the data
 
 al = ff.al_help()
-path_log = f'data{gas}'
+path_log = 'dataAg4CO2'
 path_xyz = path_log+'xyz'
 al.log_to_xyz(path_log, path_xyz)
 
@@ -41,7 +41,7 @@ for fo in data['Forces'].values:
         for x in f:
             forces_dft.append(x)
 from matplotlib import pyplot as plt
-import numpy as np
+
 
 # 4 clean the data
 #data = al.clean_data(data,setup)
@@ -49,7 +49,7 @@ import numpy as np
 
 # 5 solve the model
 t1 = perf_counter()    
-data, current_costs, setup, optimizer = al.solve_model(data,setup)    
+data, current_costs, setup, optimizer = al.solve_model(data,setup)
 print('solving time = {:.3e} sec '.format(perf_counter()-t1))
 # 5 end
 
