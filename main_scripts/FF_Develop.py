@@ -728,28 +728,36 @@ class al_help():
         al_help.set_L_toRhoMax(dataMan, setup)
                
         optimizer = FF_Optimizer(data,train_indexes, dev_indexes,setup)
-        lfs = [0, *np.logspace(-1,2,10) ]
-        min_metric = 1e16
-        metrics = []
-        for lf in lfs:
-            setup.lambda_force = lf
-            optimizer.optimize_params()
-            optimizer.epoch = 0
-            se = optimizer.current_costs.selection_metric
-            metrics.append(se)
-            if se <min_metric:
-                min_metric = se
-                best_setup = copy.deepcopy( optimizer.setup )
-        _ = plt.figure( figsize=(3.5,3.5) , dpi = 300)
-        plt.xscale('log')
-        plt.plot( lfs, metrics,marker ='s', label=None, color='blue' )
-        plt.plot(lfs[np.argmin(metrics)], np.min(metrics) , ls='none',marker='o', color='red')
-        plt.xlabel('lambda force')
-        plt.ylabel('cost')
         
-        plt.legend(frameon=False)
-        plt.show()
-        optimizer.setup = best_setup
+        method = 'pareto'
+        if method =='scan_lambda_force':
+            lfs = [0, *np.logspace(-1,2,10) ]
+            min_metric = 1e16
+            metrics = []
+            for lf in lfs:
+                setup.lambda_force = lf
+                optimizer.optimize_params()
+                optimizer.epoch = 0
+                se = optimizer.current_costs.selection_metric
+                metrics.append(se)
+                if se <min_metric:
+                    min_metric = se
+                    best_setup = copy.deepcopy( optimizer.setup )
+                    best_costs = copy.deepcopy( optimizer.current_costs )
+            _ = plt.figure( figsize=(3.5,3.5) , dpi = 300)
+            plt.xscale('log')
+            plt.plot( lfs, metrics,marker ='s', label=None, color='blue' )
+            plt.plot(lfs[np.argmin(metrics)], np.min(metrics) , ls='none',marker='o', color='red')
+            plt.xlabel('lambda force')
+            plt.ylabel('cost')
+            
+            plt.legend(frameon=False)
+            plt.show()
+            optimizer.setup = best_setup
+            optimizer.current_costs = best_costs
+        elif method == 'pareto':
+            optimizer.make_energy_force_pareto()
+
         optimizer.report()
         #print('evaluations')
         #results
@@ -2432,7 +2440,7 @@ class Setup_Interfacial_Optimization():
         'nepochs':100,
         'batchsize':10,
         'maxiter_i':50,
-        'tolerance':1e-4,
+        'tolerance':1e-6,
         'sampling_method':'random',
         'seed':1291412,
         'train_perc':0.8,
@@ -5198,7 +5206,7 @@ class FF_Optimizer(Optimizer):
                      mu_e =0.0, std_e=1.0,
                      mu_f = 0.0, std_f=1.0):   
         
-        cE = CostFunctions.Energy(params, Energy, models_list_info, measure,mu_e,std_e)
+        cE = CostFunctions.Energy(params, Energy, models_list_info, measure, mu_e,std_e)
         cR = reg*CostFunctions.Regularization(params,reguls,reg_measure) 
         cF = CostFunctions.Forces(params, Forces, models_list_info, measure, mu_f,std_f) 
         cost = cE + cR + lambda_force*cF
@@ -5543,6 +5551,160 @@ class FF_Optimizer(Optimizer):
         
         return params, bounds, args, fixed_parameters, isnot_fixed
     
+    def make_energy_force_pareto(self,setfrom='init'):
+        
+        nrandom, npareto = 3, 15
+        tol = self.setup.tolerance
+
+        params, bounds,  args, fixed_parameters, isnot_fixed = self.get_params_n_args(setfrom,'train')
+        
+        (Energy,Forces, lambda_force,models_list_info, 
+                 reg_par, reguls,
+                 measure,
+                 measure_reg ) = args
+        
+        args_energy = (Energy, models_list_info, reg_par, reguls, measure, measure_reg)
+        #args_forces = (Forces, models_list_info, reg_par, reguls, measure, measure_reg)
+        
+        normalize_data = self.setup.normalize_data
+        if normalize_data:
+            mu_e, std_e, mu_f, std_f = self.get_normalized_data('train')
+
+            args_energy = (*args_energy, mu_e, std_e ) 
+            
+        if params.shape[0] >0 and self.setup.optimize :
+            self.randomize = True
+            best_params, best_fun, success = params, 1e17, False
+            for _ in range(nrandom):
+                params = self.randomize_initial_params(params,bounds)
+                t0 = perf_counter()
+                res = minimize(self.costEnergy, params,
+                                   args = args_energy,
+                                   jac = self.gradEnergy,
+                                   bounds=bounds,tol=tol, 
+                                   options={'disp':self.setup.opt_disp,
+                                            'maxiter':self.setup.maxiter,
+                                            'ftol': self.setup.tolerance},
+                                   method = 'SLSQP')
+                tmt = perf_counter() - t0 
+                self.minimization_time = tmt
+                self.tpfev = tmt/res.nfev
+                if res.fun < best_fun:
+                    best_fun ,best_params  = res.fun, res.x
+
+            self.current_res = res
+            
+            self.set_models('init','opt',best_params,isnot_fixed,fixed_parameters)
+            self.set_models('opt','best_opt')
+            self.set_results()
+            best_se = self.current_costs.selection_metric
+            
+            params = res.x
+            max_force  = self.current_costs.selection_forces
+            
+            fvals = np.arange(max_force,0,-max_force/npareto)
+            ce_init, cf_init = self.current_costs.selection_energy, self.current_costs.selection_forces
+            best_iter, best_ce , best_cf = 0, ce_init, cf_init
+            
+            energy_costs = [ ce_init ] 
+            force_costs =  [ cf_init ]
+            
+            for iteration, fv in enumerate(fvals):
+                args_c_forces = (Forces, models_list_info, measure, fv)
+                if normalize_data:
+                    args_c_forces = (*args_c_forces, mu_f, std_f)
+                best_params, best_fun, success = params, 1e17, False
+                
+                for _ in range(nrandom):
+                    
+                    params = self.randomize_initial_params(params,bounds)
+                    res = minimize(self.costEnergy, params,
+                               args = args_energy,
+                               jac = self.gradEnergy,
+                               bounds=bounds,tol=tol, 
+                               constraints = {'type':'eq',
+                                               'fun':self.constrainForces,
+                                               'jac':self.gradconstrainForces,
+                                               'args':args_c_forces},
+                               options={'disp':self.setup.opt_disp,
+                                        'maxiter':self.setup.maxiter,
+                                        'ftol': self.setup.tolerance},
+                               method = 'SLSQP')
+                    if res.success:
+                        success = True
+                        if res.fun < best_fun:
+                            best_fun ,best_params  = res.fun, res.x
+                    else:
+                        break
+                params = best_params
+                        
+                if not success:
+                    break
+                self.current_res = res
+                self.set_models('init','opt',params,isnot_fixed,fixed_parameters)
+                self.set_results()
+                se = self.current_costs.selection_metric
+                ce, cf = self.current_costs.selection_energy, self.current_costs.selection_forces
+                energy_costs.append( ce )
+                force_costs.append( cf )
+                print('Iteration {:d}, Energy Cost = {:4.5f} Force Cost = {:4.5f}'.format(
+                    iteration, ce, cf))
+                print('Iteration {:d}, force desired error {:4.5f} best iter = {:d}, best_metric = {:4.5f}'.format(
+                    iteration,fv,best_iter,best_se))
+                if se < best_se:
+                    best_se , best_ce, best_cf, best_iter = se, ce, cf, iteration
+                    self.set_models('opt','best_opt')
+                    params = res.x
+            self.set_models('best_opt','opt')
+            self.set_results()        
+            _ = plt.figure(figsize=(3.3,3.3),dpi=300)
+            plt.xlabel('Energy costs')
+            plt.ylabel('Force costs')
+            #plt.yscale('log')
+            #plt.xscale('log')
+            plt.plot(energy_costs,force_costs,marker='s',ls='none',color='blue')
+            plt.plot([ce_init], [cf_init], marker='*', ls='none',color='k')
+            plt.plot([best_ce],[best_cf],marker='o',ls='none',color='red')
+            plt.show()
+            return 
+    @staticmethod
+    def costEnergy(params,Energy, models_list_info, 
+                   reg_par, reguls, measure, measure_reg, mu_e=0, std_e=0):
+        cE = CostFunctions.Energy(params, Energy, models_list_info, measure, mu_e,std_e)
+        cR = reg_par*CostFunctions.Regularization(params,reguls,measure_reg) 
+        return cE + cR
+    
+    @staticmethod
+    def constrainForces(params,Forces, models_list_info, 
+                   measure, value,  mu_f=0, std_f=0 ):   
+        cF = CostFunctions.Forces(params, Forces, models_list_info, measure, mu_f,std_f)
+        return cF - value 
+    @staticmethod
+    def gradconstrainForces(params,Forces, models_list_info, 
+                    measure, value, mu_f=0, std_f=0):   
+        gF = CostFunctions.gradForces(params, Forces, models_list_info, measure, mu_f,std_f)
+        return gF 
+    @staticmethod
+    def costForces(params,Forces, models_list_info, 
+                   reg_par, reguls, measure, measure_reg, mu_f=0, std_f=0):   
+        cR = reg_par*CostFunctions.Regularization(params,reguls,measure_reg) 
+        cF = CostFunctions.Forces(params, Forces, models_list_info, measure, mu_f,std_f)
+        return cF + cR 
+    
+    @staticmethod
+    def gradEnergy(params,Energy, models_list_info, 
+                   reg_par, reguls, measure, measure_reg, mu_e=0, std_e=0):
+        gE = CostFunctions.gradEnergy(params, Energy, models_list_info, measure, mu_e,std_e)
+        gR = reg_par*CostFunctions.gradRegularization(params,reguls,measure_reg) 
+        return gE + gR
+    
+    @staticmethod
+    def gradForces(params,Forces, models_list_info, 
+                   reg_par, reguls, measure, measure_reg, mu_f=0, std_f=0):   
+        gR = reg_par*CostFunctions.gradRegularization(params,reguls,measure_reg) 
+        gF = CostFunctions.gradForces(params, Forces, models_list_info, measure, mu_f,std_f)
+        return gF + gR 
+    
     def optimize_params(self,setfrom='init'):
         t0 = perf_counter()
         
@@ -5554,10 +5716,7 @@ class FF_Optimizer(Optimizer):
         params, bounds,  args, fixed_parameters, isnot_fixed = self.get_params_n_args(setfrom,'train')
         
         n_train = args[0].shape[0]
-        
-        #if not hasattr(self,'checkedGrads'):
-        #    self.test_CostGrads(params, args)
-        #    self.checkedGrads = True
+
         normalize_data = self.setup.normalize_data
         if normalize_data:
             mu_e, std_e, mu_f, std_f = self.get_normalized_data('train')
@@ -5565,6 +5724,7 @@ class FF_Optimizer(Optimizer):
             args = (*args, mu_e, std_e, mu_f,std_f ) 
         try:
             self.randomize
+        
         except AttributeError:
             self.randomize= False
         
@@ -5803,7 +5963,9 @@ class FF_Optimizer(Optimizer):
                             setattr(costs,prefix + 'reg_scaled', reg_par*creg) 
                     setattr(costs,prefix + 'cost', ce + lambda_force*cf) 
                     if dataname == 'dev' and meas == measure and norm =='norm_':
-                        costs.selection_metric = 0.5*(ce + cf)
+                        costs.selection_metric = 0.5*(ce*ce + cf*cf)**0.5
+                        costs.selection_energy = ce
+                        costs.selection_forces = cf
         self.current_costs = costs
         #Get the new params and give to vdw_dataframe
         return
