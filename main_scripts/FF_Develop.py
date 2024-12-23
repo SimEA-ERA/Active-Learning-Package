@@ -730,48 +730,15 @@ class al_help():
         optimizer = FF_Optimizer(data,train_indexes, dev_indexes,setup)
         
         method = setup.training_method
-        if not ( 0 < setup.lambda_force < 1.0):
-            raise ValueError(f'lambda_force {setup.lambda_force} must be between 0 and 1 ')
+        
         if method =='scan_lambda_force':
-            lfs = np.arange(0,1.0000001, 1/setup.npareto)
-            min_metric = 1e16
-            metrics = [] ; ce_metric = [] ; cf_metric = []
-            for iteration,lf in enumerate(lfs):
-                setup.lambda_force = lf
-                optimizer.optimize_params()
-                optimizer.epoch = 0
-                se = optimizer.current_costs.selection_metric
-                ce = optimizer.current_costs.selection_energy
-                cf = optimizer.current_costs.selection_forces
-                
-                metrics.append(se)
-                ce_metric.append(ce)
-                cf_metric.append(cf)
-                
-                if se <min_metric:
-                    min_metric = se
-                    best_iter = iteration
-                    best_lf = lf
-                    best_setup = copy.deepcopy( optimizer.setup )
-                    best_costs = copy.deepcopy( optimizer.current_costs )
-                print('Iteration {:d}, Energy Cost = {:4.5f} Force Cost = {:4.5f}'.format(
-                    iteration, ce, cf))
-                print('Iteration {:d},  best iter = {:d}, best_metric = {:4.5f} , best_lf = {:4.5f}'.format(
-                    iteration,best_iter,min_metric, best_lf))
-            _ = plt.figure( figsize=(3.5,3.5) , dpi = 300)
-            plt.plot( ce_metric,cf_metric,marker ='s', label=None, color='blue' )
-            plt.plot(ce_metric[0], cf_metric[0] , ls='none',marker='*', color='k')
-            plt.plot(ce_metric[best_iter], cf_metric[best_iter] , ls='none',marker='o', color='red')
-            plt.xlabel('Energy cost')
-            plt.ylabel('Force cost')
-            
-            plt.legend(frameon=False)
-            plt.savefig(f'{setup.runpath}/pareto_wscan.png',bbox_inches='tight')
-            plt.show()
-            optimizer.setup = best_setup
-            optimizer.current_costs = best_costs
-        elif method == 'pareto':
-            optimizer.make_energy_force_pareto()
+            optimizer.pareto_via_scan()
+        elif method == 'scan_force_error':
+            optimizer.pareto_via_constrain()
+        elif method=='fixed_lambda':
+            if not ( 0 < setup.lambda_force < 1.0):
+                raise ValueError(f'lambda_force {setup.lambda_force} must be between 0 and 1 ')
+            optimizer.optimize_params()
         else:
             raise Exception(f'method "{method}"')
         optimizer.report()
@@ -2460,7 +2427,7 @@ class Setup_Interfacial_Optimization():
         'sampling_method':'random',
         'seed':1291412,
         'train_perc':0.8,
-        'training_method':'pareto',
+        'training_method':'scan_force_error',
          'lambda_force':0.5,
          'random_initializations': 2,
          'npareto':15,
@@ -5517,6 +5484,7 @@ class FF_Optimizer(Optimizer):
     
     
     def randomize_initial_params(self,params,bounds):
+        params = params.copy()
         if self.setup.increased_stochasticity >0 and self.randomize:
             s = self.setup.increased_stochasticity
             ran = [b[1]-b[0] for b in bounds]
@@ -5569,8 +5537,89 @@ class FF_Optimizer(Optimizer):
                 self.setup.regularization_method)
         
         return params, bounds, args, fixed_parameters, isnot_fixed
-    
-    def make_energy_force_pareto(self,setfrom='init'):
+
+    def pareto_via_scan(self,setfrom='init'):
+        
+        nrandom, npareto = self.setup.random_initializations, self.setup.npareto
+        tol = self.setup.tolerance
+
+        params, bounds,  args, fixed_parameters, isnot_fixed = self.get_params_n_args(setfrom,'train')
+        
+        (Energy,Forces, lambda_force,models_list_info, 
+                 reg_par, reguls,
+                 measure,
+                 measure_reg ) = args
+        
+        normalize_data = self.setup.normalize_data
+        if normalize_data:
+            mu_e, std_e, mu_f, std_f = self.get_normalized_data('train')
+            args = (*args, mu_e, std_e, mu_f, std_f)
+        if params.shape[0] >0 and self.setup.optimize :
+            self.randomize = True
+            best_params, success, best_iter = params,  False,0
+            
+            lfs = np.arange(0,0.999999, 1.0/npareto)
+            energy_costs = []
+            force_costs = []
+            best_se = 1e17
+            
+            for iteration, lf in enumerate(lfs):
+                args = list(args)
+                args[2] = lf
+                args = tuple(args)
+              
+                best_params, best_fun, success = params, 1e17 , False
+                
+                for rand_sol in range(nrandom+1):
+                    if rand_sol !=0:
+                        params = self.randomize_initial_params(best_params.copy(),bounds)
+                    res = minimize(self.CostFunction, params,
+                               args = args,
+                               jac = self.gradCost,
+                               bounds=bounds,tol=tol, 
+                               options={'disp':self.setup.opt_disp,
+                                        'maxiter':self.setup.maxiter,
+                                        'ftol': self.setup.tolerance},
+                               method = 'SLSQP')
+                    if res.success:
+                        success = True
+                        if res.fun < best_fun:
+                            best_fun ,best_params  = res.fun, res.x.copy()
+                    else:
+                        break
+                params = best_params
+                        
+                if not success:
+                    break
+                self.current_res = res
+                self.set_models('init','opt',params,isnot_fixed,fixed_parameters)
+                self.set_results()
+                se = self.current_costs.selection_metric
+                ce, cf = self.current_costs.selection_energy, self.current_costs.selection_forces
+                energy_costs.append( ce )
+                force_costs.append( cf )
+                if se < best_se:
+                    best_se , best_iter = se, iteration
+                    self.set_models('opt','best_opt')
+                    params = res.x
+                print('Iteration {:d}, Energy Cost = {:4.5f} Force Cost = {:4.5f}'.format(
+                    iteration, ce, cf))
+                print('Iteration {:d},  best iter = {:d}, best_metric = {:4.5f}'.format(
+                    iteration,best_iter,best_se))
+            self.set_models('best_opt','opt')
+            self.set_results()        
+            _ = plt.figure(figsize=(3.3,3.3),dpi=300)
+            plt.xlabel('Energy costs')
+            plt.ylabel('Force costs')
+            
+            plt.plot(energy_costs,force_costs,marker='s',ls='none',color='blue')
+            plt.plot(energy_costs[0], force_costs[0], marker='*', ls='none',color='k')
+            plt.plot(energy_costs[best_iter],force_costs[best_iter],marker='o',ls='none',color='red')
+            plt.savefig(f'{self.setup.runpath}/pareto_scan.png', bbox_inches='tight')
+            plt.show()
+            return     
+
+    def pareto_via_constrain(self,setfrom='init'):
         
         nrandom, npareto = self.setup.random_initializations, self.setup.npareto
         tol = self.setup.tolerance
@@ -5596,7 +5645,7 @@ class FF_Optimizer(Optimizer):
             best_params, best_fun, success = params, 1e17, False
             for rand_sol in range(nrandom+1):
                 if rand_sol !=0:
-                    params = self.randomize_initial_params(params,bounds)
+                    params = self.randomize_initial_params(params.copy(),bounds)
                 t0 = perf_counter()
                 res = minimize(self.costEnergy, params,
                                    args = args_energy,
@@ -5637,7 +5686,7 @@ class FF_Optimizer(Optimizer):
                 
                 for rand_sol in range(nrandom+1):
                     if rand_sol !=0:
-                        params = self.randomize_initial_params(params,bounds)
+                        params = self.randomize_initial_params(params.copy(),bounds)
                     res = minimize(self.costEnergy, params,
                                args = args_energy,
                                jac = self.gradEnergy,
@@ -5684,7 +5733,7 @@ class FF_Optimizer(Optimizer):
             plt.plot(energy_costs,force_costs,marker='s',ls='none',color='blue')
             plt.plot([ce_init], [cf_init], marker='*', ls='none',color='k')
             plt.plot([best_ce],[best_cf],marker='o',ls='none',color='red')
-            plt.savefig(f'{self.setup.runpath}/pareto.png', bbox_inches='tight')
+            plt.savefig(f'{self.setup.runpath}/pareto_constrain.png', bbox_inches='tight')
             plt.show()
             return 
     @staticmethod
@@ -5749,7 +5798,7 @@ class FF_Optimizer(Optimizer):
             self.randomize= False
         
         if params.shape[0] >0 and self.setup.optimize :
-            params = self.randomize_initial_params(params,bounds)
+            params = self.randomize_initial_params(params.copy(),bounds)
             t1 = perf_counter()
             
             if opt_method in ['SLSQP','BFGS','L-BFGS-B']:   
