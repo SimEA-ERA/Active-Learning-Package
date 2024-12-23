@@ -12,7 +12,7 @@ import pandas as pd
 from time import perf_counter
 
 # 1 end
-gas='CO2'
+gas='NO2'
 # 2 read the setup file
 setup = ff.Setup_Interfacial_Optimization(f'{gas}.in')
 # 2 end 

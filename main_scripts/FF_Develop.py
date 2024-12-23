@@ -2402,63 +2402,65 @@ class Setup_Interfacial_Optimization():
     
     defaults = {
         'representation':'AA',
-        'storing_path':'FFresults',
+        'storing_path':'Results',
         'run': '0',
-        'dpi':300,
-        'figsize':(3.5,3.5),
         'runpath_attributes':['run'],
-        'uncertainty_method':'no',
+        
         'max_ener':1.0,
         'rclean':6.0,
         'max_force':0.003,
-        'central_LD_atoms': ['',],
-        'split_method':'random',
-        'colsplit':'label',
-        'train_colvars': ['',],
-        'optimization_method':'DA',
-        'opt_disp':False,
+        'clean_perc':0.8,
+        'bC':30.0,
+        'bS':15.0,
+        
+        'optimization_method':'SLSQP',
+        'opt_disp':True,
         'optimize':True,
-        'maxiter':30,
-        'max_moves':10,
-        'nepochs':100,
-        'batchsize':10,
-        'maxiter_i':50,
-        'tolerance':1e-6,
-        'sampling_method':'random',
-        'seed':1291412,
-        'train_perc':0.8,
+        'costf':'MSE',
+        
         'training_method':'scan_force_error',
-         'lambda_force':0.5,
          'random_initializations': 2,
          'npareto':15,
-         'normalize_data':True,
+        'lambda_force':0.5,
+        
+        'normalize_data':True,
+        
         'regularization_method': 'ridge',
-        'increased_stochasticity':0.0,
-        'reg_par': 0.0,
+        'reg_par': 1e-6,
+        
+        'maxiter':300,
+        'max_moves':10,
+        'increased_stochasticity':0.2,
+        'SLSQP_batchsize':100000,
+        'tolerance':1e-5,
+        
+        'train_perc':0.8,
+        'sampling_method':'random',
+        'seed':1291412,
+
         'polish':False,
         'popsize':30,
         'mutation':(0.5,1.0),
         'recombination':0.7,
+        
         'initial_temp':5230.0,
         'restart_temp_ratio':2e-5,
         'local_search_scale':1.0,
         'accept':-5.0,
         'visit':2.62,
+        
         'weighting_method':'constant',
-        'w':10.0,
+        'w':1.0,
         'bT':15.0,
-        'bC':30.0,
-        'bS':15.0,
-        'clean_perc':0.8,
-        'costf':'MSE',
+
         'nLD':1,
-        'nPW':1,
+        'nPW':2,
         'nBO':2,
         'nAN':2,
-        'LD_model':'polynomial',
-        'LD_types' : [''],
-        'rho_r0' : 1.1,
-        'rho_rc': 6.0,
+
+        'rho_r0' : 0.1,
+        'rho_rc': 5.5,
+        
         'distance_map':"dict()",
         'reference_energy':"dict()",
         'struct_types':"[('type1'),('type2','type3')]",
@@ -2493,7 +2495,7 @@ class Setup_Interfacial_Optimization():
         #print('setting algorithm from file "{:s}"'.format(fname))
         def my_setattr(self,attrname,val,defaults):
             if attrname not in defaults:
-                raise Exception('Uknown input variable "{:s}"'.format(attrname))
+                raise Exception('InputError: Uknown input variable "{:s}"'.format(attrname))
             ty = type(defaults[attrname])
             if ty is list or ty is tuple:
                 
@@ -2784,7 +2786,7 @@ class Setup_Interfacial_Optimization():
         def type_var(v,ti,s):
             if ti is int: s+='{:d} '.format(v)
             elif ti is str: s+='{:s} '.format(v)
-            elif ti is float: s+='{:8.6f} '.format(v)
+            elif ti is float: s+='{:7.8f} '.format(v)
             elif ti is bool:
                 if v: s+='1 ' 
                 else: s+='0 '
@@ -2813,14 +2815,15 @@ class Setup_Interfacial_Optimization():
         
         fname = '{:s}/runned.in'.format(self.runpath)
         with open(fname,'w') as file:
-            add_empty_line = [6,12,27,31] 
+            add_empty_line = ['runpath_attributes','bS','costf','lambda_force','normalize_data','reg_par',
+                              'tolerance','seed','recombination','visit','bT','nAN','rho_rc'] 
             
             for i,(k,v) in enumerate(self.defaults.items()):
                 var = getattr(self,k)
                 if k in self.executes:
                     var = str(var)
                 write(file,k,var)
-                if i in add_empty_line: 
+                if k in add_empty_line: 
                     file.write('\n')
             file.write('\n')
             
@@ -5860,7 +5863,7 @@ class FF_Optimizer(Optimizer):
                     itera=0
                     while( len(current_total_indexes) > 0):
                         self.train_indexes = np.random.choice(current_total_indexes,replace=False,
-                                                              size=min(self.setup.batchsize, n_train , len(current_total_indexes) )
+                                                              size=min(self.setup.SLSQP_batchsize, n_train , len(current_total_indexes) )
                                                               )
                         current_total_indexes = [ i for i in current_total_indexes if i not in self.train_indexes ]
 
