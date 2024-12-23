@@ -15,14 +15,14 @@ import numpy as np
 check_only_analytical = False
 verbose = True
 num = 10
-file = 'CO2.in'
+file = 'AgCO2.in'
 setup = ff.Setup_Interfacial_Optimization(file)
 # 2 end 
 
 # 3  Let's read the data
 
 al = ff.al_help()
-path_xyz ='dataCO2xyz'
+path_xyz ='dataAg4CO2xyz'
    
 
 #al.log_to_xyz(path_log, path_xyz)

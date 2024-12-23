@@ -10,19 +10,18 @@ sys.path.append('../../main_scripts')
 import FF_Develop as ff
 import pandas as pd
 from time import perf_counter
-
+import numpy as np
 # 1 end
 
-# 2 read the setup file
-setup = ff.Setup_Interfacial_Optimization('example2.in')
+
+setup = ff.Setup_Interfacial_Optimization(f'AgCO2.in')
 # 2 end 
 
 # 3  Let's read the data
 
 al = ff.al_help()
 
-path_log = 'data'
-path_xyz ='data_xyz'
+path_xyz ='dataAg4CO2xyz'
 
 #al.log_to_xyz(path_log, path_xyz)
 
@@ -38,9 +37,13 @@ data = al.clean_data(data,setup)
 
 #0ff.Data_Manager(data,setup).distribution('Energy')
 # 4 end
+ff.al_help.make_interactions(data,setup)
+dataMan = ff.Data_Manager(data, setup)
+train_indexes, test_indexes = dataMan.train_development_split()
 
-# 5 solve the model
-t1 = perf_counter()    
-data, errors, optimizer = al.solve_model(data,setup)
-print('solving time = {:.3e} '.format(perf_counter()-t1))
-# 5 end
+optimizer = ff.FF_Optimizer(data,train_indexes,test_indexes, setup)
+grads_a,grads_n = optimizer.test_gradUclass(which='init',order=4,epsilon=1e-4)
+
+diff = np.abs(grads_a - grads_n).max()
+ave = np.abs(grads_a - grads_n).mean()
+print( "Maximum Difference in numerical and analytical gradient {:4.3e} , mean diff = {:4.3e}".format(diff,ave))
