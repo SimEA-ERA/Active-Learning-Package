@@ -729,35 +729,51 @@ class al_help():
                
         optimizer = FF_Optimizer(data,train_indexes, dev_indexes,setup)
         
-        method = 'pareto'
+        method = setup.training_method
+        if not ( 0 < setup.lambda_force < 1.0):
+            raise ValueError(f'lambda_force {setup.lambda_force} must be between 0 and 1 ')
         if method =='scan_lambda_force':
-            lfs = [0, *np.logspace(-1,2,10) ]
+            lfs = np.arange(0,1.0000001, 1/setup.npareto)
             min_metric = 1e16
-            metrics = []
-            for lf in lfs:
+            metrics = [] ; ce_metric = [] ; cf_metric = []
+            for iteration,lf in enumerate(lfs):
                 setup.lambda_force = lf
                 optimizer.optimize_params()
                 optimizer.epoch = 0
                 se = optimizer.current_costs.selection_metric
+                ce = optimizer.current_costs.selection_energy
+                cf = optimizer.current_costs.selection_forces
+                
                 metrics.append(se)
+                ce_metric.append(ce)
+                cf_metric.append(cf)
+                
                 if se <min_metric:
                     min_metric = se
+                    best_iter = iteration
+                    best_lf = lf
                     best_setup = copy.deepcopy( optimizer.setup )
                     best_costs = copy.deepcopy( optimizer.current_costs )
+                print('Iteration {:d}, Energy Cost = {:4.5f} Force Cost = {:4.5f}'.format(
+                    iteration, ce, cf))
+                print('Iteration {:d},  best iter = {:d}, best_metric = {:4.5f} , best_lf = {:4.5f}'.format(
+                    iteration,best_iter,min_metric, best_lf))
             _ = plt.figure( figsize=(3.5,3.5) , dpi = 300)
-            plt.xscale('log')
-            plt.plot( lfs, metrics,marker ='s', label=None, color='blue' )
-            plt.plot(lfs[np.argmin(metrics)], np.min(metrics) , ls='none',marker='o', color='red')
-            plt.xlabel('lambda force')
-            plt.ylabel('cost')
+            plt.plot( ce_metric,cf_metric,marker ='s', label=None, color='blue' )
+            plt.plot(ce_metric[0], cf_metric[0] , ls='none',marker='*', color='k')
+            plt.plot(ce_metric[best_iter], cf_metric[best_iter] , ls='none',marker='o', color='red')
+            plt.xlabel('Energy cost')
+            plt.ylabel('Force cost')
             
             plt.legend(frameon=False)
+            plt.savefig(f'{setup.runpath}/pareto_wscan.png',bbox_inches='tight')
             plt.show()
             optimizer.setup = best_setup
             optimizer.current_costs = best_costs
         elif method == 'pareto':
             optimizer.make_energy_force_pareto()
-
+        else:
+            raise Exception(f'method "{method}"')
         optimizer.report()
         #print('evaluations')
         #results
@@ -2444,7 +2460,10 @@ class Setup_Interfacial_Optimization():
         'sampling_method':'random',
         'seed':1291412,
         'train_perc':0.8,
-         'lambda_force':1.0,
+        'training_method':'pareto',
+         'lambda_force':0.5,
+         'random_initializations': 2,
+         'npareto':15,
          'normalize_data':True,
         'regularization_method': 'ridge',
         'increased_stochasticity':0.0,
@@ -5209,7 +5228,7 @@ class FF_Optimizer(Optimizer):
         cE = CostFunctions.Energy(params, Energy, models_list_info, measure, mu_e,std_e)
         cR = reg*CostFunctions.Regularization(params,reguls,reg_measure) 
         cF = CostFunctions.Forces(params, Forces, models_list_info, measure, mu_f,std_f) 
-        cost = cE + cR + lambda_force*cF
+        cost = (1.0-lambda_force)*cE + lambda_force*cF + cR
         return cost
     
     @staticmethod
@@ -5223,7 +5242,7 @@ class FF_Optimizer(Optimizer):
         gradE = CostFunctions.gradEnergy(params, Energy, models_list_info, measure, mu_e,std_e)
         gradR = reg*CostFunctions.gradRegularization(params,reguls,reg_measure) 
         gradF = CostFunctions.gradForces(params, Forces, models_list_info, measure, mu_f,std_f) 
-        grads =  gradE + gradR + lambda_force*gradF
+        grads =  (1.0-lambda_force)*gradE + lambda_force*gradF + gradR
         
         return grads
     
@@ -5553,7 +5572,7 @@ class FF_Optimizer(Optimizer):
     
     def make_energy_force_pareto(self,setfrom='init'):
         
-        nrandom, npareto = 3, 15
+        nrandom, npareto = self.setup.random_initializations, self.setup.npareto
         tol = self.setup.tolerance
 
         params, bounds,  args, fixed_parameters, isnot_fixed = self.get_params_n_args(setfrom,'train')
@@ -5575,8 +5594,9 @@ class FF_Optimizer(Optimizer):
         if params.shape[0] >0 and self.setup.optimize :
             self.randomize = True
             best_params, best_fun, success = params, 1e17, False
-            for _ in range(nrandom):
-                params = self.randomize_initial_params(params,bounds)
+            for rand_sol in range(nrandom+1):
+                if rand_sol !=0:
+                    params = self.randomize_initial_params(params,bounds)
                 t0 = perf_counter()
                 res = minimize(self.costEnergy, params,
                                    args = args_energy,
@@ -5615,9 +5635,9 @@ class FF_Optimizer(Optimizer):
                     args_c_forces = (*args_c_forces, mu_f, std_f)
                 best_params, best_fun, success = params, 1e17, False
                 
-                for _ in range(nrandom):
-                    
-                    params = self.randomize_initial_params(params,bounds)
+                for rand_sol in range(nrandom+1):
+                    if rand_sol !=0:
+                        params = self.randomize_initial_params(params,bounds)
                     res = minimize(self.costEnergy, params,
                                args = args_energy,
                                jac = self.gradEnergy,
@@ -5660,11 +5680,11 @@ class FF_Optimizer(Optimizer):
             _ = plt.figure(figsize=(3.3,3.3),dpi=300)
             plt.xlabel('Energy costs')
             plt.ylabel('Force costs')
-            #plt.yscale('log')
-            #plt.xscale('log')
+            
             plt.plot(energy_costs,force_costs,marker='s',ls='none',color='blue')
             plt.plot([ce_init], [cf_init], marker='*', ls='none',color='k')
             plt.plot([best_ce],[best_cf],marker='o',ls='none',color='red')
+            plt.savefig(f'{self.setup.runpath}/pareto.png', bbox_inches='tight')
             plt.show()
             return 
     @staticmethod
@@ -5786,7 +5806,7 @@ class FF_Optimizer(Optimizer):
                 self.randomize = False
                 total_fev = 0
                 time_only_min = 0
-                while(self.epoch <= self.setup.nepochs):
+                while(self.epoch <= self.setup.random_initializations):
                     current_total_indexes = list (self.total_train_indexes.copy())
                     itera=0
                     while( len(current_total_indexes) > 0):
@@ -5957,13 +5977,14 @@ class FF_Optimizer(Optimizer):
                     
                     if dataname=='train':
                         if (normalize and norm=='norm_') or (norm=='' and normalize==False):
-                            setattr(costs,prefix + 'cost_with_reg', ce + lambda_force*cf + reg_par*creg) 
+                            setattr(costs,prefix + 'cost_with_reg', (1.0-lambda_force)*ce + lambda_force*cf + reg_par*creg) 
+                                
                         if norm == '': 
                             setattr(costs,prefix + 'reg', creg) 
                             setattr(costs,prefix + 'reg_scaled', reg_par*creg) 
                     setattr(costs,prefix + 'cost', ce + lambda_force*cf) 
                     if dataname == 'dev' and meas == measure and norm =='norm_':
-                        costs.selection_metric = 0.5*(ce*ce + cf*cf)**0.5
+                        costs.selection_metric = (ce*ce + cf*cf)**0.5
                         costs.selection_energy = ce
                         costs.selection_forces = cf
         self.current_costs = costs
