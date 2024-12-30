@@ -21,3 +21,13 @@
 *.zip
 *.csv
 *slurm*out
+*.tab
+*.inc
+*.lammpstrj
+*.dat
+*.ld
+*.lmscr
+*.lammps
+*report_of_run*
+*out*
+*err*

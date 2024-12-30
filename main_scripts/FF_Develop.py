@@ -516,7 +516,7 @@ class al_help():
                     s = 'pair_coeff {:s} {:s} \n'.format(t,va)
                     f.write(s)
             if setup.nLD > 0 and 'pair' in classified_models:
-                s = 'pair_coeff * * local/density frhos{:d}.ld \n'.format(setup.nLD)
+                s = 'pair_coeff * * local/density frhos.ld \n'
                 f.write(s)
                 setup.write_LDtable(types_map,50000,which=which)
             f.write('\n')
@@ -680,6 +680,17 @@ class al_help():
         dataeval.plot_predict_vs_target(E, U, path = setup.runpath,title='prediction dataset',
                                           fname='predict.png',size=2.35,compare='sys_name')
         
+        forces_true = [] ; forces_class = []
+        for ftrue, fclass in zip(data['Forces'].values, data['Fclass'].values):
+            for ft,fc in zip(ftrue,fclass):
+                for x,y in zip(ft,fc):
+                    forces_true.append(x)
+                    forces_class.append(y)
+        
+        dataeval.plot_predict_vs_target(np.array(forces_true),np.array(forces_class),
+                                        path = setup.runpath,title='Prediction dataset Forces',
+                                          fname='predictForces.png',size=2.35,
+                                          xlabel=r'$F^{dft}$',ylabel=r'$F^{class}$')
         
         dataeval.plot_eners(subsample=1,fname='predicteners.png')
        
@@ -731,7 +742,10 @@ class al_help():
         
         method = setup.training_method
         
-        if method =='scan_lambda_force':
+        if not setup.optimize:
+          optimizer.set_models('init','opt')
+          optimizer.set_results()
+        elif method =='scan_lambda_force':
             optimizer.pareto_via_scan()
         elif method == 'scan_force_error':
             optimizer.pareto_via_constrain()
@@ -2867,14 +2881,12 @@ class Setup_Interfacial_Optimization():
             lines.append(keyword)
             lines.append('N {:d}  \n'.format(Nr))
             u = np.zeros(r.shape[0],dtype=float)
+            du = np.zeros(r.shape[0],dtype=float)
             for model in models_of_ty:
-                fu = model.function
-                u += fu(r,model.parameters,*model.model_args)
-
-            du = np.empty_like(u)
-            du[0] = -(u[1]-u[0])/dr
-            du[1:-1] = -(u[2:]-u[:-2])/(2*dr)
-            du[-1] = -(u[-1]-u[-2])/dr
+                fobj = model.function(r,model.parameters,*model.model_args)
+                u += fobj.u_vectorized()
+                du += - fobj.find_dydx()
+            
             for i in range(Nr):
                 s = '{:d} {:.16e} {:.16e} {:.16e}'.format(i+1,r[i],u[i],du[i])
                 lines.append(s)
@@ -2906,14 +2918,12 @@ class Setup_Interfacial_Optimization():
             lines.append(keyword)
             lines.append('N {:d} \n'.format(Nr,))
             u = np.zeros(r.shape[0],dtype=float)
+            du = np.zeros(r.shape[0],dtype=float)
             for model in models_of_ty:
-                fu = model.function
-                u += fu(r,model.parameters,*model.model_args)
+                fobj = model.function(r,model.parameters,*model.model_args)
+                u += fobj.u_vectorized()
+                du += - fobj.find_dydx()
 
-            du = np.empty_like(u)
-            du[0] = -(u[1]-u[0])/dr
-            du[1:-1] = -(u[2:]-u[:-2])/(2*dr)
-            du[-1] = -(u[-1]-u[-2])/dr
             c = 180/np.pi
             for i in range(Nr):
                 s = '{:d} {:.16e} {:.16e} {:.16e}'.format(i+1,r[i]*c,u[i],du[i]/c)
@@ -2951,7 +2961,7 @@ class Setup_Interfacial_Optimization():
 
             cobj = model.function(r,model.parameters,*model.model_args)
             u = cobj.u_vectorized()
-            du = cobj.find_dydx()
+            du = - cobj.find_dydx()
             
             for i in range(Nr):
                 s = '{:d} {:.16e} {:.16e} {:.16e}'.format(i+1,r[i],u[i],du[i])
@@ -5609,6 +5619,8 @@ class FF_Optimizer(Optimizer):
                     iteration, ce, cf))
                 print('Iteration {:d},  best iter = {:d}, best_metric = {:4.5f}'.format(
                     iteration,best_iter,best_se))
+
+                sys.stdout.flush()
             self.set_models('best_opt','opt')
             self.set_results()        
             _ = plt.figure(figsize=(3.3,3.3),dpi=300)
@@ -5671,7 +5683,7 @@ class FF_Optimizer(Optimizer):
             self.set_results()
             best_se = self.current_costs.selection_metric
             
-            params = res.x
+            params = best_params
             max_force  = self.current_costs.selection_forces
             
             fvals = np.arange(max_force,0,-max_force/npareto)
@@ -5723,6 +5735,7 @@ class FF_Optimizer(Optimizer):
                     iteration, ce, cf))
                 print('Iteration {:d}, force desired error {:4.5f} best iter = {:d}, best_metric = {:4.5f}'.format(
                     iteration,fv,best_iter,best_se))
+                sys.stdout.flush()
                 if se < best_se:
                     best_se , best_ce, best_cf, best_iter = se, ce, cf, iteration
                     self.set_models('opt','best_opt')

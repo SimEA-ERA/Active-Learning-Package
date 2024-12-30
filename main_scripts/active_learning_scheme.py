@@ -104,10 +104,14 @@ def main():
         if parsed_args.sampling_method == 'perturbation':
             possible_data = al.make_random_petrubations(data[necessary_columns],
                                                  sigma=parsed_args.sigma, method=setup.perturbation_method)
+            selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
+        
         elif parsed_args.sampling_method == 'md':
             parsed_args.writing_path='lammps_working'
             possible_data = al.sample_via_lammps(data,r_setup,parsed_args)
-        selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
+            selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
+        elif parsed_args.sampling_method == 'mc':
+            selected_data = al.MC_sample_and_select(data, r_setup, parsed_args)
         
         selected_data = selected_data.reset_index(drop=True)
    #     for j in selected_data.index:
