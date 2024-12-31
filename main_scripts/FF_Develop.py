@@ -213,7 +213,7 @@ class al_help():
     def MC_sample(data, r_setup, parsed_args):
         max_mc_steps = 100
         max_candidates_per_system = 500
-        bT =  2
+        bT =  1
         sigma = parsed_args.sigma
         c = copy.deepcopy(data['coords'].to_numpy())
 
@@ -221,7 +221,7 @@ class al_help():
         
         step_data['coords'] = c
         
-        al_help.evaluate_potential(step_data, r_setup)
+        al_help.evaluate_potential(step_data, r_setup,'opt')
 
         Uclass_prev = step_data['Uclass'].to_numpy().copy()
         n = len(step_data)
@@ -241,7 +241,7 @@ class al_help():
                 all_new_coords.append(new_coords)
             step_data['coords'] = all_new_coords
                 
-            al_help.evaluate_potential(step_data, r_setup)
+            al_help.evaluate_potential(step_data, r_setup,'opt')
             
             Uclass_new = step_data['Uclass'].to_numpy()
             
@@ -267,7 +267,32 @@ class al_help():
             print( 'Monte Carlo step {:d}, accept_ratio {:5.4f} | time --> {:.3e} ms canidate size {:d}, persys  {:d}'.format(step, accept_ratio, tf*1000, c_size, c_per_system) ) 
             sys.stdout.flush()
             step += 1
+
         print('Average acceptance {:5.4f}'.format( c_size/(n*step) ) )
+        
+        tot_u = possible_data['Uclass'].to_numpy()
+        min_u = np.empty_like(tot_u)
+        for name in names:
+            fn = possible_data['sys_name'] == name
+            min_u[fn] = np.min(tot_u[fn]) 
+        u = (tot_u - min_u)
+        u_sorted = np.sort(u)
+        P_boltz = np.exp(-u_sorted/bT)
+        P_boltz /= np.trapz(P_boltz, u_sorted)
+        _ = plt.figure(figsize = (3.3,3.3), dpi=300)
+        #plt.yscale('log')
+        nbins = 100
+        hist,bin_edges = np.histogram(u, bins=nbins,density = True)
+        lambda_fit = 1 / np.mean(u)  # Rate parameter
+        x = np.linspace(0, bin_edges[-1], 500)
+        pdf_theoretical = lambda_fit * np.exp(-lambda_fit * x)
+        plt.hist(u, bins=nbins,density = True,label = 'candidates')
+        plt.plot(u_sorted,P_boltz, ls='-', label='expected' )
+        plt.plot(x,pdf_theoretical, ls='-', label='fit' )
+        plt.legend(frameon=False)
+        plt.savefig(f'{r_setup.runpath}/candidate_distribution.png', bbox_inches='tight')
+        plt.show()
+        print('beta_fit = {:4.3f} '.format(1/lambda_fit ) )
         #raise  Exception('Debuging. Want to stop here')
         return possible_data
 
@@ -304,7 +329,7 @@ class al_help():
         return
     
     @staticmethod
-    def evaluate_potential(data,setup):
+    def evaluate_potential(data,setup, which='init'):
         al_help.make_interactions(data,setup)
         
         
@@ -315,10 +340,8 @@ class al_help():
         optimizer = FF_Optimizer(data,indexes, indexes, setup)
         #print('dataevaluations')
         #results
-        optimizer.set_models('init','opt')
-
         #optimizer.optimize_params()
-        optimizer.set_UFclass_ondata(which='opt',dataset='all')
+        optimizer.set_UFclass_ondata(which = which,dataset='all')
         
 
         return optimizer
@@ -351,7 +374,7 @@ class al_help():
         manager = Data_Manager(data,setup)
         manager.setup_bonds(setup.distance_map) 
         al_help.make_absolute_Energy_to_interaction(data,setup)
-        al_help.evaluate_potential(data,setup)
+        al_help.evaluate_potential(data,setup,'init')
         for j,df in data.iterrows():
             maps = al.get_lammps_maps(df,parsed_args)
             bonded_inters = al.write_Lammps_dat(df,setup,maps['types_map'],maps['mass_map'],maps['charge_map'])
@@ -720,9 +743,12 @@ class al_help():
 
         GeneralFunctions.make_dir(setup.runpath)
         
-        optimizer = al_help.evaluate_potential(data,setup)
+        optimizer = al_help.evaluate_potential(data,setup,'init')
+        
+        optimizer.set_models('init', 'opt')
         
         optimizer.set_results()
+        
         predicted_costs = optimizer.current_costs
 
         dataeval = Interfacial_Evaluator(data,setup,prefix='all')
@@ -798,7 +824,6 @@ class al_help():
         dataMan = Data_Manager(data,setup)
         train_indexes, dev_indexes = dataMan.train_development_split()
         
-        al_help.set_L_toRhoMax(dataMan, setup)
                
         optimizer = FF_Optimizer(data,train_indexes, dev_indexes,setup)
         
@@ -825,6 +850,9 @@ class al_help():
         optimizer.report()
         #print('evaluations')
         #results
+        
+        if not setup.optimize:
+            optimizer.set_models('init','opt')
         optimizer.set_UFclass_ondata(which='opt',dataset='all')
         
         setup.write_running_output()
@@ -964,7 +992,7 @@ class al_help():
         possible_data = possible_data[~fcheck]
         print('evaluating in selection step with nld = {:d}'.format(setup.nLD))
         possible_data['Energy']=np.zeros(len(possible_data))
-        al_help.evaluate_potential(possible_data,setup)
+        al_help.evaluate_potential(possible_data,setup,'opt')
 
         possible_data['Prob. select'] = possible_data['disimilarity']/dis.sum()
         

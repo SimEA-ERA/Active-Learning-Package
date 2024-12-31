@@ -99,8 +99,9 @@ def main():
     
     if num >= parsed_args.existing_data:
         t2 = perf_counter()
-        parsed_args.ffinputfile='Results/{:d}/runned.in'.format(num)
-        r_setup = ff.Setup_Interfacial_Optimization( parsed_args.ffinputfile )
+        #parsed_args.ffinputfile='Results/{:d}/runned.in'.format(num)
+        #r_setup = ff.Setup_Interfacial_Optimization( parsed_args.ffinputfile )
+        r_setup = setup
         if parsed_args.sampling_method == 'perturbation':
             possible_data = al.make_random_petrubations(data[necessary_columns],
                                                  sigma=parsed_args.sigma, method=setup.perturbation_method)
