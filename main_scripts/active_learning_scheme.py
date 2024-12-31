@@ -84,7 +84,7 @@ def main():
     ff.Data_Manager(data,setup).distribution('Energy')
     setup.run = num
 
-    necessary_columns = ['sys_name','natoms','coords','at_type','bodies']
+    necessary_columns = ['sys_name','natoms','coords','at_type','bodies', 'Energy']
     
     batchsize= parsed_args.batchsize
     
@@ -111,7 +111,8 @@ def main():
             possible_data = al.sample_via_lammps(data,r_setup,parsed_args)
             selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
         elif parsed_args.sampling_method == 'mc':
-            selected_data = al.MC_sample_and_select(data, r_setup, parsed_args)
+            possible_data = al.MC_sample(data, r_setup, parsed_args)
+            selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
         
         selected_data = selected_data.reset_index(drop=True)
    #     for j in selected_data.index:

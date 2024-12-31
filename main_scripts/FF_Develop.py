@@ -210,6 +210,68 @@ class al_help():
         return possible_data
 
     @staticmethod
+    def MC_sample(data, r_setup, parsed_args):
+        max_mc_steps = 100
+        max_candidates_per_system = 500
+        bT =  2
+        sigma = parsed_args.sigma
+        c = copy.deepcopy(data['coords'].to_numpy())
+
+        step_data = copy.deepcopy(data[['at_type','sys_name','natoms','coords', 'bodies']])
+        
+        step_data['coords'] = c
+        
+        al_help.evaluate_potential(step_data, r_setup)
+
+        Uclass_prev = step_data['Uclass'].to_numpy().copy()
+        n = len(step_data)
+        names = np.unique(data['sys_name'])
+        possible_data = pd.DataFrame()
+        step = 1
+        c_per_system = 0
+
+        while(step <= max_mc_steps and c_per_system <= max_candidates_per_system):
+            t0 = perf_counter()
+
+            step_data = copy.deepcopy( step_data[['at_type', 'sys_name','natoms','coords','bodies']] )
+            all_new_coords = []
+            old_coords = copy.deepcopy(step_data['coords'])
+            for j,dat in step_data.iterrows():
+                new_coords = al_help.petrube_coords(np.array(dat['coords']) ,sigma, 'random_walk', dat['bodies'])
+                all_new_coords.append(new_coords)
+            step_data['coords'] = all_new_coords
+                
+            al_help.evaluate_potential(step_data, r_setup)
+            
+            Uclass_new = step_data['Uclass'].to_numpy()
+            
+            
+            dubt = (Uclass_new - Uclass_prev)/bT  # possitive by definition
+
+            pe = np.exp( -dubt )
+            unione = np.random.uniform( 0,1, n )
+            acceptance_filter =  pe > unione 
+            
+            filtered_step_data = step_data[ acceptance_filter ]
+            
+            step_data[ 'coords' ][ np.logical_not(acceptance_filter) ] = old_coords
+
+            accept_ratio = np.count_nonzero(acceptance_filter)/n
+
+            Uclass_prev = Uclass_new.copy()
+
+            possible_data = pd.concat( (possible_data, filtered_step_data), ignore_index=True)
+            c_per_system = np.min( [ np.count_nonzero(possible_data['sys_name'] == name) for name in names ] ) 
+            c_size = len(possible_data)
+            tf = perf_counter() - t0
+            print( 'Monte Carlo step {:d}, accept_ratio {:5.4f} | time --> {:.3e} ms canidate size {:d}, persys  {:d}'.format(step, accept_ratio, tf*1000, c_size, c_per_system) ) 
+            sys.stdout.flush()
+            step += 1
+        print('Average acceptance {:5.4f}'.format( c_size/(n*step) ) )
+        #raise  Exception('Debuging. Want to stop here')
+        return possible_data
+
+    @staticmethod
     def write_potential_files(setup,data_point,parsed_args,bonded_inters):
         maps = al_help.get_lammps_maps(data_point,parsed_args)
 
@@ -742,6 +804,11 @@ class al_help():
         
         method = setup.training_method
         
+        min_per_system = np.min( [ np.count_nonzero( data['sys_name'] == name ) for name in np.unique(data['sys_name']) ] )
+        ndata = len(data)
+        if ndata < 100 or min_per_system < 10:
+            method = 'scan_lambda_force'
+            print(f'Setting method to scan_lambda_force: ndata = {ndata}, min_per_system = {min_per_system}')
         if not setup.optimize:
           optimizer.set_models('init','opt')
           optimizer.set_results()
@@ -827,21 +894,24 @@ class al_help():
         for j,dat in data.iterrows():
             for k in range(nper):
                 d = dat.copy()
-                new_coords = al_help.petrube_coords(dat,sigma,method)
+                new_coords = al_help.petrube_coords( np.array(dat['coords']) ,sigma,method,dat['bodies'])
                 d['coords'] = new_coords
                 possible_data = pd.concat([possible_data, d.to_frame().T], ignore_index=True)
         return possible_data
     @staticmethod
-    def petrube_coords(dat,sigma,method):
+    def petrube_coords(coords,sigma, method, bodies = {} ):
         
-        c = np.array(dat['coords'])
+        c = coords.copy()
         if method == 'atoms':
             c += np.random.normal(0,sigma,c.shape)
         elif method =='rigid':
-            bodies = dat['bodies']
             for j,body in bodies.items():
                 b = body
                 c[b] = al_help.rottrans_randomly(c[b],sigma)
+        elif method =='random_walk':
+            idx = np.random.randint(0,c.shape[0])
+            r_move =  np.random.normal(0,sigma,3) 
+            c[idx] += r_move
         else:
             raise Exception('method {:s} is not Implemente. Give prober name for petrubation method'.format(method))
         return c
@@ -4596,7 +4666,8 @@ class FF_Optimizer(Optimizer):
     
     def set_UFclass_ondata(self,which='opt',dataset='all'):
         
-        ndata = len(self.get_Energy(dataset))
+        index = self.get_indexes(dataset)
+        ndata = len(index)
         models = getattr(self.setup,which+'_models')
         
         
