@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Ag3co2
+#SBATCH --job-name=co2
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
@@ -17,12 +17,12 @@ mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
 cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
-inff="$script_dir/AgCO2.in"
+inff="$script_dir/CO2.in"
 bsize=100
-Niters=10
-iexist=5
-contin=5
-sigma=0.05
+Niters=12
+iexist=11
+contin=11
+sigma=0.02
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
@@ -34,7 +34,7 @@ results_path="$script_dir/Results"
 mkdir -p $eval_dir
 
 for ((num=$contin; num<=$Niters; num++)); do
-   if [ "$num" -le 4 ]; then
+   if [ "$num" -le 13 ]; then
       echo "Sampling method is set to perturbation"
       sampling_method="mc"
    else

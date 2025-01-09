@@ -110,9 +110,12 @@ def main():
         elif parsed_args.sampling_method == 'md':
             parsed_args.writing_path='lammps_working'
             possible_data = al.sample_via_lammps(data,r_setup,parsed_args)
+            al.plot_candidate_distribution(possible_data,r_setup, beta=1)
             selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
         elif parsed_args.sampling_method == 'mc':
             possible_data = al.MC_sample(data, r_setup, parsed_args)
+
+            al.plot_candidate_distribution(possible_data,r_setup , beta=1)
             selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
         
         selected_data = selected_data.reset_index(drop=True)

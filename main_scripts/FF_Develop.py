@@ -211,9 +211,9 @@ class al_help():
 
     @staticmethod
     def MC_sample(data, r_setup, parsed_args):
-        max_mc_steps = 100
-        max_candidates_per_system = 500
-        bT =  1
+        max_mc_steps = 10000
+        max_candidates_per_system = 1500
+        beta =  1.0
         sigma = parsed_args.sigma
         c = copy.deepcopy(data['coords'].to_numpy())
 
@@ -229,72 +229,114 @@ class al_help():
         possible_data = pd.DataFrame()
         step = 1
         c_per_system = 0
-
+        sigma_calibr = 0.00003
+        all_accepted_u = []
+        
+        print('Initial sigma = {:4.6f}'.format(sigma ) ) 
+        initial_steps = 0
+        here_steps = 0
+        avg_accept_ratio = 0
+        beta_fit = beta
+        Um_prev = Uclass_prev.min()
+        reached = False
         while(step <= max_mc_steps and c_per_system <= max_candidates_per_system):
             t0 = perf_counter()
 
-            step_data = copy.deepcopy( step_data[['at_type', 'sys_name','natoms','coords','bodies']] )
+            #step_data = copy.deepcopy( step_data[['at_type', 'sys_name','natoms','coords','bodies']] )
             all_new_coords = []
-            old_coords = copy.deepcopy(step_data['coords'])
+            old_coords = copy.deepcopy(step_data['coords'].to_numpy())
             for j,dat in step_data.iterrows():
                 new_coords = al_help.petrube_coords(np.array(dat['coords']) ,sigma, 'random_walk', dat['bodies'])
                 all_new_coords.append(new_coords)
-            step_data['coords'] = all_new_coords
+            #step_data.drop(columns = ['coords'], inplace=True)
+            step_data.loc[step_data.index,'coords'] = all_new_coords
                 
             al_help.evaluate_potential(step_data, r_setup,'opt')
             
             Uclass_new = step_data['Uclass'].to_numpy()
+            Um_new = Uclass_new.min()
             
+            dubt = (Uclass_new  - Um_new - Uclass_prev + Um_prev)*beta
+            #dubt = (Uclass_new  - Um_new )*beta 
+
+            pe =  np.exp( - dubt ) 
+            if beta_fit >= beta: 
+                reached = True
+                accepted_filter = np.random.uniform(0,1,n) < pe
+            else:
+                accepted_filter = 1 < pe
+
             
-            dubt = (Uclass_new - Uclass_prev)/bT  # possitive by definition
-
-            pe = np.exp( -dubt )
-            unione = np.random.uniform( 0,1, n )
-            acceptance_filter =  pe > unione 
+            not_accepted_filter = np.logical_not(accepted_filter)
+            step_data.loc[ not_accepted_filter, 'coords']  = old_coords[not_accepted_filter]
             
-            filtered_step_data = step_data[ acceptance_filter ]
+            Uclass_prev [ accepted_filter ] = Uclass_new [accepted_filter].copy()
+            Uclass_prev [ not_accepted_filter ] =  Uclass_prev [ not_accepted_filter].copy()
+            Um_prev = Uclass_prev.min()
+            accepted_eners = Uclass_prev# [accepted_filter]
+            all_accepted_u = all_accepted_u[-500*n:]
+            all_accepted_u.extend( accepted_eners )
+            ut = np.array(all_accepted_u)
+            if ut.shape[0]>0:
+                shifted_energies = ut  - ut.min()
+            else:
+                shifted_energies = ut
+            beta_fit = 1/np.mean(shifted_energies)  
+
+            accept_ratio = np.count_nonzero(accepted_filter)/n
+            avg_accept_ratio += accept_ratio
+            print( 'Monte Carlo step {:d}, beta_fit = {:4.6f}, sigma = {:4.6f} ,  accept_ratio {:5.4f} current_accept = {:5.4F} '.format(step, beta_fit, sigma, avg_accept_ratio/step, accept_ratio) ) 
+
             
-            step_data[ 'coords' ][ np.logical_not(acceptance_filter) ] = old_coords
-
-            accept_ratio = np.count_nonzero(acceptance_filter)/n
-
-            Uclass_prev = Uclass_new.copy()
-
+            step += 1
+            if reached ==False:
+                initial_steps +=1
+                continue
+            elif here_steps < 500:
+                here_steps+=1
+                continue
+            
+            filtered_step_data = step_data[ accepted_filter ]
             possible_data = pd.concat( (possible_data, filtered_step_data), ignore_index=True)
             c_per_system = np.min( [ np.count_nonzero(possible_data['sys_name'] == name) for name in names ] ) 
             c_size = len(possible_data)
             tf = perf_counter() - t0
-            print( 'Monte Carlo step {:d}, accept_ratio {:5.4f} | time --> {:.3e} ms canidate size {:d}, persys  {:d}'.format(step, accept_ratio, tf*1000, c_size, c_per_system) ) 
+            print( 'Monte Carlo step {:d}, | time --> {:.3e} ms canidate size {:d}, persys  {:d}'.format(step,  tf*1000, c_size, c_per_system) ) 
             sys.stdout.flush()
-            step += 1
 
-        print('Average acceptance {:5.4f}'.format( c_size/(n*step) ) )
+        print('Average acceptance {:5.4f}'.format( c_size/(n*(step-initial_steps) ) ) )
         
+        #raise  Exception('Debuging. Want to stop here')
+        return possible_data
+    @staticmethod
+    def plot_candidate_distribution(possible_data,r_setup,beta=1):
+        if 'Uclass' not in possible_data.columns:
+            optimizer = al_help.evaluate_potential(possible_data,r_setup, 'opt')
         tot_u = possible_data['Uclass'].to_numpy()
+        names = np.unique( possible_data['sys_name'] )
         min_u = np.empty_like(tot_u)
         for name in names:
             fn = possible_data['sys_name'] == name
             min_u[fn] = np.min(tot_u[fn]) 
         u = (tot_u - min_u)
-        u_sorted = np.sort(u)
-        P_boltz = np.exp(-u_sorted/bT)
-        P_boltz /= np.trapz(P_boltz, u_sorted)
+        
         _ = plt.figure(figsize = (3.3,3.3), dpi=300)
         #plt.yscale('log')
         nbins = 100
         hist,bin_edges = np.histogram(u, bins=nbins,density = True)
-        lambda_fit = 1 / np.mean(u)  # Rate parameter
-        x = np.linspace(0, bin_edges[-1], 500)
-        pdf_theoretical = lambda_fit * np.exp(-lambda_fit * x)
+        beta_fit =  1/np.mean(u)  # Rate parameter
+        u_sorted = np.linspace(0, bin_edges[-1], 500)
+        P_boltz = np.exp(-u_sorted*beta)
+        P_boltz /= np.trapz(P_boltz, u_sorted)
+        pdf_theoretical = (beta_fit) * np.exp(- u_sorted*beta_fit )
         plt.hist(u, bins=nbins,density = True,label = 'candidates')
-        plt.plot(u_sorted,P_boltz, ls='-', label='expected' )
-        plt.plot(x,pdf_theoretical, ls='-', label='fit' )
+        plt.plot(u_sorted, P_boltz, ls='--', label='expected' )
+        plt.plot(u_sorted, pdf_theoretical, ls='-', label='fit' )
         plt.legend(frameon=False)
         plt.savefig(f'{r_setup.runpath}/candidate_distribution.png', bbox_inches='tight')
         plt.show()
-        print('beta_fit = {:4.3f} '.format(1/lambda_fit ) )
-        #raise  Exception('Debuging. Want to stop here')
-        return possible_data
+        print('beta_fit = {:4.3f} '.format(beta_fit ) )
+        return 
 
     @staticmethod
     def write_potential_files(setup,data_point,parsed_args,bonded_inters):
@@ -906,8 +948,18 @@ class al_help():
                                           xlabel=r'$F^{dft}$ (kcal/mol/$\AA$)',ylabel=r'$F^{class}$ (kcal/mol/$\AA$)')
         
         train_eval.plot_eners(subsample=1,path=setup.runpath,fname='eners.png')
-        
-    
+
+        fe_ty = []
+        for model in setup.init_models.values():
+            fe = model.feature
+            ty = model.type
+            c = (fe, ty)
+            if c in fe_ty:
+                continue
+            else:
+                fe_ty.append(c)
+                dataMan.plot_discriptor_distribution(ty,fe)
+
         dataMan.save_selected_data(setup.runpath+'/frames.xyz', data,labels=['sys_name','Energy'])
         
         setup.plot_models(which='opt')
@@ -926,6 +978,7 @@ class al_help():
                 d['coords'] = new_coords
                 possible_data = pd.concat([possible_data, d.to_frame().T], ignore_index=True)
         return possible_data
+    
     @staticmethod
     def petrube_coords(coords,sigma, method, bodies = {} ):
         
@@ -938,11 +991,12 @@ class al_help():
                 c[b] = al_help.rottrans_randomly(c[b],sigma)
         elif method =='random_walk':
             idx = np.random.randint(0,c.shape[0])
-            r_move =  np.random.normal(0,sigma,3) 
+            r_move =  np.random.normal(0 , sigma,3) 
             c[idx] += r_move
         else:
             raise Exception('method {:s} is not Implemente. Give prober name for petrubation method'.format(method))
         return c
+
     @staticmethod
     def rottrans_randomly(c,sigma):
         rtrans = np.random.normal(0,sigma,3)
@@ -1064,7 +1118,7 @@ class al_help():
                   multiplicity=1):
         file = '{:s}/{:s}'.format(path,fname)
         #lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf=xqc scfcyc=999\n\nTemplate file\n\n']    
-        lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force=EnOnly\n\nTemplate file\n\n']    
+        lines = ['%nprocshared=4\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force=EnOnly\n\nTemplate file\n\n']    
         lines.append(' 0 {:1d}\n'.format(multiplicity))
         for i in range(len(atom_types)):
             at = atom_types[i]
@@ -1086,7 +1140,7 @@ class al_help():
         "#SBATCH --error=error  ",
         "#SBATCH --array=0-{0:d}%{0:d}  ".format(size),
         "#SBATCH --nodes=1  ",
-        "#SBATCH --ntasks-per-node=16  ",
+        "#SBATCH --ntasks-per-node=4  ",
         "#SBATCH --partition=milan  ",
         "#SBATCH --time=2:00:00  ",
         "",
@@ -4586,7 +4640,7 @@ class Data_Manager():
             data = self.data [ self.data['sys_name'] == sys_name ] 
             
         return data
-    def plot_distribution(self,ty,inter_type='vdw',bins=100,ret_max=False):
+    def plot_discriptor_distribution(self,ty,inter_type='vdw',bins=100,ret_max=False):
         dists = self.get_distribution(ty,inter_type)
         _ = plt.figure(figsize=(3.5,3.5),dpi=300)
         plt.minorticks_on()
@@ -4597,11 +4651,13 @@ class Data_Manager():
             plt.xlabel('r({}) \ $\AA$'.format('-'.join(ty)))
         else:
             plt.xlabel(r'{:s}({:s}) \ '.format(inter_type,'-'.join(ty)))
-        plt.hist(dists,bins=bins,histtype='step',color='magenta')
+        plt.hist(dists,bins=bins,histtype='step',density=True,color='magenta')
         #plt.show()
+        plt.savefig(f'{self.setup.runpath}/discriptor_distribution_{inter_type}_{ty}.png',bbox_inches='tight') 
         if ret_max:
             return dists.max()
         return
+
     def get_distribution(self,ty,inter_type='vdw'):
         data = self.data
         #data = self.get_systems_data(self.data,sys_name)

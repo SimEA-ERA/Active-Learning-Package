@@ -17,12 +17,12 @@ mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
 cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
-inff="$script_dir/AgCO2.in"
+inff="$script_dir/Ag.in"
 bsize=100
 Niters=10
-iexist=5
-contin=5
-sigma=0.05
+iexist=2
+contin=2
+sigma=0.1
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
