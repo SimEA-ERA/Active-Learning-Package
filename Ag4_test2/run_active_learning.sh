@@ -19,9 +19,9 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/Ag.in"
 bsize=100
-Niters=10
-iexist=4
-contin=4
+Niters=20
+iexist=1
+contin=1
 sigma=0.05
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
@@ -34,8 +34,10 @@ results_path="$script_dir/Results"
 mkdir -p $eval_dir
 
 for ((num=$contin; num<=$Niters; num++)); do
-   if [ "$num" -le 4 ]; then
+   if [ "$num" -eq 0 ]; then
+	   sampling_method="perturbation"
       echo "Sampling method is set to perturbation"
+   elif [ "$num" -le 5 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"

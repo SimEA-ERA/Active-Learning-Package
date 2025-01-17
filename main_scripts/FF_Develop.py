@@ -211,7 +211,7 @@ class al_help():
 
     @staticmethod
     def MC_sample(data, r_setup, parsed_args):
-        max_mc_steps = 10000
+        max_mc_steps = 100000
         max_candidates_per_system = 1500
         beta =  1.0
         sigma = parsed_args.sigma
@@ -238,7 +238,11 @@ class al_help():
         avg_accept_ratio = 0
         beta_fit = beta
         Um_prev = Uclass_prev.min()
-        reached = False
+        beta_fit_converged = False
+        procedure = 'Annealing'
+        beta_count = 0
+        beta_old = 1e16
+        changed_to_MC = False 
         while(step <= max_mc_steps and c_per_system <= max_candidates_per_system):
             t0 = perf_counter()
 
@@ -260,11 +264,10 @@ class al_help():
             #dubt = (Uclass_new  - Um_new )*beta 
 
             pe =  np.exp( - dubt ) 
-            if beta_fit >= beta: 
-                reached = True
-                accepted_filter = np.random.uniform(0,1,n) < pe
-            else:
-                accepted_filter = 1 < pe
+            if procedure=='Annealing':
+                accepted_filter = pe > 1
+            elif procedure == 'MC':
+                accepted_filter = pe > np.random.uniform(0,1,n) 
 
             
             not_accepted_filter = np.logical_not(accepted_filter)
@@ -273,28 +276,46 @@ class al_help():
             Uclass_prev [ accepted_filter ] = Uclass_new [accepted_filter].copy()
             Uclass_prev [ not_accepted_filter ] =  Uclass_prev [ not_accepted_filter].copy()
             Um_prev = Uclass_prev.min()
-            accepted_eners = Uclass_prev# [accepted_filter]
-            all_accepted_u = all_accepted_u[-500*n:]
+            accepted_eners = Uclass_prev [accepted_filter]
+
             all_accepted_u.extend( accepted_eners )
-            ut = np.array(all_accepted_u)
-            if ut.shape[0]>0:
-                shifted_energies = ut  - ut.min()
-            else:
-                shifted_energies = ut
-            beta_fit = 1/np.mean(shifted_energies)  
+            
+            ut = np.array(all_accepted_u)[-1000*n:]
+            if ut.shape[0] == 0:
+                print('Zero accept')
+                continue
+            shifted_energies = ut  - ut.min()
+            beta_fit = 1/np.mean(shifted_energies + 1e-16)   
 
             accept_ratio = np.count_nonzero(accepted_filter)/n
             avg_accept_ratio += accept_ratio
-            print( 'Monte Carlo step {:d}, beta_fit = {:4.6f}, sigma = {:4.6f} ,  accept_ratio {:5.4f} current_accept = {:5.4F} '.format(step, beta_fit, sigma, avg_accept_ratio/step, accept_ratio) ) 
 
             
             step += 1
-            if reached ==False:
-                initial_steps +=1
+            beta_count += beta_fit
+            AR = avg_accept_ratio/step
+            if AR < 0.2:
+                sigma*=0.95
+            elif AR > 0.5:
+                sigma/=0.95
+            sigma  = max(sigma,1e-5) 
+            if step %100 ==0:
+                beta_new = beta_count/100
+                print( 'Annealing step {:d}, beta_fit = {:4.6f}, sigma = {:.4e} ,  accept_ratio {:5.4f} current_accept = {:5.4F} '.format(step, beta_new, sigma, AR, accept_ratio) ) 
+                if np.abs(beta_old - beta_new) <0.01:
+                    print('Annealing Converged ! beta = {:4.6f}  '.format (beta_new) )
+                    beta_fit_converged = True
+                beta_old = beta_new
+                beta_count = 0.0
+
+            if beta_fit_converged == False:
+                procedure = 'Annealing'
                 continue
-            elif here_steps < 500:
-                here_steps+=1
-                continue
+            else:
+                if not changed_to_MC:
+                    avg_accept_ratio , step = 0.0, 0
+                changed_to_MC = True
+                procedure = 'MC'
             
             filtered_step_data = step_data[ accepted_filter ]
             possible_data = pd.concat( (possible_data, filtered_step_data), ignore_index=True)
@@ -304,7 +325,7 @@ class al_help():
             print( 'Monte Carlo step {:d}, | time --> {:.3e} ms canidate size {:d}, persys  {:d}'.format(step,  tf*1000, c_size, c_per_system) ) 
             sys.stdout.flush()
 
-        print('Average acceptance {:5.4f}'.format( c_size/(n*(step-initial_steps) ) ) )
+        print('Average acceptance {:5.4f}'.format( c_size/(n*(step) ) ) )
         
         #raise  Exception('Debuging. Want to stop here')
         return possible_data
@@ -1562,8 +1583,8 @@ class VectorGeometry:
         vkj = rk - rj
         
         a = np.dot(vij,vkj)
-        b = np.sqrt( np.dot(vij,vij) )
-        c = np.sqrt( np.dot(vkj,vkj) )
+        b = np.sqrt( np.dot(vij,vij) ) 
+        c = np.sqrt( np.dot(vkj,vkj) ) 
         
         
         fi = vkj/(b*c) - a*vij/(c*b**3)
@@ -1571,7 +1592,7 @@ class VectorGeometry:
         
         cth = a/(b*c)
         
-        dth_dcth = -1/np.sin(np.arccos(cth))
+        dth_dcth = -1/max(np.sin(np.arccos(cth)),1.49e-8)
         
         fi *= dth_dcth
         fk *= dth_dcth

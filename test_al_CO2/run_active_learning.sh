@@ -20,9 +20,9 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 inff="$script_dir/CO2.in"
 bsize=100
 Niters=12
-iexist=11
-contin=11
-sigma=0.02
+iexist=3
+contin=3
+sigma=0.05
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
@@ -34,7 +34,9 @@ results_path="$script_dir/Results"
 mkdir -p $eval_dir
 
 for ((num=$contin; num<=$Niters; num++)); do
-   if [ "$num" -le 13 ]; then
+   if [ "$num" -eq 0 ]; then
+	   sampling_method="perturbation"
+   elif [ "$num" -le 13 ]; then
       echo "Sampling method is set to perturbation"
       sampling_method="mc"
    else
@@ -72,7 +74,6 @@ for ((num=$contin; num<=$Niters; num++)); do
            sleep 10
        done
 
-       bash "$main_set_of_files_path/extract_logfiles.sh" $nextnum $datapath
        rm report_of_run
    else
        echo "Iteration $nextnum not performing DFT since data already exist"
