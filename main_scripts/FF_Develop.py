@@ -208,122 +208,105 @@ class al_help():
         print('Lammps Simulations complete')
         sys.stdout.flush()
         return possible_data
+    @staticmethod
+    def coordinate_simulated_annealing(data, r_setup):
+        synames = np.unique(data['sys_name'])
+        for sys in sysnames:
+            sys_data = data [ sys == data['sys_name'] ]
+            c = copy.deepcopy(np.array([ c for c in sys_data['coords'].to_numpy()]))
+            init_data = copy.deepcopy(sys_data[['at_type','sys_name','natoms','coords', 'bodies']])
+            init_data['coords'] = c
 
+            natoms = init_data['natoms'].to_numpy()[0]
+            params = c.flatten()
+        
     @staticmethod
     def MC_sample(data, r_setup, parsed_args):
         max_mc_steps = 100000
         max_candidates_per_system = 1500
-        beta =  1.0
-        sigma = parsed_args.sigma
+        kB = 0.00198720375145233
+        effective_temp =500
+        beta =  1/(kB*effective_temp)
+        print('Target beta = {:4.6f}'.format(beta) )
+        sigma_init = parsed_args.sigma
         c = copy.deepcopy(data['coords'].to_numpy())
-
-        step_data = copy.deepcopy(data[['at_type','sys_name','natoms','coords', 'bodies']])
+        init_data = copy.deepcopy(data[['at_type','sys_name','natoms','coords', 'bodies']])
+        init_data['coords'] = c
+        systems = np.unique(init_data['sys_name'])
         
-        step_data['coords'] = c
-        
-        al_help.evaluate_potential(step_data, r_setup,'opt')
-
-        Uclass_prev = step_data['Uclass'].to_numpy().copy()
-        n = len(step_data)
-        names = np.unique(data['sys_name'])
         possible_data = pd.DataFrame()
-        step = 1
-        c_per_system = 0
-        sigma_calibr = 0.00003
-        all_accepted_u = []
         
-        print('Initial sigma = {:4.6f}'.format(sigma ) ) 
-        initial_steps = 0
-        here_steps = 0
-        avg_accept_ratio = 0
-        beta_fit = beta
-        Um_prev = Uclass_prev.min()
-        beta_fit_converged = False
-        procedure = 'Annealing'
-        beta_count = 0
-        beta_old = 1e16
-        changed_to_MC = False 
-        while(step <= max_mc_steps and c_per_system <= max_candidates_per_system):
-            t0 = perf_counter()
-
-            #step_data = copy.deepcopy( step_data[['at_type', 'sys_name','natoms','coords','bodies']] )
-            all_new_coords = []
-            old_coords = copy.deepcopy(step_data['coords'].to_numpy())
-            for j,dat in step_data.iterrows():
-                new_coords = al_help.petrube_coords(np.array(dat['coords']) ,sigma, 'random_walk', dat['bodies'])
-                all_new_coords.append(new_coords)
-            #step_data.drop(columns = ['coords'], inplace=True)
-            step_data.loc[step_data.index,'coords'] = all_new_coords
-                
+        for sysname in systems:
+            sys_data = init_data [ init_data['sys_name'] == sysname]
+            step_data = copy.deepcopy(sys_data)
             al_help.evaluate_potential(step_data, r_setup,'opt')
-            
-            Uclass_new = step_data['Uclass'].to_numpy()
-            Um_new = Uclass_new.min()
-            
-            dubt = (Uclass_new  - Um_new - Uclass_prev + Um_prev)*beta
-            #dubt = (Uclass_new  - Um_new )*beta 
 
-            pe =  np.exp( - dubt ) 
-            if procedure=='Annealing':
-                accepted_filter = pe > 1
-            elif procedure == 'MC':
-                accepted_filter = pe > np.random.uniform(0,1,n) 
-
-            
-            not_accepted_filter = np.logical_not(accepted_filter)
-            step_data.loc[ not_accepted_filter, 'coords']  = old_coords[not_accepted_filter]
-            
-            Uclass_prev [ accepted_filter ] = Uclass_new [accepted_filter].copy()
-            Uclass_prev [ not_accepted_filter ] =  Uclass_prev [ not_accepted_filter].copy()
+            Uclass_prev = step_data['Uclass'].to_numpy().copy()
+            n = len(step_data)
+            step, c_size , all_accepted_u, sigma = 0, 0 , [] , sigma_init
+            avg_accept_ratio, beta_fit = 0 , beta
             Um_prev = Uclass_prev.min()
-            accepted_eners = Uclass_prev [accepted_filter]
+            asymptotic_steps = 1000
+            possible_data_sys = pd.DataFrame()
+            while(step <= max_mc_steps and c_size <= max_candidates_per_system):
+                t0 = perf_counter()
+ 
+                all_new_coords = []
+                old_coords = copy.deepcopy(step_data['coords'].to_numpy())
+                for j,dat in step_data.iterrows():
+                    new_coords = al_help.petrube_coords(np.array(dat['coords']) ,sigma, 'random_walk', dat['bodies'])
+                    all_new_coords.append(new_coords)
+                step_data.loc[step_data.index,'coords'] = all_new_coords
+                 
+                al_help.evaluate_potential(step_data, r_setup,'opt')
+                 
+                Uclass_new = step_data['Uclass'].to_numpy()
+                 
+                dubt = (Uclass_new  - Uclass_prev )*beta 
+                 
+                pe =  beta_fit/beta*np.exp( - dubt/beta_fit ) 
+                accepted_filter = pe > np.random.uniform(0,1,n) 
+ 
+             
+                not_accepted_filter = np.logical_not(accepted_filter)
+                step_data.loc[ not_accepted_filter, 'coords']  = old_coords[not_accepted_filter]
+                 
+                Uclass_prev [ accepted_filter ] = Uclass_new [accepted_filter].copy()
+                Uclass_prev [ not_accepted_filter ] =  Uclass_prev [ not_accepted_filter].copy()
+                accepted_eners = Uclass_prev[accepted_filter]
+ 
+                all_accepted_u.extend( accepted_eners )
+                ut = np.array(all_accepted_u[int(-500*n*avg_accept_ratio/max(1,step) ):])
+                
+                if ut.shape[0] == 0:
+                    print('Zero accept')
+                    continue
+                umin = ut.min()
+                shifted_energies = ut  - umin
+                beta_fit = 1/np.mean(shifted_energies + 1e-16)   
+ 
+                accept_ratio = np.count_nonzero(accepted_filter)/n
+                avg_accept_ratio += accept_ratio
+ 
+                step += 1
+                AR = avg_accept_ratio/step
+                if AR < 0.2:
+                     sigma*=0.97
+                elif AR > 0.5:
+                     sigma/=0.97
+                sigma  = max(sigma,1e-5) 
+                if step %10 ==0:
+                    print( 'MC step {:d},  beta_fit = {:4.6f}, Tfit = {:4.6f} K, umin = {:4.6f} kcal/mol sigma = {:.4e} A ,  accept_ratio {:5.4f} current_accept = {:5.4f} '.format(step, beta_fit, 1/(beta_fit*kB) ,umin, sigma, AR, accept_ratio) ) 
 
-            all_accepted_u.extend( accepted_eners )
-            
-            ut = np.array(all_accepted_u)[-1000*n:]
-            if ut.shape[0] == 0:
-                print('Zero accept')
-                continue
-            shifted_energies = ut  - ut.min()
-            beta_fit = 1/np.mean(shifted_energies + 1e-16)   
-
-            accept_ratio = np.count_nonzero(accepted_filter)/n
-            avg_accept_ratio += accept_ratio
-
-            
-            step += 1
-            beta_count += beta_fit
-            AR = avg_accept_ratio/step
-            if AR < 0.2:
-                sigma*=0.95
-            elif AR > 0.5:
-                sigma/=0.95
-            sigma  = max(sigma,1e-5) 
-            if step %100 ==0:
-                beta_new = beta_count/100
-                print( 'Annealing step {:d}, beta_fit = {:4.6f}, sigma = {:.4e} ,  accept_ratio {:5.4f} current_accept = {:5.4F} '.format(step, beta_new, sigma, AR, accept_ratio) ) 
-                if np.abs(beta_old - beta_new) <0.01:
-                    print('Annealing Converged ! beta = {:4.6f}  '.format (beta_new) )
-                    beta_fit_converged = True
-                beta_old = beta_new
-                beta_count = 0.0
-
-            if beta_fit_converged == False:
-                procedure = 'Annealing'
-                continue
-            else:
-                if not changed_to_MC:
-                    avg_accept_ratio , step = 0.0, 0
-                changed_to_MC = True
-                procedure = 'MC'
-            
-            filtered_step_data = step_data[ accepted_filter ]
-            possible_data = pd.concat( (possible_data, filtered_step_data), ignore_index=True)
-            c_per_system = np.min( [ np.count_nonzero(possible_data['sys_name'] == name) for name in names ] ) 
-            c_size = len(possible_data)
-            tf = perf_counter() - t0
-            print( 'Monte Carlo step {:d}, | time --> {:.3e} ms canidate size {:d}, persys  {:d}'.format(step,  tf*1000, c_size, c_per_system) ) 
-            sys.stdout.flush()
+                if step < asymptotic_steps:
+                    continue
+                filtered_step_data = step_data[ accepted_filter ]
+                possible_data_sys = pd.concat( (possible_data_sys, filtered_step_data), ignore_index=True)
+                c_size = len(possible_data_sys)
+                tf = perf_counter() - t0
+                print( 'Monte Carlo step {:d}, | time --> {:.3e} ms canidate size {:d} '.format(step,  tf*1000, c_size) ) 
+                sys.stdout.flush()
+            possible_data = possible_data.append(possible_data_sys,ignore_index=True)
 
         print('Average acceptance {:5.4f}'.format( c_size/(n*(step) ) ) )
         
@@ -356,7 +339,9 @@ class al_help():
         plt.legend(frameon=False)
         plt.savefig(f'{r_setup.runpath}/candidate_distribution.png', bbox_inches='tight')
         plt.show()
-        print('beta_fit = {:4.3f} '.format(beta_fit ) )
+        kB = 0.00198720375145233
+        alpha = np.mean(u)/(2*np.sqrt(2/np.pi) )
+        print('beta_fit = {:4.3f} , Tfit = {:4.3f} K  '.format(beta_fit, 1/(kB*beta_fit) ) )
         return 
 
     @staticmethod
@@ -1139,7 +1124,7 @@ class al_help():
                   multiplicity=1):
         file = '{:s}/{:s}'.format(path,fname)
         #lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf=xqc scfcyc=999\n\nTemplate file\n\n']    
-        lines = ['%nprocshared=4\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force=EnOnly\n\nTemplate file\n\n']    
+        lines = ['%nprocshared=4\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force\n\nTemplate file\n\n']    
         lines.append(' 0 {:1d}\n'.format(multiplicity))
         for i in range(len(atom_types)):
             at = atom_types[i]

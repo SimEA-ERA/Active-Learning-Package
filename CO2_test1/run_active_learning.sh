@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Ag3co2
+#SBATCH --job-name=co2
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
@@ -15,12 +15,13 @@ main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the s
 
 mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
+cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
-inff="$script_dir/Ag.in"
+inff="$script_dir/CO2.in"
 bsize=100
 Niters=20
-iexist=7
-contin=7
+iexist=9
+contin=9
 sigma=0.01
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
@@ -33,11 +34,10 @@ results_path="$script_dir/Results"
 mkdir -p $eval_dir
 
 for ((num=$contin; num<=$Niters; num++)); do
-   cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
    if [ "$num" -eq 0 ]; then
 	   sampling_method="perturbation"
+   elif [ "$num" -le 4 ]; then
       echo "Sampling method is set to perturbation"
-   elif [ "$num" -le 1 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"
@@ -74,7 +74,6 @@ for ((num=$contin; num<=$Niters; num++)); do
            sleep 10
        done
 
-       bash "$main_set_of_files_path/extract_logfiles.sh" $nextnum $datapath
        rm report_of_run
    else
        echo "Iteration $nextnum not performing DFT since data already exist"
