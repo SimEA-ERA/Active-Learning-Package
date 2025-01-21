@@ -17,17 +17,17 @@ mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
 cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
-inff="$script_dir/AgCO2.in"
+inff="$script_dir/Ag.in"
 bsize=100
-Niters=12
-iexist=8
-contin=8
+Niters=20
+iexist=0
+contin=0
 sigma=0.02
-Ttarget=300
+Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-
+beta_sampling=1.00
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
@@ -49,7 +49,7 @@ for ((num=$contin; num<=$Niters; num++)); do
    # Run Python scripts from the same directory as this Bash script
    python "$main_set_of_files_path/active_learning_scheme.py" \
           -n $num -dp $datapath -f $inff -b $bsize -s $sigma -exd $iexist \
-          -m $sampling_method -cm "$charge_map" -mm "$mass_map" -t $Ttarget 
+          -m $sampling_method -cm "$charge_map" -mm "$mass_map" -t $Ttarget  -bs $beta_sampling
 
    if [ $? -ne 0 ]; then
        echo "Error: Fitting algorithm did not execute successfully."
@@ -95,5 +95,6 @@ for ((num=$contin; num<=$Niters; num++)); do
    fi
 
    inff="$results_path/$num/runned.in"
+   beta_sampling=$(head -n 1 beta_sampling_value)
 done
 

@@ -151,11 +151,28 @@ class al_help():
         return pd.DataFrame({'coords':coords,'at_type':types,'natoms':np.array(natoms)})
 
     @staticmethod
-    def sample_via_lammps(data,setup,parsed_args):
+    def sample_via_lammps(data,setup,parsed_args, beta_sampling):
+        print('MD sampling with Lammps')
         al = al_help()
         cols = data.columns
-        possible_data = pd.DataFrame()
+        candidate_data = pd.DataFrame()
+        lammps_main_file = "lammps_working/sample_run.lmscr"
+        kB = 0.00198720375145233
 
+        teff = round(1.0/ (beta_sampling*kB), 2) 
+        
+        with open(lammps_main_file,'r') as fil:
+            lines = fil.readlines()
+            fil.closed
+        for l,line in enumerate(lines):
+            li = line.split()
+            if 'variable' in li and 'teff' in li and 'equal' in li:
+                print(f'Updating temperature to {teff}  K' )
+                lines[l] = f'variable teff equal {teff}\n'
+        with open(lammps_main_file,'w') as fil:
+            for line in lines:
+                fil.write(line)
+            fil.closed
         #select randomly 0.01% of the index
         unq_sys = np.unique(data['sys_name'])
         #old_bonded_inters = 'dumb variable'
@@ -203,11 +220,11 @@ class al_help():
                 #print('from runned data chose configurations',chosen_index)
                 new_data['sys_name'] = sname
                 dfn = new_data.loc[chosen_index]
-                possible_data = possible_data.append(dfn, ignore_index=True)
+                candidate_data = candidate_data.append(dfn, ignore_index=True)
         
         print('Lammps Simulations complete')
         sys.stdout.flush()
-        return possible_data
+        return candidate_data
     @staticmethod
     def coordinate_simulated_annealing(data, r_setup):
         synames = np.unique(data['sys_name'])
@@ -221,20 +238,24 @@ class al_help():
             params = c.flatten()
         
     @staticmethod
-    def MC_sample(data, r_setup, parsed_args):
+    def MC_sample(data, r_setup, sigma, beta_sampling):
         max_mc_steps = 100000
         max_candidates_per_system = 1500
         kB = 0.00198720375145233
-        effective_temp =500
-        beta =  1/(kB*effective_temp)
-        print('Target beta = {:4.6f}'.format(beta) )
-        sigma_init = parsed_args.sigma
+        
+        beta =  beta_sampling
+        
+        print('Sampling beta in MC = {:4.6f}'.format(beta) )
+        
+        sigma_init = sigma
+        
         c = copy.deepcopy(data['coords'].to_numpy())
+        
         init_data = copy.deepcopy(data[['at_type','sys_name','natoms','coords', 'bodies']])
         init_data['coords'] = c
         systems = np.unique(init_data['sys_name'])
         
-        possible_data = pd.DataFrame()
+        candidate_data = pd.DataFrame()
         
         for sysname in systems:
             sys_data = init_data [ init_data['sys_name'] == sysname]
@@ -247,7 +268,7 @@ class al_help():
             avg_accept_ratio, beta_fit = 0 , beta
             Um_prev = Uclass_prev.min()
             asymptotic_steps = 1000
-            possible_data_sys = pd.DataFrame()
+            candidate_data_sys = pd.DataFrame()
             while(step <= max_mc_steps and c_size <= max_candidates_per_system):
                 t0 = perf_counter()
  
@@ -301,26 +322,26 @@ class al_help():
                 if step < asymptotic_steps:
                     continue
                 filtered_step_data = step_data[ accepted_filter ]
-                possible_data_sys = pd.concat( (possible_data_sys, filtered_step_data), ignore_index=True)
-                c_size = len(possible_data_sys)
+                candidate_data_sys = pd.concat( (candidate_data_sys, filtered_step_data), ignore_index=True)
+                c_size = len(candidate_data_sys)
                 tf = perf_counter() - t0
                 print( 'Monte Carlo step {:d}, | time --> {:.3e} ms canidate size {:d} '.format(step,  tf*1000, c_size) ) 
                 sys.stdout.flush()
-            possible_data = possible_data.append(possible_data_sys,ignore_index=True)
+            candidate_data = candidate_data.append(candidate_data_sys,ignore_index=True)
 
         print('Average acceptance {:5.4f}'.format( c_size/(n*(step) ) ) )
         
         #raise  Exception('Debuging. Want to stop here')
-        return possible_data
+        return candidate_data
     @staticmethod
-    def plot_candidate_distribution(possible_data,r_setup,beta=1):
-        if 'Uclass' not in possible_data.columns:
-            optimizer = al_help.evaluate_potential(possible_data,r_setup, 'opt')
-        tot_u = possible_data['Uclass'].to_numpy()
-        names = np.unique( possible_data['sys_name'] )
+    def plot_candidate_distribution(candidate_data,r_setup,beta=1):
+        if 'Uclass' not in candidate_data.columns:
+            optimizer = al_help.evaluate_potential(candidate_data,r_setup, 'opt')
+        tot_u = candidate_data['Uclass'].to_numpy()
+        names = np.unique( candidate_data['sys_name'] )
         min_u = np.empty_like(tot_u)
         for name in names:
-            fn = possible_data['sys_name'] == name
+            fn = candidate_data['sys_name'] == name
             min_u[fn] = np.min(tot_u[fn]) 
         u = (tot_u - min_u)
         
@@ -342,7 +363,7 @@ class al_help():
         kB = 0.00198720375145233
         alpha = np.mean(u)/(2*np.sqrt(2/np.pi) )
         print('beta_fit = {:4.3f} , Tfit = {:4.3f} K  '.format(beta_fit, 1/(kB*beta_fit) ) )
-        return 
+        return  beta_fit
 
     @staticmethod
     def write_potential_files(setup,data_point,parsed_args,bonded_inters):
@@ -975,15 +996,15 @@ class al_help():
         return  data, optimizer.current_costs , optimizer.setup, optimizer
 
     @staticmethod
-    def make_random_petrubations(data,nper=10,sigma=0.05,method='atoms'):
-        possible_data= pd.DataFrame()
+    def make_random_petrubations(data,nper=10,sigma=0.05):
+        candidate_data= pd.DataFrame()
         for j,dat in data.iterrows():
             for k in range(nper):
                 d = dat.copy()
-                new_coords = al_help.petrube_coords( np.array(dat['coords']) ,sigma,method,dat['bodies'])
+                new_coords = al_help.petrube_coords( np.array(dat['coords']) ,sigma,'atoms',dat['bodies'])
                 d['coords'] = new_coords
-                possible_data = pd.concat([possible_data, d.to_frame().T], ignore_index=True)
-        return possible_data
+                candidate_data = pd.concat([candidate_data, d.to_frame().T], ignore_index=True)
+        return candidate_data
     
     @staticmethod
     def petrube_coords(coords,sigma, method, bodies = {} ):
@@ -1028,11 +1049,11 @@ class al_help():
         return np.array(vec)
 
     @staticmethod
-    def disimilarity_selection(data,setup,possible_data,batchsize,method='sys_name'):
-        al_help.make_interactions(possible_data,setup) 
-        possible_data = al_help.clean_possible_data(possible_data,setup)
+    def disimilarity_selection(data,setup,candidate_data,batchsize,method='sys_name'):
+        al_help.make_interactions(candidate_data,setup) 
+        candidate_data = al_help.clean_candidate_data(candidate_data,setup)
         dis = []
-        for k1,d1 in possible_data.iterrows():
+        for k1,d1 in candidate_data.iterrows():
             disim = 0
             vec1 = al_help.similarity_vector(d1['values'])
             synm = d1['sys_name']
@@ -1044,29 +1065,29 @@ class al_help():
                 jdat+=1
             dis.append(disim)
         dis = np.array(dis)
-        possible_data['disimilarity'] = dis
-        fcheck = np.isnan(possible_data['disimilarity'])
-        for j,d in possible_data[fcheck].iterrows():
+        candidate_data['disimilarity'] = dis
+        fcheck = np.isnan(candidate_data['disimilarity'])
+        for j,d in candidate_data[fcheck].iterrows():
             print('Warning: Removing nan values', j,d['sys_name'],d['disimilarity'])
             sys.stdout.flush()
-        possible_data = possible_data[~fcheck]
+        candidate_data = candidate_data[~fcheck]
         print('evaluating in selection step with nld = {:d}'.format(setup.nLD))
-        possible_data['Energy']=np.zeros(len(possible_data))
-        al_help.evaluate_potential(possible_data,setup,'opt')
+        candidate_data['Energy']=np.zeros(len(candidate_data))
+        al_help.evaluate_potential(candidate_data,setup,'opt')
 
-        possible_data['Prob. select'] = possible_data['disimilarity']/dis.sum()
+        candidate_data['Prob. select'] = candidate_data['disimilarity']/dis.sum()
         
-        Ucls = possible_data['Uclass'].to_numpy()
-        n = len(possible_data)
+        Ucls = candidate_data['Uclass'].to_numpy()
+        n = len(candidate_data)
         indx = np.arange(0,n,1,dtype=int)
         if n<=batchsize:
             batchsize=min(n,batchsize)
             method = None
 
         if method is None:
-            chosen = np.random.choice(indx,size=batchsize,replace=False,p=possible_data['Prob. select'])
+            chosen = np.random.choice(indx,size=batchsize,replace=False,p=candidate_data['Prob. select'])
         else:
-            col = possible_data[method].to_numpy()
+            col = candidate_data[method].to_numpy()
             colvals = np.unique(col)
             Props = [1/np.count_nonzero(col == c) for c in colvals]
             Props = np.array(Props)/np.sum(Props)
@@ -1075,7 +1096,7 @@ class al_help():
             nums = {name: np.count_nonzero(names==name) for name in colvals} 
             
             chosen = []
-            psel = possible_data['Prob. select'].to_numpy()
+            psel = candidate_data['Prob. select'].to_numpy()
             for name,num in nums.items():
                 fc = col == name 
                 pc = psel[ fc ] 
@@ -1115,9 +1136,9 @@ class al_help():
         for j in indx:
             if j in chosen:
                 select[j] = True
-        possible_data['select'] = select
+        candidate_data['select'] = select
 
-        return  possible_data [ possible_data ['select'] ] 
+        return  candidate_data [ candidate_data ['select'] ] 
 
     @staticmethod
     def write_gjf(path,fname,atom_types,coords,
@@ -1381,7 +1402,7 @@ class al_help():
                     dmin = d
         return dmin
     @staticmethod
-    def clean_possible_data(data,setup):
+    def clean_candidate_data(data,setup):
         rc = setup.rclean
         #sc = setup.struct_types
         keep_index = []

@@ -12,6 +12,7 @@ import pandas as pd
 import FF_Develop as ff
 import numpy as np
 import argparse
+import math
 
 
 
@@ -29,7 +30,8 @@ def main():
     hexisting_data = 'iteration of already existing data'
     hm="mass map. Provide a python dictionary in as a string"
     hc="charge map. Provide a python dictionary in as a string"
-
+    htt="Target sampling temperature"
+    hbs="Input sampling beta"
 
 
     argparser.add_argument('-n',"--num",metavar=None,
@@ -52,10 +54,19 @@ def main():
     
     argparser.add_argument('-mm',"--mass_map",metavar=None,
             type=str, required=True, help=hm)
+    argparser.add_argument('-t',"--Ttarget",metavar=None,
+            type=float, required=False,default=300.0, help=htt)
     
+    argparser.add_argument('-bs',"--beta_sampling",metavar=None,
+            type=float, required=False,default=1.67, help=htt)
     
     parsed_args = argparser.parse_args()
     
+    beta_sampling = parsed_args.beta_sampling
+
+    kB = 0.00198720375145233 # kcal/mol
+    beta_target = 1.0/(kB*parsed_args.Ttarget)
+
     setup = ff.Setup_Interfacial_Optimization(parsed_args.inputfile)
     al = ff.al_help()
 
@@ -84,7 +95,6 @@ def main():
     ff.Data_Manager(data,setup).distribution('Energy')
     setup.run = num
 
-    necessary_columns = ['sys_name','natoms','coords','at_type','bodies', 'Energy']
     
     batchsize= parsed_args.batchsize
     
@@ -96,31 +106,35 @@ def main():
     sys.stdout.flush()
 
     al.write_errors(model_costs,num) 
-    
     if num >= parsed_args.existing_data:
         t2 = perf_counter()
-        #parsed_args.ffinputfile='Results/{:d}/runned.in'.format(num)
-        #r_setup = ff.Setup_Interfacial_Optimization( parsed_args.ffinputfile )
-        r_setup = setup
-        if parsed_args.sampling_method == 'perturbation':
-            possible_data = al.make_random_petrubations(data[necessary_columns],
-                                                 sigma=parsed_args.sigma, method=setup.perturbation_method)
-            selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
         
+        if parsed_args.sampling_method == 'perturbation':
+            candidate_data = al.make_random_petrubations(data, sigma = parsed_args.sigma)
         elif parsed_args.sampling_method == 'md':
             parsed_args.writing_path='lammps_working'
-            possible_data = al.sample_via_lammps(data,r_setup,parsed_args)
-            al.plot_candidate_distribution(possible_data,r_setup, beta=1)
-            selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
+            candidate_data = al.sample_via_lammps(data,setup, parsed_args, beta_sampling)
         elif parsed_args.sampling_method == 'mc':
-            possible_data = al.MC_sample(data, r_setup, parsed_args)
-
-            al.plot_candidate_distribution(possible_data,r_setup , beta=1)
-            selected_data = al.disimilarity_selection(data,r_setup,possible_data,batchsize)
+            candidate_data = al.MC_sample(data, setup, parsed_args.sigma, beta_sampling)
+        else:
+            raise NotImplementedError(f'Candidate Sampling Method "{parsed_args.sampling_method}" is unknown')
+        
+        beta_fit = al.plot_candidate_distribution(candidate_data,setup , beta= beta_target)
+        
+        if beta_fit is None or math.isinf(beta_fit):
+            beta_fit = beta_target
+        
+        beta_sampling_old = beta_sampling
+        beta_sampling *= beta_target/beta_fit
+        with open('beta_sampling_value','w') as f:
+            f.write(f'{beta_sampling}')
+            f.closed
+        print(f'AL iteration {num} beta_fit = {beta_fit} ,  beta_target =  {beta_target}')
+        print(f'AL iteration {num} beta_sampling = {beta_sampling_old} ...  updating to {beta_sampling}')
+        
+        selected_data = al.disimilarity_selection(data, setup, candidate_data,batchsize  )
         
         selected_data = selected_data.reset_index(drop=True)
-   #     for j in selected_data.index:
-    #        print(selected_data.loc[j,'coords'])
  
         print('selecting time = {:.3e} '.format(perf_counter()-t2))
         sys.stdout.flush()
