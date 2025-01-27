@@ -150,6 +150,7 @@ class al_help():
             natoms.append(crds.shape[0])
         return pd.DataFrame({'coords':coords,'at_type':types,'natoms':np.array(natoms)})
 
+
     @staticmethod
     def sample_via_lammps(data,setup,parsed_args, beta_sampling):
         print('MD sampling with Lammps')
@@ -157,22 +158,23 @@ class al_help():
         cols = data.columns
         candidate_data = pd.DataFrame()
         lammps_main_file = "lammps_working/sample_run.lmscr"
-        kB = 0.00198720375145233
+        kB = 0.0019872037514523
 
+        beta_target = 1.0/(kB*parsed_args.Ttarget)
         teff = round(1.0/ (beta_sampling*kB), 2) 
-        
-        with open(lammps_main_file,'r') as fil:
-            lines = fil.readlines()
-            fil.closed
-        for l,line in enumerate(lines):
-            li = line.split()
-            if 'variable' in li and 'teff' in li and 'equal' in li:
-                print(f'Updating temperature to {teff}  K' )
-                lines[l] = f'variable teff equal {teff}\n'
-        with open(lammps_main_file,'w') as fil:
-            for line in lines:
-                fil.write(line)
-            fil.closed
+        def update_main_file_temperature(teff):
+            with open(lammps_main_file,'r') as fil:
+                lines = fil.readlines()
+                fil.closed
+            for l,line in enumerate(lines):
+                li = line.split()
+                if 'variable' in li and 'teff' in li and 'equal' in li:
+                    print(f'Updating temperature to {teff}  K' )
+                    lines[l] = f'variable teff equal {teff}\n'
+            with open(lammps_main_file,'w') as fil:
+                for line in lines:
+                    fil.write(line)
+                fil.closed
         #select randomly 0.01% of the index
         unq_sys = np.unique(data['sys_name'])
         #old_bonded_inters = 'dumb variable'
@@ -209,13 +211,29 @@ class al_help():
                 c3 = 'mkdir {0:s} ; cp samples.lammpstrj {0:s}/ ;  mv structure.dat {0:s}'.format(naming)
                 c4 = 'mv potential.inc {0:s}/ ;  mv rigid_fixes.inc {0:s}'.format(naming)
                 c5 = ' cd - '
-                command  = '  ;  '.join([c1,c2,c3,c4,c5])
-                os.system(command)
+                command  = '  ;  '.join([c1,c2])
 
-                new_data = al_help.read_lammps_structs('lammps_working/samples.lammpstrj',inv_types)
-                
+                beta_fit = 1e8
+                md_iter = 0
+                while (np.abs ((beta_target - beta_fit)/beta_target) > 0.05)  and md_iter < 10:
+                    print(f'md_iter = {md_iter} ,  beta_sampling = {beta_sampling} , tsampling = {teff} K')
+                    os.system(command)
+
+                    new_data = al_help.read_lammps_structs('lammps_working/samples.lammpstrj',inv_types)
+                    
+                    al_help.evaluate_potential(new_data, setup,'opt')
+                 
+                    ut = new_data['Uclass'].to_numpy()
+                    shifted_energies = ut - ut.min()
+                    tfit, beta_fit, alpha, bins = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
+                    
+                    beta_sampling *= beta_target/beta_fit
+                    teff = round(1.0/ (beta_sampling*kB), 5) 
+                    update_main_file_temperature(teff)
+                    print(f'md_iter = {md_iter} , beta_fit = {beta_fit}')
+                    md_iter += 1
                 #select randomly 0.01% of the new_data
-                
+                os.system('  ;  '.join([c1, c3,c4,c5]) )
                 chosen_index = new_data.index #[ np.random.choice( new_data.index, max(1,int(0.1*len(new_data))), replace=False) ]
                 #print('from runned data chose configurations',chosen_index)
                 new_data['sys_name'] = sname
@@ -224,7 +242,7 @@ class al_help():
         
         print('Lammps Simulations complete')
         sys.stdout.flush()
-        return candidate_data
+        return candidate_data, beta_sampling
     @staticmethod
     def coordinate_simulated_annealing(data, r_setup):
         synames = np.unique(data['sys_name'])
@@ -317,7 +335,7 @@ class al_help():
                      sigma/=0.97
                 sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
                 if step %50 ==0:
-                    tfit, beta_fit, alpha = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
+                    tfit, beta_fit, alpha, bins = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
                     print( 'MC step {:d},  beta_fit = {:4.6f}, Tfit = {:4.6f} K, umin = {:4.6f} kcal/mol sigma = {:.4e} A ,  accept_ratio {:5.4f} current_accept = {:5.4f} '.format(step, beta_fit, tfit ,umin, sigma, AR, accept_ratio) )
 
                 if step < asymptotic_steps:
@@ -336,7 +354,7 @@ class al_help():
         return candidate_data
 
     @staticmethod
-    def plot_candidate_distribution(candidate_data,r_setup,beta=1):
+    def plot_candidate_distribution(candidate_data,r_setup):
         if 'Uclass' not in candidate_data.columns:
             optimizer = al_help.evaluate_potential(candidate_data,r_setup, 'opt')
         tot_u = candidate_data['Uclass'].to_numpy()
@@ -349,18 +367,17 @@ class al_help():
         u_sorted = np.sort(u)
         kB = 0.00198720375145233
         
-        tfit, beta_fit, alpha = al_help.estimate_Teff_Beff(u_sorted)
+        tfit, beta_fit, alpha, bins = al_help.estimate_Teff_Beff(u_sorted)
         Pfit = al_help.joint_Boltzman_Maxwellian_distribution(u_sorted, beta_fit, alpha)
         _ = plt.figure(figsize = (3.3,3.3), dpi=300)
-        nbins = 200
-        hist,bin_edges = np.histogram(u, bins=nbins,density = True)
-        plt.hist(u, bins=nbins,density = True,label = 'candidates', color='blue')
+        hist,bin_edges = np.histogram(u, bins=bins,density = True)
+        plt.hist(u, bins=bins,density = True,label = 'candidates', color='blue')
         plt.plot(u_sorted, Pfit, ls ='-',label='fit', color='red')
         plt.legend(frameon=False, fontsize=7)
         plt.savefig(f'{r_setup.runpath}/candidate_distribution.png', bbox_inches='tight')
         plt.show()
         print('beta_fit = {:4.3f} , Tfit = {:4.3f} K  '.format(beta_fit, tfit) )
-        return  beta_fit
+        return
     
     @staticmethod
     def joint_Boltzman_Gaussian_distribution(u, beta, cv, mu):
@@ -390,37 +407,39 @@ class al_help():
         mu = np.mean(u)
         beta = 1/mu
         params = np.array( [ beta, beta**2 ] )
-        bounds = [ [0,10], [0,10], ]
-        
+        bounds = [ [0.1,10], [0.0001,0.5], ]
+        kB = 0.00198720375145233
         def cost_BG(params, dens ,bc):
             c = cost_distribution_fit(params, dens, bc) 
             return c
         def cost_distribution_fit(params, dens, bc):
+            w = 1/(1 + dens)
             ps = al_help.joint_Boltzman_Maxwellian_distribution(bc,*params)
-            return np.sum( (ps - dens )**2 )/ps.shape[0]   
-        b, a = 0, 0 
-
+            return np.sum( w*(ps - dens )**2 )/np.sum(w) #ps.shape[0]   
+        min_cost = 1e17
         list_bins =  np.arange(int(0.7*nbins),int(1.25*nbins),10)
         for nbins in list_bins:
             dens, bin_edges = np.histogram(u, bins=nbins, density=True)
             bc = bin_edges[0 : -1] - 0.5*(bin_edges[1]-bin_edges[0])
             args = (dens , bc)
             #res = minimize(cost_BG, params, bounds=bounds, args = args, method='SLSQP',constraints = {'type':'eq','fun': mubt})
-            res = dual_annealing(cost_BG, bounds, args = args, x0=params)
+            res = dual_annealing(cost_BG, bounds, args = args, x0=params, initial_temp=15000, restart_temp_ratio=2e-04)
             cfit = cost_distribution_fit(res.x, dens, bc)
             print (f'bins = {nbins}, beta = {res.x[0]}, alpha = {res.x[1]}  costf = {res.fun}')
-            b += res.x[0]
-            a += res.x[1]
-            params = res.x
-        nb = len(list_bins)
-        b/=nb
-        a/=nb
-        return b, a
+            if res.fun < min_cost: 
+                b = res.x[0]
+                a = res.x[1]
+                min_cost = res.fun
+                params = res.x
+                bins = nbins
+        print(' Estimated cv  = {:5.4f} kcal/mol/K based on var'.format(u.var()*kB*b**2))
+
+        return b, a, bins
 
     @staticmethod
     def estimate_Teff_Beff(u, nbins = 200):
         u = u -u.min()
-        beta , alpha = al_help.find_bcvmu(u, nbins = nbins)
+        beta , alpha, bins = al_help.find_bcvmu(u, nbins = nbins)
 
         kB = 0.00198720375145233
 
@@ -429,7 +448,7 @@ class al_help():
 
         print('Effective cv = {:5.4f} kcal/mol/K'.format(cv))
         Teff = 1.0/(beta*kB)
-        return Teff, beta, alpha
+        return Teff, beta, alpha, bins
     
     @staticmethod
     def write_potential_files(setup,data_point,parsed_args,bonded_inters):
@@ -1113,6 +1132,34 @@ class al_help():
                 v.sort()
                 vec.extend(v)
         return np.array(vec)
+
+    @staticmethod
+    def random_selection(data , setup,candidate_data,batchsize,method='sys_name'):
+        al_help.make_interactions(candidate_data,setup) 
+        candidate_data = al_help.clean_candidate_data(candidate_data,setup)
+        Ucls = candidate_data['Uclass'].to_numpy()
+        n = len(candidate_data)
+        indx = np.arange(0,n,1,dtype=int)
+        if n<=batchsize:
+            batchsize=min(n,batchsize)
+        col = data['sys_name'].to_numpy()
+        colvals = np.unique(col)
+        Props = [1/np.count_nonzero(col == c) for c in colvals]
+        Props = np.array(Props)/np.sum(Props)
+
+        names = np.random.choice(  colvals,size=batchsize,replace=True,p = Props  )
+        nums = {name: np.count_nonzero(names==name) for name in colvals} 
+        selected_data = pd.DataFrame()
+        ix = candidate_data.index
+        for name,num in nums.items():
+            fsystem = candidate_data['sys_name'] == name 
+            ix_f = ix [fsystem]
+            nx = len(ix_f)
+            ix_sel = np.random.choice (ix_f, size=min(num, nx),replace=False)
+
+            selected_data = selected_data.append( candidate_data.iloc[ix_sel] , ignore_index=True)
+        return selected_data
+
 
     @staticmethod
     def disimilarity_selection(data,setup,candidate_data,batchsize,method='sys_name'):

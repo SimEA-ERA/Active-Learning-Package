@@ -107,33 +107,32 @@ def main():
 
     al.write_errors(model_costs,num) 
     if num >= parsed_args.existing_data:
-        t2 = perf_counter()
         
+        t2 = perf_counter()
         if parsed_args.sampling_method == 'perturbation':
             candidate_data = al.make_random_petrubations(data, sigma = parsed_args.sigma)
         elif parsed_args.sampling_method == 'md':
             parsed_args.writing_path='lammps_working'
-            candidate_data = al.sample_via_lammps(data,setup, parsed_args, beta_sampling)
+            candidate_data, beta_sampling = al.sample_via_lammps(data,setup, parsed_args, beta_sampling)
         elif parsed_args.sampling_method == 'mc':
-            candidate_data = al.MC_sample(data, setup, parsed_args.sigma, beta_sampling)
+            candidate_data, beta_sampling = al.MC_sample(data, setup, parsed_args.sigma, beta_sampling)
         else:
             raise NotImplementedError(f'Candidate Sampling Method "{parsed_args.sampling_method}" is unknown')
         
-        beta_fit = al.plot_candidate_distribution(candidate_data,setup , beta= beta_target)
+        al.plot_candidate_distribution(candidate_data,setup )
         
-        if beta_fit is None or math.isinf(beta_fit):
-            beta_fit = beta_target
-        
-        beta_sampling_old = beta_sampling
-        beta_sampling *= beta_target/beta_fit
         with open('beta_sampling_value','w') as f:
             f.write(f'{beta_sampling}')
             f.closed
-        print(f'AL iteration {num} beta_fit = {beta_fit} ,  beta_target =  {beta_target}')
-        print(f'AL iteration {num} beta_sampling = {beta_sampling_old} ...  updating to {beta_sampling}')
+        kB = 0.00198720375145233
+        tsamp = 1/(kB*beta_sampling)
+        print(f'AL iteration {num} beta_sampling =  {beta_sampling}, Tsample = {tsamp} K ')
         
-        selected_data = al.disimilarity_selection(data, setup, candidate_data,batchsize  )
+        print('Candidate sampling time = {:.3e} '.format(perf_counter()-t2))
+        #selected_data = al.disimilarity_selection(data, setup, candidate_data,batchsize  )
         
+        t2 = perf_counter()
+        selected_data = al.random_selection(data, setup, candidate_data,batchsize  )
         selected_data = selected_data.reset_index(drop=True)
  
         print('selecting time = {:.3e} '.format(perf_counter()-t2))
