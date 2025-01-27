@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Ag3co2
+#SBATCH --job-name=Ag7
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
@@ -19,15 +19,15 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/Ag.in"
 bsize=100
-Niters=20
-iexist=0
-contin=0
+Niters=21
+iexist=12
+contin=12
 sigma=0.02
 Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=1.00
+beta_sampling=1.0
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"

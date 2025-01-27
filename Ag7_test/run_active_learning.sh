@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Ag3co2
+#SBATCH --job-name=Ag7
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
@@ -15,17 +15,19 @@ main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the s
 
 mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
+cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/Ag.in"
 bsize=100
-Niters=22
-iexist=21
-contin=21
+Niters=21
+iexist=0
+contin=0
 sigma=0.02
+Ttarget=2000
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-
+beta_sampling=2.22
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
@@ -33,7 +35,7 @@ results_path="$script_dir/Results"
 mkdir -p $eval_dir
 
 for ((num=$contin; num<=$Niters; num++)); do
-   cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
+   
    if [ "$num" -eq 0 ]; then
 	   sampling_method="perturbation"
       echo "Sampling method is set to perturbation"
@@ -47,7 +49,7 @@ for ((num=$contin; num<=$Niters; num++)); do
    # Run Python scripts from the same directory as this Bash script
    python "$main_set_of_files_path/active_learning_scheme.py" \
           -n $num -dp $datapath -f $inff -b $bsize -s $sigma -exd $iexist \
-          -m $sampling_method -cm "$charge_map" -mm "$mass_map"
+          -m $sampling_method -cm "$charge_map" -mm "$mass_map" -t $Ttarget  -bs $beta_sampling
 
    if [ $? -ne 0 ]; then
        echo "Error: Fitting algorithm did not execute successfully."
@@ -93,5 +95,6 @@ for ((num=$contin; num<=$Niters; num++)); do
    fi
 
    inff="$results_path/$num/runned.in"
+   beta_sampling=$(head -n 1 beta_sampling_value)
 done
 
