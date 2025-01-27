@@ -20,7 +20,9 @@ from time import perf_counter
 import coloredlogs
 import logging
 import itertools
-from scipy.special import erf
+#from scipy.special import erf
+from mpmath import erf, mp, exp, sqrt
+mp.dps = 50
 import collections
 import six
 
@@ -225,8 +227,9 @@ class al_help():
                  
                     ut = new_data['Uclass'].to_numpy()
                     shifted_energies = ut - ut.min()
-                    tfit, beta_fit, alpha, bins = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
-                    
+                    tfit, beta_fit, alpha, bins, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
+                    if fail:
+                        break
                     beta_sampling *= beta_target/beta_fit
                     teff = round(1.0/ (beta_sampling*kB), 5) 
                     update_main_file_temperature(teff)
@@ -334,8 +337,8 @@ class al_help():
                 elif AR > 0.5:
                      sigma/=0.97
                 sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
-                if step %50 ==0:
-                    tfit, beta_fit, alpha, bins = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
+                if step %100 ==0:
+                    tfit, beta_fit, alpha, bins, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
                     print( 'MC step {:d},  beta_fit = {:4.6f}, Tfit = {:4.6f} K, umin = {:4.6f} kcal/mol sigma = {:.4e} A ,  accept_ratio {:5.4f} current_accept = {:5.4f} '.format(step, beta_fit, tfit ,umin, sigma, AR, accept_ratio) )
 
                 if step < asymptotic_steps:
@@ -367,7 +370,7 @@ class al_help():
         u_sorted = np.sort(u)
         kB = 0.00198720375145233
         
-        tfit, beta_fit, alpha, bins = al_help.estimate_Teff_Beff(u_sorted)
+        tfit, beta_fit, alpha, bins, fail = al_help.estimate_Teff_Beff(u_sorted)
         Pfit = al_help.joint_Boltzman_Maxwellian_distribution(u_sorted, beta_fit, alpha)
         _ = plt.figure(figsize = (3.3,3.3), dpi=300)
         hist,bin_edges = np.histogram(u, bins=bins,density = True)
@@ -387,31 +390,35 @@ class al_help():
 
     @staticmethod 
     def Irecurr (beta, alpha, n ):
-        I0 = 0.5 * np.sqrt(np.pi/alpha) * np.exp(beta**2/(4*alpha)) *( 1- erf(beta/(2*np.sqrt(alpha))) )
-        I1 = (1 - beta*I0)/(2*alpha)
+        ab = beta * alpha
+        I0 = 0.5 * sqrt(np.pi/ab) * exp(beta**2/(4*ab)) * ( 1 - erf(beta/(2*sqrt(ab))) )
+        #I0 = np.float64(I0)
+        I1 = (1.0 - beta*I0)/(2*ab)
         ir = [I0, I1]
         for i in range(2, n+1):
-            ir_i = (ir[i-2] - beta*ir[i-1] ) / (2*alpha)
+            ir_i = ( (i-1)*ir[i-2] - beta*ir[i-1] ) / (2*ab)
             ir.append( ir_i )
-        return tuple(ir)
+        return tuple([np.float64(i) for i in ir])
 
     @staticmethod
     def joint_Boltzman_Maxwellian_distribution(u, beta, alpha):
         I0, I1, I2 = al_help.Irecurr(beta, alpha, 2)
 
-        P = u**2 * np.exp(-beta*u) * np.exp(-alpha*u**2)
+        P = u**2 * np.exp(-beta*u) * np.exp(-alpha*beta*u**2)
         return P/I2
 
     @staticmethod
     def find_bcvmu(u,nbins=200):
         mu = np.mean(u)
         beta = 1/mu
-        params = np.array( [ beta, beta**2 ] )
-        bounds = [ [0.1,10], [0.0001,0.5], ]
+        params = np.array( [ 1.0, 0.0033 ] )
+        bounds = [ [0.1,10], [0.001,0.01], ]
         kB = 0.00198720375145233
-        def cost_BG(params, dens ,bc):
+        def cost_BG(params, dens ,bc, mu):
             c = cost_distribution_fit(params, dens, bc) 
-            return c
+            ir = al_help.Irecurr(params[0], params[1], 3)
+            c2 = (ir[-1]/ir[-2] - mu)**2
+            return c + c2
         def cost_distribution_fit(params, dens, bc):
             w = 1/(1 + dens)
             ps = al_help.joint_Boltzman_Maxwellian_distribution(bc,*params)
@@ -421,34 +428,39 @@ class al_help():
         for nbins in list_bins:
             dens, bin_edges = np.histogram(u, bins=nbins, density=True)
             bc = bin_edges[0 : -1] - 0.5*(bin_edges[1]-bin_edges[0])
-            args = (dens , bc)
+            args = (dens , bc, mu)
             #res = minimize(cost_BG, params, bounds=bounds, args = args, method='SLSQP',constraints = {'type':'eq','fun': mubt})
-            res = dual_annealing(cost_BG, bounds, args = args, x0=params, initial_temp=15000, restart_temp_ratio=2e-04)
-            cfit = cost_distribution_fit(res.x, dens, bc)
+            res = dual_annealing(cost_BG, bounds, args = args,  initial_temp=15000, restart_temp_ratio=2e-04)
             print (f'bins = {nbins}, beta = {res.x[0]}, alpha = {res.x[1]}  costf = {res.fun}')
             if res.fun < min_cost: 
                 b = res.x[0]
                 a = res.x[1]
                 min_cost = res.fun
-                params = res.x
                 bins = nbins
+                cfit = cost_distribution_fit(res.x, dens, bc)
+        if cfit > 0.05 or b ==0:
+            fail = True
+        else:
+            fail = False
         print(' Estimated cv  = {:5.4f} kcal/mol/K based on var'.format(u.var()*kB*b**2))
 
-        return b, a, bins
+        return b, a, bins, fail
 
     @staticmethod
     def estimate_Teff_Beff(u, nbins = 200):
         u = u -u.min()
-        beta , alpha, bins = al_help.find_bcvmu(u, nbins = nbins)
+        beta , alpha, bins, fail = al_help.find_bcvmu(u, nbins = nbins)
 
         kB = 0.00198720375145233
 
         I0, I1, I2, I3, I4 = al_help.Irecurr(beta, alpha, 4)
+        for j,i in enumerate([ I0, I1, I2, I3, I4]):
+            print(f'I{j} --> {i}')
         cv = beta**2 * (I4/I2 -(I3/I2)**2 ) *kB
 
         print('Effective cv = {:5.4f} kcal/mol/K'.format(cv))
         Teff = 1.0/(beta*kB)
-        return Teff, beta, alpha, bins
+        return Teff, beta, alpha, bins, fail
     
     @staticmethod
     def write_potential_files(setup,data_point,parsed_args,bonded_inters):

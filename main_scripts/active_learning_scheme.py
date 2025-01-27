@@ -118,8 +118,8 @@ def main():
             candidate_data, beta_sampling = al.MC_sample(data, setup, parsed_args.sigma, beta_sampling)
         else:
             raise NotImplementedError(f'Candidate Sampling Method "{parsed_args.sampling_method}" is unknown')
-        
-        al.plot_candidate_distribution(candidate_data,setup )
+        if num != 0:
+            al.plot_candidate_distribution(candidate_data,setup )
         
         with open('beta_sampling_value','w') as f:
             f.write(f'{beta_sampling}')
@@ -132,7 +132,10 @@ def main():
         #selected_data = al.disimilarity_selection(data, setup, candidate_data,batchsize  )
         
         t2 = perf_counter()
-        selected_data = al.random_selection(data, setup, candidate_data,batchsize  )
+        if len(candidate_data) <= batchsize:
+            selected_data = candidate_data
+        else:
+            selected_data = al.random_selection(data, setup, candidate_data,batchsize  )
         selected_data = selected_data.reset_index(drop=True)
  
         print('selecting time = {:.3e} '.format(perf_counter()-t2))
