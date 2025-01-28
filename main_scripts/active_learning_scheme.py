@@ -118,8 +118,8 @@ def main():
             candidate_data, beta_sampling = al.MC_sample(data, setup, parsed_args.sigma, beta_sampling)
         else:
             raise NotImplementedError(f'Candidate Sampling Method "{parsed_args.sampling_method}" is unknown')
-        if num != 0:
-            al.plot_candidate_distribution(candidate_data,setup )
+        #if num != 0:
+           # al.plot_candidate_distribution(candidate_data,setup )
         
         with open('beta_sampling_value','w') as f:
             f.write(f'{beta_sampling}')

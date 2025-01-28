@@ -215,9 +215,9 @@ class al_help():
                 c5 = ' cd - '
                 command  = '  ;  '.join([c1,c2])
 
-                beta_fit = 1e8
+                beta_eff = 1e8
                 md_iter = 0
-                while (np.abs ((beta_target - beta_fit)/beta_target) > 0.05)  and md_iter < 10:
+                while (np.abs ((beta_target - beta_eff)/beta_target) > 0.05)  and md_iter < 10:
                     print(f'md_iter = {md_iter} ,  beta_sampling = {beta_sampling} , tsampling = {teff} K')
                     os.system(command)
 
@@ -227,13 +227,18 @@ class al_help():
                  
                     ut = new_data['Uclass'].to_numpy()
                     shifted_energies = ut - ut.min()
-                    tfit, beta_fit, alpha, bins, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
+                    tfit, beta_eff, alpha, bins, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
+                    
+                    al_help.plot_candidate_distribution(shifted_energies, (beta_eff, alpha), bins, 
+                            title = f'MD iter {md_iter}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff),
+                            fname=f'{setup.runpath}/CD{md_iter}_t{round(beta_target,2)}_e{round(beta_eff,2)}.png')
+                    
                     if fail:
                         break
-                    beta_sampling *= beta_target/beta_fit
+                    beta_sampling *= beta_target/beta_eff
                     teff = round(1.0/ (beta_sampling*kB), 5) 
                     update_main_file_temperature(teff)
-                    print(f'md_iter = {md_iter} , beta_fit = {beta_fit}')
+                    print(f'md_iter = {md_iter} , beta_eff = {beta_eff}')
                     md_iter += 1
                 #select randomly 0.01% of the new_data
                 os.system('  ;  '.join([c1, c3,c4,c5]) )
@@ -286,7 +291,7 @@ class al_help():
             Uclass_prev = step_data['Uclass'].to_numpy().copy()
             n = len(step_data)
             step, c_size , all_accepted_u, sigma = 0, 0 , [] , sigma_init
-            avg_accept_ratio, beta_fit = 0 , beta
+            avg_accept_ratio, beta_eff = 0 , beta
             Um_prev = Uclass_prev.min()
             asymptotic_steps = 1000
             candidate_data_sys = pd.DataFrame()
@@ -306,7 +311,7 @@ class al_help():
                  
                 dubt = (Uclass_new  - Uclass_prev )*beta 
                  
-                #pe =  beta_fit/beta*np.exp( - dubt/beta_fit ) 
+                #pe =  beta_eff/beta*np.exp( - dubt/beta_eff ) 
                 pe =  np.exp( - dubt ) 
                 accepted_filter = pe > np.random.uniform(0,1,n) 
  
@@ -326,7 +331,7 @@ class al_help():
                     continue
                 umin = ut.min()
                 shifted_energies = ut  - umin
-                #beta_fit = 1/np.mean(shifted_energies + 1e-16)   
+                #beta_eff = 1/np.mean(shifted_energies + 1e-16)   
                 accept_ratio = np.count_nonzero(accepted_filter)/n
                 avg_accept_ratio += accept_ratio
  
@@ -338,8 +343,8 @@ class al_help():
                      sigma/=0.97
                 sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
                 if step %100 ==0:
-                    tfit, beta_fit, alpha, bins, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
-                    print( 'MC step {:d},  beta_fit = {:4.6f}, Tfit = {:4.6f} K, umin = {:4.6f} kcal/mol sigma = {:.4e} A ,  accept_ratio {:5.4f} current_accept = {:5.4f} '.format(step, beta_fit, tfit ,umin, sigma, AR, accept_ratio) )
+                    tfit, beta_eff, alpha, bins, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
+                    print( 'MC step {:d},  beta_eff = {:4.6f}, Tfit = {:4.6f} K, umin = {:4.6f} kcal/mol sigma = {:.4e} A ,  accept_ratio {:5.4f} current_accept = {:5.4f} '.format(step, beta_eff, tfit ,umin, sigma, AR, accept_ratio) )
 
                 if step < asymptotic_steps:
                     continue
@@ -354,32 +359,23 @@ class al_help():
         print('Average acceptance {:5.4f}'.format( c_size/(n*(step) ) ) )
         
         #raise  Exception('Debuging. Want to stop here')
-        return candidate_data
+        return candidate_data , beta_sampling
 
     @staticmethod
-    def plot_candidate_distribution(candidate_data,r_setup):
-        if 'Uclass' not in candidate_data.columns:
-            optimizer = al_help.evaluate_potential(candidate_data,r_setup, 'opt')
-        tot_u = candidate_data['Uclass'].to_numpy()
-        names = np.unique( candidate_data['sys_name'] )
-        min_u = np.empty_like(tot_u)
-        for name in names:
-            fn = candidate_data['sys_name'] == name
-            min_u[fn] = np.min(tot_u[fn]) 
-        u = (tot_u - min_u)
-        u_sorted = np.sort(u)
-        kB = 0.00198720375145233
+    def plot_candidate_distribution(u, fitting_params, bins, title = '', fname=None):
         
-        tfit, beta_fit, alpha, bins, fail = al_help.estimate_Teff_Beff(u_sorted)
-        Pfit = al_help.joint_Boltzman_Maxwellian_distribution(u_sorted, beta_fit, alpha)
+        u_sorted = np.sort(u)
+        Pfit = al_help.joint_Boltzman_Maxwellian_distribution(u_sorted, *fitting_params)
         _ = plt.figure(figsize = (3.3,3.3), dpi=300)
+        if title != '':
+            plt.title(title, fontsize = 5.5)
         hist,bin_edges = np.histogram(u, bins=bins,density = True)
         plt.hist(u, bins=bins,density = True,label = 'candidates', color='blue')
         plt.plot(u_sorted, Pfit, ls ='-',label='fit', color='red')
         plt.legend(frameon=False, fontsize=7)
-        plt.savefig(f'{r_setup.runpath}/candidate_distribution.png', bbox_inches='tight')
-        plt.show()
-        print('beta_fit = {:4.3f} , Tfit = {:4.3f} K  '.format(beta_fit, tfit) )
+        if fname is not None:
+            plt.savefig(fname, bbox_inches='tight')
+        #plt.show()
         return
     
     @staticmethod
@@ -391,8 +387,12 @@ class al_help():
     @staticmethod 
     def Irecurr (beta, alpha, n ):
         ab = beta * alpha
-        I0 = 0.5 * sqrt(np.pi/ab) * exp(beta**2/(4*ab)) * ( 1 - erf(beta/(2*sqrt(ab))) )
-        #I0 = np.float64(I0)
+        b4a = beta/(4.0*alpha)
+        if b4a < 100:
+            f0 = exp(b4a) * ( 1 - erf(sqrt(b4a)) ) 
+        else:
+            f0 = 1/sqrt(np.pi*b4a)
+        I0 = 0.5 * sqrt(np.pi/ab) * f0 
         I1 = (1.0 - beta*I0)/(2*ab)
         ir = [I0, I1]
         for i in range(2, n+1):
@@ -412,13 +412,13 @@ class al_help():
         mu = np.mean(u)
         beta = 1/mu
         params = np.array( [ 1.0, 0.0033 ] )
-        bounds = [ [0.1,10], [0.001,0.01], ]
+        bounds = [ [0.1,10], [0.001,0.1], ]
         kB = 0.00198720375145233
         def cost_BG(params, dens ,bc, mu):
             c = cost_distribution_fit(params, dens, bc) 
             ir = al_help.Irecurr(params[0], params[1], 3)
             c2 = (ir[-1]/ir[-2] - mu)**2
-            return c + c2
+            return c #+ c2
         def cost_distribution_fit(params, dens, bc):
             w = 1/(1 + dens)
             ps = al_help.joint_Boltzman_Maxwellian_distribution(bc,*params)
