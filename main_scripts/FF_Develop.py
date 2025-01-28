@@ -354,7 +354,7 @@ class al_help():
         print('Average acceptance {:5.4f}'.format( c_size/(n*(step) ) ) )
         
         #raise  Exception('Debuging. Want to stop here')
-        return candidate_data
+        return candidate_data , beta_sampling
 
     @staticmethod
     def plot_candidate_distribution(candidate_data,r_setup):
@@ -391,8 +391,12 @@ class al_help():
     @staticmethod 
     def Irecurr (beta, alpha, n ):
         ab = beta * alpha
-        I0 = 0.5 * sqrt(np.pi/ab) * exp(beta**2/(4*ab)) * ( 1 - erf(beta/(2*sqrt(ab))) )
-        #I0 = np.float64(I0)
+        b4a = beta/(4.0*alpha)
+        if b4a < 100:
+            f0 = exp(b4a) * ( 1 - erf(sqrt(b4a)) ) 
+        else:
+            f0 = 1/sqrt(np.pi*b4a)
+        I0 = 0.5 * sqrt(np.pi/ab) * f0 
         I1 = (1.0 - beta*I0)/(2*ab)
         ir = [I0, I1]
         for i in range(2, n+1):
@@ -412,13 +416,13 @@ class al_help():
         mu = np.mean(u)
         beta = 1/mu
         params = np.array( [ 1.0, 0.0033 ] )
-        bounds = [ [0.1,10], [0.001,0.01], ]
+        bounds = [ [0.1,10], [0.001,0.1], ]
         kB = 0.00198720375145233
         def cost_BG(params, dens ,bc, mu):
             c = cost_distribution_fit(params, dens, bc) 
             ir = al_help.Irecurr(params[0], params[1], 3)
             c2 = (ir[-1]/ir[-2] - mu)**2
-            return c + c2
+            return c #+ c2
         def cost_distribution_fit(params, dens, bc):
             w = 1/(1 + dens)
             ps = al_help.joint_Boltzman_Maxwellian_distribution(bc,*params)
