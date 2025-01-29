@@ -160,9 +160,10 @@ class al_help():
         cols = data.columns
         candidate_data = pd.DataFrame()
         lammps_main_file = "lammps_working/sample_run.lmscr"
-        kB = 0.0019872037514523
 
+        kB = 0.0019872037514523
         beta_target = 1.0/(kB*parsed_args.Ttarget)
+        
         tsample = round(1.0/ (beta_sampling*kB), 2) 
         def update_main_file_temperature(tsample):
             with open(lammps_main_file,'r') as fil:
@@ -271,16 +272,15 @@ class al_help():
             params = c.flatten()
         
     @staticmethod
-    def MC_sample(data, r_setup, sigma, beta_sampling):
+    def MC_sample(data, r_setup, parsed_args, beta_sampling):
+        
         max_mc_steps = 100000
-        max_candidates_per_system = 4000
-        kB = 0.00198720375145233
+        max_candidates_per_system = 40000
         
-        beta =  beta_sampling
+        kB = 0.0019872037514523
+        beta_target = 1.0/(kB*parsed_args.Ttarget)
         
-        print('Sampling beta in MC = {:4.6f}'.format(beta) )
-        
-        sigma_init = sigma
+        sigma_init = parsed_args.sigma
         
         c = copy.deepcopy(data['coords'].to_numpy())
         
@@ -288,79 +288,94 @@ class al_help():
         init_data['coords'] = c
         systems = np.unique(init_data['sys_name'])
         
+        asymptotic_steps = 1000
         candidate_data = pd.DataFrame()
         
         for sysname in systems:
+            
             sys_data = init_data [ init_data['sys_name'] == sysname]
+            
             step_data = copy.deepcopy(sys_data)
+            
             al_help.evaluate_potential(step_data, r_setup,'opt')
 
             Uclass_prev = step_data['Uclass'].to_numpy().copy()
+            
             n = len(step_data)
-            step, c_size , all_accepted_u, sigma = 0, 0 , [] , sigma_init
-            avg_accept_ratio, beta_eff = 0 , beta
-            Um_prev = Uclass_prev.min()
-            asymptotic_steps = 1000
-            candidate_data_sys = pd.DataFrame()
-            while(step <= max_mc_steps and c_size <= max_candidates_per_system):
-                t0 = perf_counter()
- 
-                all_new_coords = []
-                old_coords = copy.deepcopy(step_data['coords'].to_numpy())
-                for j,dat in step_data.iterrows():
-                    new_coords = al_help.petrube_coords(np.array(dat['coords']) ,sigma, 'random_walk', dat['bodies'])
-                    all_new_coords.append(new_coords)
-                step_data.loc[step_data.index,'coords'] = all_new_coords
-                 
-                al_help.evaluate_potential(step_data, r_setup,'opt')
-                 
-                Uclass_new = step_data['Uclass'].to_numpy()
-                 
-                dubt = (Uclass_new  - Uclass_prev )*beta 
-                 
-                #pe =  beta_eff/beta*np.exp( - dubt/beta_eff ) 
-                pe =  np.exp( - dubt ) 
-                accepted_filter = pe > np.random.uniform(0,1,n) 
- 
-             
-                not_accepted_filter = np.logical_not(accepted_filter)
-                step_data.loc[ not_accepted_filter, 'coords']  = old_coords[not_accepted_filter]
-                 
-                Uclass_prev [ accepted_filter ] = Uclass_new [accepted_filter].copy()
-                Uclass_prev [ not_accepted_filter ] =  Uclass_prev [ not_accepted_filter].copy()
-                accepted_eners = Uclass_prev[accepted_filter]
- 
-                all_accepted_u.extend( accepted_eners )
-                ut = np.array(all_accepted_u[int(-200*n*avg_accept_ratio/max(1,step) ):])
+            
+            times_scaled_beta = 0
+            
+            while times_scaled_beta < 10:
                 
-                if ut.shape[0] == 0:
-                    print('Zero accept')
-                    continue
-                umin = ut.min()
-                shifted_energies = ut  - umin
-                #beta_eff = 1/np.mean(shifted_energies + 1e-16)   
-                accept_ratio = np.count_nonzero(accepted_filter)/n
-                avg_accept_ratio += accept_ratio
- 
-                step += 1
-                AR = avg_accept_ratio/step
-                if AR < 0.2:
-                     sigma*=0.97
-                elif AR > 0.5:
-                     sigma/=0.97
-                sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
-                if step %100 ==0:
-                    tfit, beta_eff, alpha,weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
-                    print( 'MC step {:d},  beta_eff = {:4.6f}, Tfit = {:4.6f} K, umin = {:4.6f} kcal/mol sigma = {:.4e} A ,  accept_ratio {:5.4f} current_accept = {:5.4f} '.format(step, beta_eff, tfit ,umin, sigma, AR, accept_ratio) )
+                print('MC trial = {:d} beta_sampling = {:4.6f} , system = {:s}'.format(times_scaled_beta, beta_sampling, sysname) )
+                
+                
+                step, c_size ,  sigma, avg_accept_ratio = 0, 0 , sigma_init, 0.0
+                candidate_data_sys = pd.DataFrame()
+                
+                while(step <= max_mc_steps and c_size <= max_candidates_per_system):
+             
+                    all_new_coords = []
+                    old_coords = copy.deepcopy(step_data['coords'].to_numpy())
+                    for j,dat in step_data.iterrows():
+                        new_coords = al_help.petrube_coords(np.array(dat['coords']) ,sigma, 'random_walk', dat['bodies'])
+                        all_new_coords.append(new_coords)
+                    step_data.loc[step_data.index,'coords'] = all_new_coords
+                     
+                    al_help.evaluate_potential(step_data, r_setup,'opt')
+                     
+                    Uclass_new = step_data['Uclass'].to_numpy()
+                     
+                    dubt = (Uclass_new  - Uclass_prev )*beta_sampling
+                     
+                    pe =  np.exp( - dubt ) 
+                    accepted_filter = pe > np.random.uniform(0,1,n) 
+             
+                 
+                    not_accepted_filter = np.logical_not(accepted_filter)
+                    step_data.loc[ not_accepted_filter, 'coords']  = old_coords[not_accepted_filter]
+                     
+                    Uclass_prev [ accepted_filter ] = Uclass_new [accepted_filter].copy()
+                    Uclass_prev [ not_accepted_filter ] =  Uclass_prev [ not_accepted_filter].copy()
+                    
+                    accept_ratio = np.count_nonzero(accepted_filter)/n
+                    avg_accept_ratio += accept_ratio
+             
+                    step += 1
+                    AR = avg_accept_ratio/step
+                    if AR < 0.2:
+                         sigma*=0.97
+                    elif AR > 0.5:
+                         sigma/=0.97
+                    sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
+                    if step %500 ==0:
+                        print( 'MC step {:d},   sigma = {:.4e} A ,  accept_ratio = {:5.4f}  ,  current_accept = {:5.4f} candidate size = {:d}'.format(step,  sigma, AR, accept_ratio, c_size) )
+                        sys.stdout.flush()
+            
+                    if step < asymptotic_steps:
+                        continue
+                    
+                    filtered_step_data = step_data[ accepted_filter ]
+                    
+                    candidate_data_sys = pd.concat( (candidate_data_sys, filtered_step_data), ignore_index=True)
+                    
+                    c_size = len(candidate_data_sys)
+                    ########
 
-                if step < asymptotic_steps:
-                    continue
-                filtered_step_data = step_data[ accepted_filter ]
-                candidate_data_sys = pd.concat( (candidate_data_sys, filtered_step_data), ignore_index=True)
-                c_size = len(candidate_data_sys)
-                tf = perf_counter() - t0
-                print( 'Monte Carlo step {:d}, | time --> {:.3e} ms canidate size {:d} '.format(step,  tf*1000, c_size) ) 
-                sys.stdout.flush()
+                u = candidate_data_sys['Uclass'].to_numpy()
+
+                tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u, nbins = 200) 
+                print('MC trial = {:d} beta_target = {:5.4f} ,  beta_eff = {:5.4f}  ,  beta_sampling = {:5.4f}'.format (times_scaled_beta, beta_target, beta_eff, beta_sampling) )
+                if fail:        
+                    print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
+                    break
+                if np.abs ((beta_target - beta_eff)/beta_target) < 0.05 :
+                    print(f'MC trial = {times_scaled_beta}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
+                    break
+
+                beta_sampling *= np.sqrt( beta_target/beta_eff)
+                times_scaled_beta += 1
+            
             candidate_data = candidate_data.append(candidate_data_sys,ignore_index=True)
 
         print('Average acceptance {:5.4f}'.format( c_size/(n*(step) ) ) )
@@ -472,19 +487,22 @@ class al_help():
         
         def reg_cost(params, n_l):
             c2 = 0.0 
+            c1 = 0.0
             if n_l >1:
                 w_l = params[3:3+n_l]
                 w = w_l/np.sum(params[2:3+n_l])
                 for i in range(n_l):
+                    c1 += w[i]**2
                     for j in range(i+1,n_l):
                         c2 += w[i]*w[j]
-                c2/= n_l*(n_l-1)/2.0
-            return c2
+                c2 /= n_l*(n_l-1)/2.0
+                c1 /= n_l
+            return c2 + c1
 
         def cost_BG(params, dens ,bc, n_l):
             c = cost_distribution_fit(params, dens, bc, n_l) 
-            c2 = reg_cost(params,n_l)
-            return c + c2
+            creg = reg_cost(params,n_l)
+            return c + creg
         
         def cost_distribution_fit(params, dens, bc, n_l):
             beta, alpha, w_l, min_u_l = get_params( params, n_l)
@@ -502,7 +520,7 @@ class al_help():
         cfit = cost_distribution_fit(res.x, dens, bc, nminima)
         reg = reg_cost(res.x, nminima)
         cv_eff = u.var()*kB*beta**2
-        print ('bins = {:d}, beta = {:5.4f}, alpha = {:5.4f}  costf = {:8.7f} reg_cost = {:.3e} cv_histogram = {:5.4f} kcal/mol/K'.format(nbins, beta, alpha, cfit, reg,  cv_eff))
+        print ('bins = {:d}, beta = {:5.4f}, alpha = {:5.4f}  costf = {:8.7f} reg_cost = {:8.7f} cv_histogram = {:5.4f} kcal/mol/K'.format(nbins, beta, alpha, cfit, reg,  cv_eff))
         w_l = np.array(w_l)/np.sum(w_l)
         
         al_help.plot_candidate_distribution(u, (beta, alpha, w_l, min_u_l), nbins,

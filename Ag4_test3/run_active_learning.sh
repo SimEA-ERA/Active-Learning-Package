@@ -1,16 +1,17 @@
 #!/bin/bash
-#SBATCH --job-name=Ag7
+#SBATCH --job-name=Ag4
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --partition=milan
+#SBATCH --ntasks-per-node=4
+#SBATCH --partition=a100
 #SBATCH --time=23:59:00
 
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
 #### Variables
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_dir="$SLURM_SUBMIT_DIR"
+cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
 mkdir -p lammps_working
@@ -19,15 +20,15 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/Ag.in"
 bsize=100
-Niters=25
-iexist=25
-contin=25
+Niters=15
+iexist=0
+contin=0
 sigma=0.02
 Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=1.62
+beta_sampling=1.1555096541399819
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"

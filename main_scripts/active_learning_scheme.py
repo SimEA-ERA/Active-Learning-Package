@@ -115,7 +115,7 @@ def main():
             parsed_args.writing_path='lammps_working'
             candidate_data, beta_sampling = al.sample_via_lammps(data,setup, parsed_args, beta_sampling)
         elif parsed_args.sampling_method == 'mc':
-            candidate_data, beta_sampling = al.MC_sample(data, setup, parsed_args.sigma, beta_sampling)
+            candidate_data, beta_sampling = al.MC_sample(data, setup, parsed_args, beta_sampling)
         else:
             raise NotImplementedError(f'Candidate Sampling Method "{parsed_args.sampling_method}" is unknown')
         #if num != 0:

@@ -32,11 +32,11 @@ rm lammps_working/*tab
 if [[ $number -eq 0 ]]; then
     rm evaluations/*dat
 fi
-rm out err FF_develop.log report_of_run
-echo "Do you want to delete also the reference data ? (If so type 'yes')"
+rm out err FF_develop.log report_of_run beta_sampling_value
+echo "Do you want to delete also the csv data ? (If so type 'yes')"
 read answer
 
 if [ "$answer" = "yes" ]; then
     # Your code for the next section goes here
-    rm -r reference_data
+    rm -r COSTS.csv predictCOSTS.csv
 fi
