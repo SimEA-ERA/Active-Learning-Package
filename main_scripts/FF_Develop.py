@@ -22,7 +22,7 @@ import logging
 import itertools
 #from scipy.special import erf
 from mpmath import erf, mp, exp, sqrt
-mp.dps = 50
+mp.dps = 32
 import collections
 import six
 
@@ -163,16 +163,16 @@ class al_help():
         kB = 0.0019872037514523
 
         beta_target = 1.0/(kB*parsed_args.Ttarget)
-        teff = round(1.0/ (beta_sampling*kB), 2) 
-        def update_main_file_temperature(teff):
+        tsample = round(1.0/ (beta_sampling*kB), 2) 
+        def update_main_file_temperature(tsample):
             with open(lammps_main_file,'r') as fil:
                 lines = fil.readlines()
                 fil.closed
             for l,line in enumerate(lines):
                 li = line.split()
                 if 'variable' in li and 'teff' in li and 'equal' in li:
-                    print(f'Updating temperature to {teff}  K' )
-                    lines[l] = f'variable teff equal {teff}\n'
+                    print(f'Updating temperature to {tsample}  K' )
+                    lines[l] = f'variable teff equal {tsample}\n'
             with open(lammps_main_file,'w') as fil:
                 for line in lines:
                     fil.write(line)
@@ -217,8 +217,8 @@ class al_help():
 
                 beta_eff = 1e8
                 md_iter = 0
-                while (np.abs ((beta_target - beta_eff)/beta_target) > 0.05)  and md_iter < 10:
-                    print(f'md_iter = {md_iter} ,  beta_sampling = {beta_sampling} , tsampling = {teff} K')
+                while md_iter < 10:
+                    print(f'md_iter = {md_iter} ,  beta_sampling = {beta_sampling} , tsampling = {tsample} K')
                     os.system(command)
 
                     new_data = al_help.read_lammps_structs('lammps_working/samples.lammpstrj',inv_types)
@@ -227,20 +227,27 @@ class al_help():
                  
                     ut = new_data['Uclass'].to_numpy()
                     shifted_energies = ut - ut.min()
-                    tfit, beta_eff, alpha, bins, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
+                    tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
                     
-                    al_help.plot_candidate_distribution(shifted_energies, (beta_eff, alpha), bins, 
+                    al_help.plot_candidate_distribution(shifted_energies, (beta_eff, alpha, weights, l_minima), 200,
                             title = f'MD iter {md_iter}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff),
                             fname=f'{setup.runpath}/CD{md_iter}_t{round(beta_target,2)}_e{round(beta_eff,2)}.png')
                     
                     if fail:
+                        print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
                         break
-                    beta_sampling *= beta_target/beta_eff
-                    teff = round(1.0/ (beta_sampling*kB), 5) 
-                    update_main_file_temperature(teff)
+                    if np.abs ((beta_target - beta_eff)/beta_target) < 0.05 :
+                        print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
+                        break
+                    beta_sampling *= np.sqrt(beta_target/beta_eff)
+                    
+                    tsample = round(1.0/ (beta_sampling*kB), 5) 
+                    
+                    update_main_file_temperature(tsample)
+                    
                     print(f'md_iter = {md_iter} , beta_eff = {beta_eff}')
                     md_iter += 1
-                #select randomly 0.01% of the new_data
+                
                 os.system('  ;  '.join([c1, c3,c4,c5]) )
                 chosen_index = new_data.index #[ np.random.choice( new_data.index, max(1,int(0.1*len(new_data))), replace=False) ]
                 #print('from runned data chose configurations',chosen_index)
@@ -343,7 +350,7 @@ class al_help():
                      sigma/=0.97
                 sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
                 if step %100 ==0:
-                    tfit, beta_eff, alpha, bins, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
+                    tfit, beta_eff, alpha,weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = min(int(0.01*ut.shape[0]),200) )
                     print( 'MC step {:d},  beta_eff = {:4.6f}, Tfit = {:4.6f} K, umin = {:4.6f} kcal/mol sigma = {:.4e} A ,  accept_ratio {:5.4f} current_accept = {:5.4f} '.format(step, beta_eff, tfit ,umin, sigma, AR, accept_ratio) )
 
                 if step < asymptotic_steps:
@@ -365,16 +372,24 @@ class al_help():
     def plot_candidate_distribution(u, fitting_params, bins, title = '', fname=None):
         
         u_sorted = np.sort(u)
-        Pfit = al_help.joint_Boltzman_Maxwellian_distribution(u_sorted, *fitting_params)
+        Pfit = al_help.joint_Boltzman_Maxwellian_distribution_multy_minima(u_sorted, *fitting_params)
         _ = plt.figure(figsize = (3.3,3.3), dpi=300)
         if title != '':
             plt.title(title, fontsize = 5.5)
         hist,bin_edges = np.histogram(u, bins=bins,density = True)
         plt.hist(u, bins=bins,density = True,label = 'candidates', color='blue')
+        beta, alpha, wl, u_min_l = fitting_params
+        lstyle =[':','-.','--']*5
+        for w, ul, j in zip(wl, u_min_l, range(len(wl)) ):
+            u_s = u_sorted - ul
+            u_s = u_s[u_s>0]
+            pl = w * al_help.joint_Boltzman_Maxwellian_distribution(u_s, beta, alpha)
+            plt.plot(u_s+ul, pl, ls=lstyle[j], color='orange', label='LM={:3.2f}'.format(ul), lw =0.75 )
         plt.plot(u_sorted, Pfit, ls ='-',label='fit', color='red')
         plt.legend(frameon=False, fontsize=7)
         if fname is not None:
             plt.savefig(fname, bbox_inches='tight')
+        plt.close()
         #plt.show()
         return
     
@@ -388,7 +403,7 @@ class al_help():
     def Irecurr (beta, alpha, n ):
         ab = beta * alpha
         b4a = beta/(4.0*alpha)
-        if b4a < 100:
+        if b4a < 50:
             f0 = exp(b4a) * ( 1 - erf(sqrt(b4a)) ) 
         else:
             f0 = 1/sqrt(np.pi*b4a)
@@ -399,6 +414,20 @@ class al_help():
             ir_i = ( (i-1)*ir[i-2] - beta*ir[i-1] ) / (2*ab)
             ir.append( ir_i )
         return tuple([np.float64(i) for i in ir])
+    
+    @staticmethod
+    def joint_Boltzman_Maxwellian_distribution_multy_minima(u, beta, alpha, w_l=[1.0], min_u_l=[0.0]):
+        I0, I1, I2 = al_help.Irecurr(beta, alpha, 2)
+        sw = np.sum(w_l)
+        P = 0.0
+        for w,u_l in zip(w_l, min_u_l):
+            P += (w/sw) * al_help.P(u - u_l ,beta, alpha)
+        return P/I2
+    @staticmethod
+    def P(u, beta, alpha):
+        pu = u**2 * np.exp(-beta*u) * np.exp(-alpha*beta*u**2)
+        pu[ u <0 ] = 0.0
+        return pu
 
     @staticmethod
     def joint_Boltzman_Maxwellian_distribution(u, beta, alpha):
@@ -408,59 +437,130 @@ class al_help():
         return P/I2
 
     @staticmethod
-    def find_bcvmu(u,nbins=200):
+    def find_distribution_parameters(u, nminima=0,nbins=200):
+        u = u - u.min()
         mu = np.mean(u)
-        beta = 1/mu
-        params = np.array( [ 1.0, 0.0033 ] )
-        bounds = [ [0.1,10], [0.001,0.1], ]
-        kB = 0.00198720375145233
-        def cost_BG(params, dens ,bc, mu):
-            c = cost_distribution_fit(params, dens, bc) 
-            ir = al_help.Irecurr(params[0], params[1], 3)
-            c2 = (ir[-1]/ir[-2] - mu)**2
-            return c #+ c2
-        def cost_distribution_fit(params, dens, bc):
-            w = 1/(1 + dens)
-            ps = al_help.joint_Boltzman_Maxwellian_distribution(bc,*params)
-            return np.sum( w*(ps - dens )**2 )/np.sum(w) #ps.shape[0]   
-        min_cost = 1e17
-        list_bins =  np.arange(int(0.7*nbins),int(1.25*nbins),10)
-        for nbins in list_bins:
-            dens, bin_edges = np.histogram(u, bins=nbins, density=True)
-            bc = bin_edges[0 : -1] - 0.5*(bin_edges[1]-bin_edges[0])
-            args = (dens , bc, mu)
-            #res = minimize(cost_BG, params, bounds=bounds, args = args, method='SLSQP',constraints = {'type':'eq','fun': mubt})
-            res = dual_annealing(cost_BG, bounds, args = args,  initial_temp=15000, restart_temp_ratio=2e-04)
-            print (f'bins = {nbins}, beta = {res.x[0]}, alpha = {res.x[1]}  costf = {res.fun}')
-            if res.fun < min_cost: 
-                b = res.x[0]
-                a = res.x[1]
-                min_cost = res.fun
-                bins = nbins
-                cfit = cost_distribution_fit(res.x, dens, bc)
-        if cfit > 0.05 or b ==0:
-            fail = True
-        else:
-            fail = False
-        print(' Estimated cv  = {:5.4f} kcal/mol/K based on var'.format(u.var()*kB*b**2))
+        
+        params = [ 1.0, 0.0033 ] # beta, alpha
+        bounds = [ [0.1,10], [0.001,0.1]] 
+        if nminima > 0:
+            for _ in range(nminima +1):
+                # adding the weights
+                params.append(0.5)
+                bounds.append([0,1.0])
+            umax = u.max()
+            for j in range(nminima):
+                # adding initializations about the minima
+                params.append( (j+0.5)*umax/nminima)
+                bounds.append([0,umax])
 
-        return b, a, bins, fail
+        params = np.array(params)
+        
+        kB = 0.00198720375145233
+        
+        def get_params( params, n_l):
+            beta, alpha = params[0], params[1]
+            if n_l>0:
+                n_w = n_l + 1
+                n_w_e = n_w + 2
+                w_l =  params[2:n_w_e]
+                min_u_l = np.array([0.0, *list( params[ n_w_e : n_w_e + n_l  ] )] )
+            else:
+                w_l = [1.0]
+                min_u_l = [ 0.0 ]
+            return beta, alpha, w_l, min_u_l
+        
+        def reg_cost(params, n_l):
+            c2 = 0.0 
+            if n_l >1:
+                w_l = params[3:3+n_l]
+                w = w_l/np.sum(params[2:3+n_l])
+                for i in range(n_l):
+                    for j in range(i+1,n_l):
+                        c2 += w[i]*w[j]
+                c2/= n_l*(n_l-1)/2.0
+            return c2
+
+        def cost_BG(params, dens ,bc, n_l):
+            c = cost_distribution_fit(params, dens, bc, n_l) 
+            c2 = reg_cost(params,n_l)
+            return c + c2
+        
+        def cost_distribution_fit(params, dens, bc, n_l):
+            beta, alpha, w_l, min_u_l = get_params( params, n_l)
+            ps = al_help.joint_Boltzman_Maxwellian_distribution_multy_minima(bc,beta, alpha, w_l, min_u_l)
+            return 100*np.sum( np.abs(ps - dens ) ) /ps.shape[0]
+        
+        dens, bin_edges = np.histogram(u, bins=nbins, density=True)
+        
+        bc = bin_edges[0 : -1] - 0.5*(bin_edges[1]-bin_edges[0])
+        args = (dens , bc, nminima)
+        
+        res = dual_annealing(cost_BG, bounds, args = args,  initial_temp=15000, maxiter=500, restart_temp_ratio=2e-04)
+        beta, alpha, w_l, min_u_l = get_params( res.x, nminima)
+        
+        cfit = cost_distribution_fit(res.x, dens, bc, nminima)
+        reg = reg_cost(res.x, nminima)
+        cv_eff = u.var()*kB*beta**2
+        print ('bins = {:d}, beta = {:5.4f}, alpha = {:5.4f}  costf = {:8.7f} reg_cost = {:.3e} cv_histogram = {:5.4f} kcal/mol/K'.format(nbins, beta, alpha, cfit, reg,  cv_eff))
+        w_l = np.array(w_l)/np.sum(w_l)
+        
+        al_help.plot_candidate_distribution(u, (beta, alpha, w_l, min_u_l), nbins,
+                title = f'nl  {nminima}:' + r'$\beta_{eff}$ =' + '{:5.4f}'.format(beta),
+                fname=f'Results/nl{nminima}.png')
+        return (beta, alpha, w_l, min_u_l), cfit
 
     @staticmethod
     def estimate_Teff_Beff(u, nbins = 200):
         u = u -u.min()
-        beta , alpha, bins, fail = al_help.find_bcvmu(u, nbins = nbins)
+        dens, bin_edges = np.histogram(u, bins=nbins, density=True)
+        std = np.sqrt(dens/u.shape[0]).sum()/nbins*100
+        print('Standard error of the data = {:8.6f}'.format(std))
+        rel_err = 1e16
+        old_err = 5
+        n_l = 0
+        def print_minima(weights, l_minima):
+            for wl, ul in zip(weights, l_minima):
+                print('found minima with weight {:5.4f} at {:5.4f}'.format(wl, ul) )
+            return
 
+        while( n_l<10 ):
+            p,  new_err  = al_help.find_distribution_parameters(u, nminima=n_l, nbins = nbins)
+            beta, alpha, weights, l_minima = p
+            rel_err = (old_err - new_err)/old_err
+            fail = old_err > std*10
+            print('number of local minima {:d} , rel error = {:5.4f}'.format(n_l, rel_err) )
+            
+            print_minima (weights, l_minima) 
+            if rel_err <0.1:
+                break
+            if new_err < 3*std:
+                pold = p
+                break
+            
+            n_l += 1
+            old_err = new_err
+            pold = p
+        
+        beta, alpha, weights, l_minima = pold
+        
+        print(' .... Solution ....'*5)
+        print('beta = {:5.4f} alpha = {:5.4f}'.format(beta,alpha) )
+        
+        print_minima (weights, l_minima) 
+        
         kB = 0.00198720375145233
-
         I0, I1, I2, I3, I4 = al_help.Irecurr(beta, alpha, 4)
         for j,i in enumerate([ I0, I1, I2, I3, I4]):
             print(f'I{j} --> {i}')
         cv = beta**2 * (I4/I2 -(I3/I2)**2 ) *kB
 
         print('Effective cv = {:5.4f} kcal/mol/K'.format(cv))
+       
+        print(' .................'*5)
+
         Teff = 1.0/(beta*kB)
-        return Teff, beta, alpha, bins, fail
+        return Teff, beta, alpha, weights, l_minima,  fail
     
     @staticmethod
     def write_potential_files(setup,data_point,parsed_args,bonded_inters):
@@ -477,6 +577,8 @@ class al_help():
                 f.write('fix {:d} rigid_group{:d} rigid {:s} langevin 1 500 $(1*dt) 15 \n'.format(j+3,j,setup.rigid_style) )
 
             f.closed
+        return 
+
     @staticmethod
     def make_interactions(data,setup):
 
