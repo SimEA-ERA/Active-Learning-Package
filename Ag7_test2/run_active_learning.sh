@@ -28,14 +28,14 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 inff="$script_dir/Ag.in"
 bsize=100
 Niters=20
-iexist=12
-contin=12
+iexist=16
+contin=16
 sigma=0.02
 Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=3.07
+beta_sampling=3.28
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"

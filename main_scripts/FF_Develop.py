@@ -438,7 +438,7 @@ class al_help():
             u_s = u_sorted - ul
             u_s = u_s[u_s>0]
             pl = w * al_help.joint_Boltzman_Maxwellian_distribution(u_s, beta, alpha)
-            plt.plot(u_s+ul, pl, ls=lstyle[j], color='orange', label='LM={:3.2f}'.format(ul), lw =0.75 )
+            plt.plot(u_s+ul, pl, ls=lstyle[j], color='orange', label=r'$u_l$ at {:3.2f}'.format(ul), lw =0.75 )
         plt.plot(u_sorted, Pfit, ls ='-',label='fit', color='red')
         plt.legend(frameon=False, fontsize=7)
         if fname is not None:
@@ -496,7 +496,7 @@ class al_help():
         mu = np.mean(u)
         
         params = [ 1.0, 0.0033 ] # beta, alpha
-        bounds = [ [0.02,10], [0.0001,0.1]] 
+        bounds = [ [0.02,10], [0.0001,2]] 
         if nminima > 0:
             for _ in range(nminima +1):
                 # adding the weights
@@ -598,7 +598,7 @@ class al_help():
             if rel_err <0.1:
                 break
             if new_err < std:
-                pold = p
+                pold = p ; old_err = new_err
                 break
             
             n_l += 1
@@ -619,7 +619,7 @@ class al_help():
         cv = beta**2 * (I4/I2 -(I3/I2)**2 ) *kB
 
         print('Effective cv = {:5.4f} kcal/mol/K'.format(cv))
-       
+        print('Fitting error = {:3.2f} std'.format(old_err/std) )
         print(' .................'*5)
         sys.stdout.flush()
 
@@ -1312,7 +1312,7 @@ class al_help():
         return np.array(vec)
 
     @staticmethod
-    def random_selection(data , setup,candidate_data,batchsize,method='sys_name'):
+    def random_selection(data , setup,candidate_data,batchsize, method='random'):
         al_help.make_interactions(candidate_data,setup) 
         candidate_data = al_help.clean_candidate_data(candidate_data,setup)
         Ucls = candidate_data['Uclass'].to_numpy()
@@ -1333,9 +1333,14 @@ class al_help():
             
             fsystem = candidate_data['sys_name'] == name 
             ix_f = ix [fsystem]
-            u_f = Ucls [ fsystem]
-            psel = np.exp (- (u_f - u_f.min())/setup.bS)
-            psel /= psel.sum()
+            if method == 'random':
+                psel = None
+            elif method =='control_energy':
+                u_f = Ucls [ fsystem]
+                psel = np.exp (- (u_f - u_f.min())/setup.bS)
+                psel /= psel.sum()
+            elif method == 'histogram_uncertainty':
+                psel = al_help.find_histogran_uncertainty(candidate_data [fsystem] )
 
             nx = len(ix_f)
             ix_sel = np.random.choice (ix_f, size=min(num, nx),replace=False, p = psel)
@@ -1698,23 +1703,37 @@ class al_help():
                     dmin = d
         return dmin
     @staticmethod
-    def clean_candidate_data(data,setup):
+    def clean_candidate_data(data, setup):
         rc = setup.rclean
-        #sc = setup.struct_types
         keep_index = []
-        for j,df in data.iterrows():
-            c = df['coords']
-            st = df['structs']
-            dmax = 0
-            for k1,i1 in st.items():
-                for k2,i2 in st.items():
-                    if k1 == k2: continue
-                    dmin = al_help.calc_dmin(c[i1],c[i2])
-                    if dmin > dmax:
-                        dmax = dmin
-            if dmax < rc:        
+    
+        for j, df in data.iterrows():
+            coords = np.array(df['coords'])  # Ensure it's a NumPy array
+            natoms = df['natoms']
+            cluster_ids = {0}
+            cluster_size_old = len(cluster_ids)
+            cluster_size = 0
+            
+            while cluster_size_old != cluster_size:
+                cluster_size_old = len(cluster_ids)
+                new_ids = set(cluster_ids)  # Copy the set to avoid modification during iteration
+                for i in cluster_ids:  # Iterate over a copy
+                    rref = coords - coords[i]
+                    distances = np.sqrt(np.sum(rref * rref, axis=1))
+                    neibs = np.where(distances < rc)[0]
+                    new_ids |= set(neibs)
+                cluster_ids = new_ids  # Update the set after the loop
+                cluster_size = len(cluster_ids)
+
+            if cluster_size == natoms:
                 keep_index.append(j)
+        
+        n = len(data)
+        ncleaned = n - len(keep_index)
+        print (f'Cleaned {ncleaned}/{n} candidate data due to separated nanostructure (r_clean = {rc})')
+        sys.stdout.flush()
         return data.loc[keep_index]
+
     @staticmethod
     def clean_data(data,setup,prefix=''):
         n = len(data)
@@ -6563,7 +6582,7 @@ class FF_Optimizer(Optimizer):
         try:
             print(self.timecosts)
         except AttributeError:
-            print('optimization not performed ... time costs info not available')
+            print('time costs info not available')
         return
     
 class regularizators:
