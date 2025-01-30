@@ -3,14 +3,15 @@
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --partition=milan
+#SBATCH --ntasks-per-node=4
+#SBATCH --partition=a100
 #SBATCH --time=23:59:00
 
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
 #### Variables
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_dir="$SLURM_SUBMIT_DIR"
+cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
 mkdir -p lammps_working
@@ -19,14 +20,15 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/CO2.in"
 bsize=100
-Niters=20
-iexist=1
-contin=1
-sigma=0.01
+Niters=15
+iexist=0
+contin=0
+sigma=0.02
+Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-
+beta_sampling=1.1555096541399819
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
@@ -34,10 +36,11 @@ results_path="$script_dir/Results"
 mkdir -p $eval_dir
 
 for ((num=$contin; num<=$Niters; num++)); do
+   
    if [ "$num" -eq 0 ]; then
 	   sampling_method="perturbation"
-   elif [ "$num" -le 4 ]; then
       echo "Sampling method is set to perturbation"
+   elif [ "$num" -le 5 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"
@@ -47,7 +50,7 @@ for ((num=$contin; num<=$Niters; num++)); do
    # Run Python scripts from the same directory as this Bash script
    python "$main_set_of_files_path/active_learning_scheme.py" \
           -n $num -dp $datapath -f $inff -b $bsize -s $sigma -exd $iexist \
-          -m $sampling_method -cm "$charge_map" -mm "$mass_map"
+          -m $sampling_method -cm "$charge_map" -mm "$mass_map" -t $Ttarget  -bs $beta_sampling
 
    if [ $? -ne 0 ]; then
        echo "Error: Fitting algorithm did not execute successfully."
@@ -74,6 +77,7 @@ for ((num=$contin; num<=$Niters; num++)); do
            sleep 10
        done
 
+       bash "$main_set_of_files_path/extract_logfiles.sh" $nextnum $datapath
        rm report_of_run
    else
        echo "Iteration $nextnum not performing DFT since data already exist"
@@ -92,5 +96,6 @@ for ((num=$contin; num<=$Niters; num++)); do
    fi
 
    inff="$results_path/$num/runned.in"
+   beta_sampling=$(head -n 1 beta_sampling_value)
 done
 

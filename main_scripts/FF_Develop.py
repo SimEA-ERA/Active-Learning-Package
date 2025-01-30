@@ -20,6 +20,7 @@ from time import perf_counter
 import coloredlogs
 import logging
 import itertools
+import math
 #from scipy.special import erf
 from mpmath import erf, mp, exp, sqrt
 mp.dps = 32
@@ -236,7 +237,10 @@ class al_help():
                     
                     if fail:
                         print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
-                        break
+                        al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
+                        sys.stdout.flush()
+                        md_iter += 1
+                        continue
                     if np.abs ((beta_target - beta_eff)/beta_target) < 0.05 :
                         print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
                         break
@@ -270,9 +274,25 @@ class al_help():
 
             natoms = init_data['natoms'].to_numpy()[0]
             params = c.flatten()
-        
     @staticmethod
-    def MC_sample(data, r_setup, parsed_args, beta_sampling):
+    def beta_distribution_fit_fail_strategy(u , setup, beta_sampling ):
+        bs = setup.bS
+        u = u - u.min()
+        urange = u.max()
+        outlier = u.max() - u.mean()
+        if outlier > bs/beta_sampling:
+            print('Found high energy outliers beta_sampling is halfed!')
+            new_beta_sampling = beta_sampling*2
+        elif urange < bs/beta_sampling:
+            print('Found very small energy range beta_sampling is doubled!')
+            new_beta_sampling = beta_sampling/2
+        else:
+            print('Found no particular reason beta_sampling is scaled randomly between 0.66 and 1.34!')
+            new_beta_sampling = beta_sampling*np.random.uniform(0.66,1.34)
+        return new_beta_sampling
+
+    @staticmethod
+    def MC_sample(data, setup, parsed_args, beta_sampling):
         
         max_mc_steps = 100000
         max_candidates_per_system = 40000
@@ -297,8 +317,19 @@ class al_help():
             
             step_data = copy.deepcopy(sys_data)
             
-            al_help.evaluate_potential(step_data, r_setup,'opt')
+            al_help.evaluate_potential(step_data, setup,'opt')
+            Uclass = step_data['Uclass'].to_numpy().copy()
+            
+            bs = setup.bS
 
+            prop_sel = np.exp( - (Uclass - Uclass.min())/bs )
+            prop_sel /= prop_sel.sum()
+
+            all_indexes = np.array(step_data.index)
+            idx_chosen = np.random.choice(all_indexes, size= min(len(step_data),100) , replace=False, p = prop_sel)
+            step_data = step_data.loc[idx_chosen]
+
+            al_help.evaluate_potential(step_data, setup,'opt')
             Uclass_prev = step_data['Uclass'].to_numpy().copy()
             
             n = len(step_data)
@@ -322,7 +353,7 @@ class al_help():
                         all_new_coords.append(new_coords)
                     step_data.loc[step_data.index,'coords'] = all_new_coords
                      
-                    al_help.evaluate_potential(step_data, r_setup,'opt')
+                    al_help.evaluate_potential(step_data, setup,'opt')
                      
                     Uclass_new = step_data['Uclass'].to_numpy()
                      
@@ -365,10 +396,18 @@ class al_help():
                 u = candidate_data_sys['Uclass'].to_numpy()
 
                 tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u, nbins = 200) 
+                
                 print('MC trial = {:d} beta_target = {:5.4f} ,  beta_eff = {:5.4f}  ,  beta_sampling = {:5.4f}'.format (times_scaled_beta, beta_target, beta_eff, beta_sampling) )
+                
+                al_help.plot_candidate_distribution(u - u.min(), (beta_eff, alpha, weights, l_minima), 200,
+                            title = f'MC trial {times_scaled_beta}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff),
+                            fname=f'{setup.runpath}/CD{times_scaled_beta}_t{round(beta_target,2)}_e{round(beta_eff,2)}.png')
+                
                 if fail:        
-                    print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
-                    break
+                    print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}\n Following empirical strategy')
+                    al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
+                    times_scaled_beta += 1
+                    continue
                 if np.abs ((beta_target - beta_eff)/beta_target) < 0.05 :
                     print(f'MC trial = {times_scaled_beta}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
                     break
@@ -457,7 +496,7 @@ class al_help():
         mu = np.mean(u)
         
         params = [ 1.0, 0.0033 ] # beta, alpha
-        bounds = [ [0.1,10], [0.001,0.1]] 
+        bounds = [ [0.02,10], [0.0001,0.1]] 
         if nminima > 0:
             for _ in range(nminima +1):
                 # adding the weights
@@ -488,16 +527,21 @@ class al_help():
         def reg_cost(params, n_l):
             c2 = 0.0 
             c1 = 0.0
-            if n_l >1:
-                w_l = params[3:3+n_l]
-                w = w_l/np.sum(params[2:3+n_l])
-                for i in range(n_l):
-                    c1 += w[i]**2
-                    for j in range(i+1,n_l):
+            
+            if n_l >0:
+                w_l = params[2:3+n_l]
+                w = w_l/w_l.sum()
+                nw = w.shape[0]
+                for i in range(nw):
+                    #c1 += w[i]**2
+                    for j in range(i+1,nw):
                         c2 += w[i]*w[j]
-                c2 /= n_l*(n_l-1)/2.0
-                c1 /= n_l
-            return c2 + c1
+                        for k  in range(j+1,nw):
+                            c1 += w[i]*w[j]*w[k]
+                c2 /= math.perm(nw,2)
+                if nw>2:
+                    c1 /= math.perm(nw,3)
+            return (c2 + c1)
 
         def cost_BG(params, dens ,bc, n_l):
             c = cost_distribution_fit(params, dens, bc, n_l) 
@@ -535,11 +579,12 @@ class al_help():
         std = np.sqrt(dens/u.shape[0]).sum()/nbins*100
         print('Standard error of the data = {:8.6f}'.format(std))
         rel_err = 1e16
-        old_err = 5
+        old_err = 1e16
         n_l = 0
         def print_minima(weights, l_minima):
             for wl, ul in zip(weights, l_minima):
                 print('found minima with weight {:5.4f} at {:5.4f}'.format(wl, ul) )
+            sys.stdout.flush()
             return
 
         while( n_l<10 ):
@@ -552,7 +597,7 @@ class al_help():
             print_minima (weights, l_minima) 
             if rel_err <0.1:
                 break
-            if new_err < 3*std:
+            if new_err < std:
                 pold = p
                 break
             
@@ -576,6 +621,7 @@ class al_help():
         print('Effective cv = {:5.4f} kcal/mol/K'.format(cv))
        
         print(' .................'*5)
+        sys.stdout.flush()
 
         Teff = 1.0/(beta*kB)
         return Teff, beta, alpha, weights, l_minima,  fail
@@ -1064,7 +1110,7 @@ class al_help():
         dataeval.plot_predict_vs_target(np.array(forces_true),np.array(forces_class),
                                         path = setup.runpath,title='Prediction dataset Forces',
                                           fname='predictForces.png',size=2.35,
-                                          xlabel=r'$F^{dft}$',ylabel=r'$F^{class}$')
+                                          xlabel=r'$F^{dft}$ (kcal/mol/$\AA$)',ylabel=r'$F^{class}$ (kcal/mol/$\AA$)')
         
         dataeval.plot_eners(subsample=1,fname='predicteners.png')
        
@@ -1284,12 +1330,17 @@ class al_help():
         selected_data = pd.DataFrame()
         ix = candidate_data.index
         for name,num in nums.items():
+            
             fsystem = candidate_data['sys_name'] == name 
             ix_f = ix [fsystem]
-            nx = len(ix_f)
-            ix_sel = np.random.choice (ix_f, size=min(num, nx),replace=False)
+            u_f = Ucls [ fsystem]
+            psel = np.exp (- (u_f - u_f.min())/setup.bS)
+            psel /= psel.sum()
 
-            selected_data = selected_data.append( candidate_data.iloc[ix_sel] , ignore_index=True)
+            nx = len(ix_f)
+            ix_sel = np.random.choice (ix_f, size=min(num, nx),replace=False, p = psel)
+
+            selected_data = selected_data.append( candidate_data.loc[ix_sel] , ignore_index=True)
         return selected_data
 
 
@@ -1606,7 +1657,7 @@ class al_help():
         if len(existing_indexes) == 0:
             exrd = pd.DataFrame(columns=data.columns)
         else:
-            exrd = data.iloc[ existing_indexes ]
+            exrd = data.loc[ existing_indexes ]
         return nexrd, exrd
     
     
@@ -1689,7 +1740,7 @@ class al_help():
 
         else:
             ix = data.index
-        data = data.iloc[ix] 
+        data = data.loc[ix] 
         print('Kept {:4.3f} % of the {:s} data'.format(len(data)*100/n,prefix))
         return data
 
@@ -4912,6 +4963,8 @@ class Data_Manager():
             data = self.data [ self.data['sys_name'] == sys_name ] 
             
         return data
+
+
     def plot_discriptor_distribution(self,ty,inter_type='vdw',bins=100,ret_max=False):
         dists = self.get_distribution(ty,inter_type)
         _ = plt.figure(figsize=(3.5,3.5),dpi=300)
