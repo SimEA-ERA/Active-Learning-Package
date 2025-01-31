@@ -1,16 +1,27 @@
 #!/bin/bash
-#SBATCH --job-name=Ag3co2
+#SBATCH --job-name=Ag7
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
-#SBATCH --partition=milan
+#SBATCH --ntasks-per-node=4
+#SBATCH --partition=a100
 #SBATCH --time=23:59:00
 
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
 #### Variables
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+#!/bin/bash
+
+# Get the absolute path of the script
+SCRIPT_PATH=$(realpath "$0")
+script_dir=$(dirname "$SCRIPT_PATH")
+SUBMIT_DIR=$SLURM_SUBMIT_DIR
+
+script_dir=$SUBMIT_DIR
+
+echo "Script is running from: $script_dir"
+
+cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
 mkdir -p lammps_working
@@ -19,14 +30,15 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/Ag.in"
 bsize=100
-Niters=10
-iexist=4
-contin=4
-sigma=0.05
+Niters=20
+iexist=0
+contin=0
+sigma=0.02
+Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-
+beta_sampling=3.28
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
@@ -34,8 +46,11 @@ results_path="$script_dir/Results"
 mkdir -p $eval_dir
 
 for ((num=$contin; num<=$Niters; num++)); do
-   if [ "$num" -le 4 ]; then
+   
+   if [ "$num" -eq 0 ]; then
+	   sampling_method="perturbation"
       echo "Sampling method is set to perturbation"
+   elif [ "$num" -le 5 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"
@@ -45,7 +60,7 @@ for ((num=$contin; num<=$Niters; num++)); do
    # Run Python scripts from the same directory as this Bash script
    python "$main_set_of_files_path/active_learning_scheme.py" \
           -n $num -dp $datapath -f $inff -b $bsize -s $sigma -exd $iexist \
-          -m $sampling_method -cm "$charge_map" -mm "$mass_map"
+          -m $sampling_method -cm "$charge_map" -mm "$mass_map" -t $Ttarget  -bs $beta_sampling
 
    if [ $? -ne 0 ]; then
        echo "Error: Fitting algorithm did not execute successfully."
@@ -91,5 +106,6 @@ for ((num=$contin; num<=$Niters; num++)); do
    fi
 
    inff="$results_path/$num/runned.in"
+   beta_sampling=$(head -n 1 beta_sampling_value)
 done
 

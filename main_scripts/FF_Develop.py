@@ -224,6 +224,7 @@ class al_help():
                     os.system(command)
 
                     new_data = al_help.read_lammps_structs('lammps_working/samples.lammpstrj',inv_types)
+                    new_data = al_help.clean_well_separated_nanostructures(new_data, setup)
                     
                     al_help.evaluate_potential(new_data, setup,'opt')
                  
@@ -232,16 +233,16 @@ class al_help():
                     tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
                     
                     al_help.plot_candidate_distribution(shifted_energies, (beta_eff, alpha, weights, l_minima), 200,
-                            title = f'MD iter {md_iter}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff),
-                            fname=f'{setup.runpath}/CD{md_iter}_t{round(beta_target,2)}_e{round(beta_eff,2)}.png')
+                            title = f'MD iter {md_iter}' + r': Candidate distribution \n $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
+                            fname=f'{setup.runpath}/CD{md_iter}_{sname}.png')
                     
                     if fail:
                         print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
-                        al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
+                        beta_sampling = al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
                         sys.stdout.flush()
                         md_iter += 1
                         continue
-                    if np.abs ((beta_target - beta_eff)/beta_target) < 0.05 :
+                    if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
                         print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
                         break
                     beta_sampling *= np.sqrt(beta_target/beta_eff)
@@ -254,11 +255,8 @@ class al_help():
                     md_iter += 1
                 
                 os.system('  ;  '.join([c1, c3,c4,c5]) )
-                chosen_index = new_data.index #[ np.random.choice( new_data.index, max(1,int(0.1*len(new_data))), replace=False) ]
-                #print('from runned data chose configurations',chosen_index)
                 new_data['sys_name'] = sname
-                dfn = new_data.loc[chosen_index]
-                candidate_data = candidate_data.append(dfn, ignore_index=True)
+                candidate_data = candidate_data.append(new_data, ignore_index=True)
         
         print('Lammps Simulations complete')
         sys.stdout.flush()
@@ -282,12 +280,12 @@ class al_help():
         outlier = u.max() - u.mean()
         if outlier > bs/beta_sampling:
             print('Found high energy outliers beta_sampling is halfed!')
-            new_beta_sampling = beta_sampling*2
+            new_beta_sampling = beta_sampling/2
         elif urange < bs/beta_sampling:
             print('Found very small energy range beta_sampling is doubled!')
-            new_beta_sampling = beta_sampling/2
+            new_beta_sampling = beta_sampling*2
         else:
-            print('Found no particular reason beta_sampling is scaled randomly between 0.66 and 1.34!')
+            print('Found no particular reason of fitting failing --> beta_sampling is scaled randomly between 0.66 and 1.34!')
             new_beta_sampling = beta_sampling*np.random.uniform(0.66,1.34)
         return new_beta_sampling
 
@@ -308,7 +306,7 @@ class al_help():
         init_data['coords'] = c
         systems = np.unique(init_data['sys_name'])
         
-        asymptotic_steps = 1000
+        asymptotic_steps = 100
         candidate_data = pd.DataFrame()
         
         for sysname in systems:
@@ -400,12 +398,12 @@ class al_help():
                 print('MC trial = {:d} beta_target = {:5.4f} ,  beta_eff = {:5.4f}  ,  beta_sampling = {:5.4f}'.format (times_scaled_beta, beta_target, beta_eff, beta_sampling) )
                 
                 al_help.plot_candidate_distribution(u - u.min(), (beta_eff, alpha, weights, l_minima), 200,
-                            title = f'MC trial {times_scaled_beta}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff),
-                            fname=f'{setup.runpath}/CD{times_scaled_beta}_t{round(beta_target,2)}_e{round(beta_eff,2)}.png')
+                            title = f'MC trial {times_scaled_beta}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
+                            fname=f'{setup.runpath}/CD{times_scaled_beta}_{sysname}.png')
                 
                 if fail:        
                     print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}\n Following empirical strategy')
-                    al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
+                    beta_sampling = al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
                     times_scaled_beta += 1
                     continue
                 if np.abs ((beta_target - beta_eff)/beta_target) < 0.05 :
@@ -496,7 +494,7 @@ class al_help():
         mu = np.mean(u)
         
         params = [ 1.0, 0.0033 ] # beta, alpha
-        bounds = [ [0.02,10], [0.0001,2]] 
+        bounds = [ [0.02,10], [0.003,0.004]] 
         if nminima > 0:
             for _ in range(nminima +1):
                 # adding the weights
@@ -541,7 +539,11 @@ class al_help():
                 c2 /= math.perm(nw,2)
                 if nw>2:
                     c1 /= math.perm(nw,3)
-            return (c2 + c1)
+            return 0.2*(c2 + c1)
+
+        def weights_to_one(params, n_l):
+            w = params[2:3+n_l]
+            return w.sum() -1
 
         def cost_BG(params, dens ,bc, n_l):
             c = cost_distribution_fit(params, dens, bc, n_l) 
@@ -557,8 +559,14 @@ class al_help():
         
         bc = bin_edges[0 : -1] - 0.5*(bin_edges[1]-bin_edges[0])
         args = (dens , bc, nminima)
-        
-        res = dual_annealing(cost_BG, bounds, args = args,  initial_temp=15000, maxiter=500, restart_temp_ratio=2e-04)
+        t0 = perf_counter()
+        res = dual_annealing(cost_BG, bounds, args = args,  initial_temp=15000, maxiter=3500, restart_temp_ratio=2e-04)
+        tf = perf_counter() - t0
+        print('Dual Annealing finished in {:.3e} sec'.format(tf))
+        #t0 = perf_counter()
+        #res = minimize(cost_BG, params,args = args, bounds=bounds,tol=1e-4,  method = 'SLSQP', constraints = {'type':'eq','fun':weights_to_one, 'args': (nminima,) } )
+        #tf = perf_counter() - t0
+        #print('SLSQP finished in {:.3e} sec and gave {} costf = {:5.4f}'.format(tf, res.x, res.fun))
         beta, alpha, w_l, min_u_l = get_params( res.x, nminima)
         
         cfit = cost_distribution_fit(res.x, dens, bc, nminima)
@@ -591,7 +599,7 @@ class al_help():
             p,  new_err  = al_help.find_distribution_parameters(u, nminima=n_l, nbins = nbins)
             beta, alpha, weights, l_minima = p
             rel_err = (old_err - new_err)/old_err
-            fail = old_err > std*10
+            fail = old_err > std*100
             print('number of local minima {:d} , rel error = {:5.4f}'.format(n_l, rel_err) )
             
             print_minima (weights, l_minima) 
@@ -618,7 +626,7 @@ class al_help():
             print(f'I{j} --> {i}')
         cv = beta**2 * (I4/I2 -(I3/I2)**2 ) *kB
 
-        print('Effective cv = {:5.4f} kcal/mol/K'.format(cv))
+        print('Effective cv = {:7.6f} kcal/mol/K'.format(cv))
         print('Fitting error = {:3.2f} std'.format(old_err/std) )
         print(' .................'*5)
         sys.stdout.flush()
@@ -1314,7 +1322,7 @@ class al_help():
     @staticmethod
     def random_selection(data , setup,candidate_data,batchsize, method='random'):
         al_help.make_interactions(candidate_data,setup) 
-        candidate_data = al_help.clean_candidate_data(candidate_data,setup)
+        candidate_data = al_help.clean_well_separated_nanostructures(candidate_data,setup)
         Ucls = candidate_data['Uclass'].to_numpy()
         n = len(candidate_data)
         indx = np.arange(0,n,1,dtype=int)
@@ -1352,7 +1360,7 @@ class al_help():
     @staticmethod
     def disimilarity_selection(data,setup,candidate_data,batchsize,method='sys_name'):
         al_help.make_interactions(candidate_data,setup) 
-        candidate_data = al_help.clean_candidate_data(candidate_data,setup)
+        candidate_data = al_help.clean_well_separated_nanostructures(candidate_data,setup)
         dis = []
         for k1,d1 in candidate_data.iterrows():
             disim = 0
@@ -1703,7 +1711,8 @@ class al_help():
                     dmin = d
         return dmin
     @staticmethod
-    def clean_candidate_data(data, setup):
+    def clean_well_separated_nanostructures(data, setup):
+        t0 = perf_counter()
         rc = setup.rclean
         keep_index = []
     
@@ -1730,7 +1739,7 @@ class al_help():
         
         n = len(data)
         ncleaned = n - len(keep_index)
-        print (f'Cleaned {ncleaned}/{n} candidate data due to separated nanostructure (r_clean = {rc})')
+        print (f'Cleaned {ncleaned}/{n} candidate data due to separated nanostructure (r_clean = {rc})' + ' time needed --> {:.3e} sec'.format(perf_counter()-t0))
         sys.stdout.flush()
         return data.loc[keep_index]
 
@@ -4387,7 +4396,7 @@ class Data_Manager():
             plt.ylabel(col + ' distribution')
             f = self.data['sys_name'] == s
             plt.title('System {:s}'.format(s))
-            plt.hist(self.data[col][f],bins=100,histtype='step',color='magenta')
+            plt.hist(self.data[col][f], bins=200, density=True, color='magenta')
             plt.savefig('{:s}/{:s}_{:s}_distribution.png'.format(path,s,col), bbox_inches='tight')
         #plt.show()   
         return
@@ -4984,7 +4993,7 @@ class Data_Manager():
         return data
 
 
-    def plot_discriptor_distribution(self,ty,inter_type='vdw',bins=100,ret_max=False):
+    def plot_discriptor_distribution(self,ty,inter_type='vdw',bins=100,ret = False):
         dists = self.get_distribution(ty,inter_type)
         _ = plt.figure(figsize=(3.5,3.5),dpi=300)
         plt.minorticks_on()
@@ -4995,11 +5004,11 @@ class Data_Manager():
             plt.xlabel('r({}) \ $\AA$'.format('-'.join(ty)))
         else:
             plt.xlabel(r'{:s}({:s}) \ '.format(inter_type,'-'.join(ty)))
-        plt.hist(dists,bins=bins,histtype='step',density=True,color='magenta')
+        plt.hist(dists,bins=bins,density=True,color='magenta')
         #plt.show()
         plt.savefig(f'{self.setup.runpath}/discriptor_distribution_{inter_type}_{ty}.png',bbox_inches='tight') 
-        if ret_max:
-            return dists.max()
+        if ret:
+            return dists
         return
 
     def get_distribution(self,ty,inter_type='vdw'):

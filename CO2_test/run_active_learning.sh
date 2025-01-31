@@ -21,8 +21,8 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 inff="$script_dir/CO2.in"
 bsize=100
 Niters=15
-iexist=0
-contin=0
+iexist=7
+contin=7
 sigma=0.02
 Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
