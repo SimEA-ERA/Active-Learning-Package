@@ -494,7 +494,7 @@ class al_help():
         mu = np.mean(u)
         
         params = [ 1.0, 0.0033 ] # beta, alpha
-        bounds = [ [0.02,10], [0.003,0.004]] 
+        bounds = [ [0.02,10], [0.003,5.004]] 
         if nminima > 0:
             for _ in range(nminima +1):
                 # adding the weights
@@ -503,7 +503,7 @@ class al_help():
             umax = u.max()
             for j in range(nminima):
                 # adding initializations about the minima
-                params.append( (j+0.5)*umax/nminima)
+                params.append( np.random.uniform(0,1))
                 bounds.append([0,umax])
 
         params = np.array(params)
@@ -559,18 +559,25 @@ class al_help():
         
         bc = bin_edges[0 : -1] - 0.5*(bin_edges[1]-bin_edges[0])
         args = (dens , bc, nminima)
-        t0 = perf_counter()
-        res = dual_annealing(cost_BG, bounds, args = args,  initial_temp=15000, maxiter=3500, restart_temp_ratio=2e-04)
-        tf = perf_counter() - t0
-        print('Dual Annealing finished in {:.3e} sec'.format(tf))
         #t0 = perf_counter()
-        #res = minimize(cost_BG, params,args = args, bounds=bounds,tol=1e-4,  method = 'SLSQP', constraints = {'type':'eq','fun':weights_to_one, 'args': (nminima,) } )
+        #res = dual_annealing(cost_BG, bounds, args = args,  initial_temp=15000, maxiter=3500, restart_temp_ratio=2e-04)
         #tf = perf_counter() - t0
-        #print('SLSQP finished in {:.3e} sec and gave {} costf = {:5.4f}'.format(tf, res.x, res.fun))
-        beta, alpha, w_l, min_u_l = get_params( res.x, nminima)
+        #print('Dual Annealing finished in {:.3e} sec'.format(tf))
+        best_cost = 1e16
+        t0 = perf_counter()
+        for ntry in range(50):
+            res = minimize(cost_BG, params,args = args, bounds=bounds,tol=1e-4,  method = 'SLSQP', constraints = {'type':'eq','fun':weights_to_one, 'args': (nminima,) } )
+            if res.fun < best_cost:
+                best_cost = res.fun
+                best_trial = ntry
+                best_params = res.x.copy()
+            params = np.array([ np.random.uniform(bounds[i][0], bounds[i][1]) for i in range(params.shape[0]) ] )
+        tf = perf_counter() - t0
+        print('SLSQP best trial {:d} , finished in {:.3e} sec costf = {:5.4f}'.format(best_trial,tf, res.fun))
+        beta, alpha, w_l, min_u_l = get_params( best_params, nminima)
         
-        cfit = cost_distribution_fit(res.x, dens, bc, nminima)
-        reg = reg_cost(res.x, nminima)
+        cfit = cost_distribution_fit(best_params , dens, bc, nminima)
+        reg = reg_cost(best_params, nminima)
         cv_eff = u.var()*kB*beta**2
         print ('bins = {:d}, beta = {:5.4f}, alpha = {:5.4f}  costf = {:8.7f} reg_cost = {:8.7f} cv_histogram = {:5.4f} kcal/mol/K'.format(nbins, beta, alpha, cfit, reg,  cv_eff))
         w_l = np.array(w_l)/np.sum(w_l)
@@ -605,7 +612,7 @@ class al_help():
             print_minima (weights, l_minima) 
             if rel_err <0.1:
                 break
-            if new_err < std:
+            if new_err < 2*std:
                 pold = p ; old_err = new_err
                 break
             
