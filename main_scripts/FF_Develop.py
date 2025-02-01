@@ -559,10 +559,9 @@ class al_help():
         
         bc = bin_edges[0 : -1] - 0.5*(bin_edges[1]-bin_edges[0])
         args = (dens , bc, nminima)
-        #t0 = perf_counter()
+        
         #res = dual_annealing(cost_BG, bounds, args = args,  initial_temp=15000, maxiter=3500, restart_temp_ratio=2e-04)
-        #tf = perf_counter() - t0
-        #print('Dual Annealing finished in {:.3e} sec'.format(tf))
+        
         best_cost = 1e16
         t0 = perf_counter()
         for ntry in range(50):
@@ -573,7 +572,7 @@ class al_help():
                 best_params = res.x.copy()
             params = np.array([ np.random.uniform(bounds[i][0], bounds[i][1]) for i in range(params.shape[0]) ] )
         tf = perf_counter() - t0
-        print('SLSQP best trial {:d} , finished in {:.3e} sec costf = {:5.4f}'.format(best_trial,tf, res.fun))
+        print('SLSQP best trial {:d} , finished in {:.3e} sec costf = {:5.4f}'.format(best_trial,tf, best_cost))
         beta, alpha, w_l, min_u_l = get_params( best_params, nminima)
         
         cfit = cost_distribution_fit(best_params , dens, bc, nminima)
