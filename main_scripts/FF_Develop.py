@@ -21,8 +21,7 @@ import coloredlogs
 import logging
 import itertools
 import math
-#from scipy.special import erf
-from mpmath import erf, mp, exp, sqrt
+from mpmath import erf, mp, exp, sqrt , gamma , power
 mp.dps = 32
 import collections
 import six
@@ -185,9 +184,9 @@ class al_help():
         for sname in unq_sys:
             fs = data['sys_name'] == sname
             udat = data [ fs ]
-            us = data['Uclass'].to_numpy()[ fs ]
+            us = udat['Uclass'].to_numpy()
             us = us - us.min()
-            ps = np.exp(-us/setup.bS)
+            ps = np.exp(-us*beta_sampling)
             ps /= ps.sum()
             print('Choosing initial configuration for {:s}'.format(sname))
             sys.stdout.flush()
@@ -224,8 +223,17 @@ class al_help():
                     os.system(command)
 
                     new_data = al_help.read_lammps_structs('lammps_working/samples.lammpstrj',inv_types)
+                    ne = len(new_data)
                     new_data = al_help.clean_well_separated_nanostructures(new_data, setup)
-                    
+                    if len(new_data) < 0.01*ne:
+                        print('More than 99% of the structures were well separated! rescaling beta by 1.5 to avoid desorption or dissolution')
+                        beta_sampling *= 1.5
+                        tsample = round(1.0/ (beta_sampling*kB), 5) 
+                        update_main_file_temperature(tsample)
+                        md_iter += 1
+                        sys.stdout.flush()
+                        continue
+
                     al_help.evaluate_potential(new_data, setup,'opt')
                  
                     ut = new_data['Uclass'].to_numpy()
@@ -240,8 +248,6 @@ class al_help():
                         print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
                         beta_sampling = al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
                         sys.stdout.flush()
-                        md_iter += 1
-                        continue
                     if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
                         print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
                         break
@@ -279,11 +285,11 @@ class al_help():
         urange = u.max()
         outlier = u.max() - u.mean()
         if outlier > bs/beta_sampling:
-            print('Found high energy outliers beta_sampling is halfed!')
-            new_beta_sampling = beta_sampling/2
-        elif urange < bs/beta_sampling:
-            print('Found very small energy range beta_sampling is doubled!')
+            print('Found high energy outliers beta_sampling is doubled!')
             new_beta_sampling = beta_sampling*2
+        elif urange < bs/beta_sampling:
+            print('Found very small energy range beta_sampling is halfed!')
+            new_beta_sampling = beta_sampling/2
         else:
             print('Found no particular reason of fitting failing --> beta_sampling is scaled randomly between 0.66 and 1.34!')
             new_beta_sampling = beta_sampling*np.random.uniform(0.66,1.34)
@@ -391,6 +397,9 @@ class al_help():
                     c_size = len(candidate_data_sys)
                     ########
 
+
+                print('Metropolis Hastings completed! Average acceptance {:5.4f}'.format( AR ) ) 
+
                 u = candidate_data_sys['Uclass'].to_numpy()
 
                 tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u, nbins = 200) 
@@ -415,7 +424,7 @@ class al_help():
             
             candidate_data = candidate_data.append(candidate_data_sys,ignore_index=True)
 
-        print('Average acceptance {:5.4f}'.format( c_size/(n*(step) ) ) )
+        print('Metropolis Hastings completed! Average acceptance {:5.4f}'.format( c_size/(n*(step) ) ) )
         
         #raise  Exception('Debuging. Want to stop here')
         return candidate_data , beta_sampling
@@ -424,7 +433,7 @@ class al_help():
     def plot_candidate_distribution(u, fitting_params, bins, title = '', fname=None):
         
         u_sorted = np.sort(u)
-        Pfit = al_help.joint_Boltzman_Maxwellian_distribution_multy_minima(u_sorted, *fitting_params)
+        Pfit = al_help.joint_power_law_Boltzmann_distribution_multy_minima(u_sorted, *fitting_params)
         _ = plt.figure(figsize = (3.3,3.3), dpi=300)
         if title != '':
             plt.title(title, fontsize = 5.5)
@@ -433,10 +442,8 @@ class al_help():
         beta, alpha, wl, u_min_l = fitting_params
         lstyle =[':','-.','--']*5
         for w, ul, j in zip(wl, u_min_l, range(len(wl)) ):
-            u_s = u_sorted - ul
-            u_s = u_s[u_s>0]
-            pl = w * al_help.joint_Boltzman_Maxwellian_distribution(u_s, beta, alpha)
-            plt.plot(u_s+ul, pl, ls=lstyle[j], color='orange', label=r'$u_l$ at {:3.2f}'.format(ul), lw =0.75 )
+            pl = w * al_help.joint_power_law_Boltzmann_distribution_multy_minima(u_sorted, beta, alpha, [1.0], [ul])
+            plt.plot(u_sorted, pl, ls=lstyle[j], color='orange', label=r'$u_l$ at {:3.2f}'.format(ul), lw =0.75 )
         plt.plot(u_sorted, Pfit, ls ='-',label='fit', color='red')
         plt.legend(frameon=False, fontsize=7)
         if fname is not None:
@@ -476,6 +483,20 @@ class al_help():
             P += (w/sw) * al_help.P(u - u_l ,beta, alpha)
         return P/I2
     @staticmethod
+    def joint_power_law_Boltzmann_distribution_multy_minima(u, beta, alpha, w_l =[1.0], min_u_l = [0.0]):
+        C = np.float64( gamma(alpha + 1.0)/power(beta,(alpha+1)) )
+        
+        sw = np.sum(w_l)
+        P = 0.0
+        for w,u_l in zip(w_l, min_u_l):
+            normalizing_factor = C*np.exp(-beta*u_l)
+            pu = (w/sw) * np.power( (u-u_l), alpha) * np.exp( - beta*u ) / normalizing_factor
+            pu [ u <u_l]  = 0.0
+            P+=pu
+
+        return P
+
+    @staticmethod
     def P(u, beta, alpha):
         pu = u**2 * np.exp(-beta*u) * np.exp(-alpha*beta*u**2)
         pu[ u <0 ] = 0.0
@@ -494,7 +515,7 @@ class al_help():
         mu = np.mean(u)
         
         params = [ 1.0, 0.0033 ] # beta, alpha
-        bounds = [ [0.02,10], [0.003,5.004]] 
+        bounds = [ [0.02,40], [0.003,8.004]] 
         if nminima > 0:
             for _ in range(nminima +1):
                 # adding the weights
@@ -552,7 +573,7 @@ class al_help():
         
         def cost_distribution_fit(params, dens, bc, n_l):
             beta, alpha, w_l, min_u_l = get_params( params, n_l)
-            ps = al_help.joint_Boltzman_Maxwellian_distribution_multy_minima(bc,beta, alpha, w_l, min_u_l)
+            ps = al_help.joint_power_law_Boltzmann_distribution_multy_minima(bc,beta, alpha, w_l, min_u_l)
             return 100*np.sum( np.abs(ps - dens ) ) /ps.shape[0]
         
         dens, bin_edges = np.histogram(u, bins=nbins, density=True)
@@ -611,7 +632,7 @@ class al_help():
             print_minima (weights, l_minima) 
             if rel_err <0.1:
                 break
-            if new_err < 2*std:
+            if new_err < 1*std:
                 pold = p ; old_err = new_err
                 break
             
@@ -627,10 +648,10 @@ class al_help():
         print_minima (weights, l_minima) 
         
         kB = 0.00198720375145233
-        I0, I1, I2, I3, I4 = al_help.Irecurr(beta, alpha, 4)
-        for j,i in enumerate([ I0, I1, I2, I3, I4]):
-            print(f'I{j} --> {i}')
-        cv = beta**2 * (I4/I2 -(I3/I2)**2 ) *kB
+        #I0, I1, I2, I3, I4 = al_help.Irecurr(beta, alpha, 4)
+        #for j,i in enumerate([ I0, I1, I2, I3, I4]):
+        #    print(f'I{j} --> {i}')
+        cv = (alpha+1) *kB
 
         print('Effective cv = {:7.6f} kcal/mol/K'.format(cv))
         print('Fitting error = {:3.2f} std'.format(old_err/std) )

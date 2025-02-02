@@ -15,6 +15,7 @@ module load numba/0.54.1-foss-2021b
 # Get the absolute path of the script
 SCRIPT_PATH=$(realpath "$0")
 script_dir=$(dirname "$SCRIPT_PATH")
+script_dir="$SLURM_SUBMIT_DIR"
 
 echo "Script is running from: $script_dir"
 
@@ -27,15 +28,15 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/Ag.in"
 bsize=100
-Niters=22
-iexist=21
-contin=21
+Niters=20
+iexist=1
+contin=1
 sigma=0.02
-Ttarget=500
+Ttarget=1000
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=1.0
+beta_sampling=0.5
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
