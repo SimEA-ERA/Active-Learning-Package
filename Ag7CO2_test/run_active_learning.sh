@@ -10,7 +10,9 @@
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
 #### Variables
-script_dir="$SLURM_SUBMIT_DIR"
+SCRIPT_PATH=$(realpath "$0")
+script_dir=$(dirname "$SCRIPT_PATH")
+#script_dir="$SLURM_SUBMIT_DIR"
 cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
@@ -20,9 +22,9 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/AgCO2.in"
 bsize=100
-Niters=20
-iexist=9
-contin=9
+Niters=5
+iexist=5
+contin=5
 sigma=0.02
 Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"

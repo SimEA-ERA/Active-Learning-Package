@@ -10,7 +10,9 @@
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
 #### Variables
-script_dir="$SLURM_SUBMIT_DIR"
+SCRIPT_PATH=$(realpath "$0")
+script_dir=$(dirname "$SCRIPT_PATH")
+#script_dir="$SLURM_SUBMIT_DIR"
 cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
@@ -20,9 +22,9 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/CO2.in"
 bsize=100
-Niters=15
-iexist=7
-contin=7
+Niters=6
+iexist=1
+contin=1
 sigma=0.02
 Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
@@ -40,7 +42,7 @@ for ((num=$contin; num<=$Niters; num++)); do
    if [ "$num" -eq 0 ]; then
 	   sampling_method="perturbation"
       echo "Sampling method is set to perturbation"
-   elif [ "$num" -le 5 ]; then
+   elif [ "$num" -le 2 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"

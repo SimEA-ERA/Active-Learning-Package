@@ -326,7 +326,7 @@ class al_help():
             
             bs = setup.bS
 
-            prop_sel = np.exp( - (Uclass - Uclass.min())/bs )
+            prop_sel = np.exp( - (Uclass - Uclass.min())*beta_sampling )
             prop_sel /= prop_sel.sum()
 
             all_indexes = np.array(step_data.index)
@@ -1784,13 +1784,16 @@ class al_help():
             mineners[i] = me[ sysnames[i] ]
         
         re = np.abs(mineners - ener)
-        pe = np.exp(-re/(2*setup.bS))
+        e_range = setup.bC
+        pe = np.exp(-re/(e_range))
         if n > 300:
             indexes = data.index
             #ix = np.random.choice(data.index,int(setup.clean_perc*n),replace=False,p=ps)
             ix = []
             for i,p in enumerate(pe):
-                if p > np.random.uniform(0,1):
+                if  re[i] < e_range:
+                    ix.append(indexes[i])
+                elif p > np.random.uniform(0,1):
                     ix.append(indexes[i])
 
         else:
@@ -2955,7 +2958,7 @@ class Setup_Interfacial_Optimization():
         'max_force':0.003,
         'clean_perc':0.8,
         'bC':30.0,
-        'bS':15.0,
+        'bS':20.0,
         
         'optimization_method':'SLSQP',
         'opt_disp':True,
@@ -5903,16 +5906,7 @@ class FF_Optimizer(Optimizer):
         return model_attributes
     
     def get_Energy(self,dataset):
-        if dataset =='train':
-            E =  np.array(self.data_train['Energy'])
-        elif dataset =='dev':
-            E =  np.array(self.data_dev['Energy'])
-        elif dataset == 'all':
-            E =  np.array(self.data['Energy'])
-        else:
-            s = "'dataset' only takes the values ['train','dev','all']"
-            logger.error(s)
-            raise Exception(s)
+        E = np.array( list( self.get_dataDict(dataset, 'Energy').values() ) )
         return E
     
     def get_dataDict(self,dataset,column):
@@ -5922,8 +5916,11 @@ class FF_Optimizer(Optimizer):
             data_dict = self.data_dev[column].to_dict()
         elif dataset == 'all':
             data_dict = self.data[column].to_dict()
+        elif dataset in np.unique(self.data['sys_name']):
+            f = self.data['sys_name'] ==  dataset
+            data_dict = self.data[f][column].to_dict()
         else:
-            s = "'dataset' only takes the values ['train','dev'','all']"
+            s = "'dataset' only takes the values ['train','dev'','all'] or a sys_name"
             logger.error(s)
             raise Exception(s)
         return data_dict
@@ -6537,6 +6534,8 @@ class FF_Optimizer(Optimizer):
     
     def set_results(self):
         
+        t0 = perf_counter()
+
         params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt','train')
         
         self.set_UFclass_ondata('opt',dataset='all')
@@ -6548,22 +6547,24 @@ class FF_Optimizer(Optimizer):
                  measure,
                  measure_reg ) = args
         
-        
+           
         normalize = self.setup.normalize_data
         if normalize:
             train_mu_e, train_std_e, train_mu_f, train_std_f = self.get_normalized_data('train')
+   
+        sys_names = list ( np.unique( list(self.get_dataDict('all', 'sys_name').values()) ) )
         
-        for meas in np.unique(['MAE','MSE',measure]):
-            for dataname in ['train','dev', 'all']:
-                for norm in ['','norm_']:
-                    params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt',dataname)
+        for dataname in ['train','dev', 'all'] + sys_names:
+            params, bounds, args, fixed_parameters, isnot_fixed = self.get_params_n_args('opt',dataname)
                 
-                    (Energy,Forces, lambda_force,models_list_info, 
-                     reg_par, reguls,
-                     measure,
-                     measure_reg ) = args
+            (Energy,Forces, lambda_force,models_list_info, 
+             reg_par, reguls,
+             measure,
+             measure_reg ) = args
+            for meas in np.unique(['MAE','MSE',measure]):
+                for norm in ['','norm_']:
                     if normalize and norm =='norm_':
-                        mu_e, std_e, mu_f, std_f = self.get_normalized_data(dataname)
+                        mu_e, std_e, mu_f, std_f = self.get_normalized_data(dataname) # IT GIVES BY DEFAULT train data mu, std but indexing refers to dataname (To have combatiple arrays)
                     else:
                         mu_e, std_e, mu_f, std_f = 0.0, 1.0, 0.0, 1.0
                     
@@ -6588,6 +6589,7 @@ class FF_Optimizer(Optimizer):
                         costs.selection_energy = ce
                         costs.selection_forces = cf
         self.current_costs = costs
+        print('time for costs = {:.3e} sec'.format( perf_counter() - t0 ) )
         #Get the new params and give to vdw_dataframe
         return
     
