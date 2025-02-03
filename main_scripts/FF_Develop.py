@@ -692,7 +692,7 @@ class al_help():
                                         rho_r0=setup.rho_r0,rho_rc=setup.rho_rc)
         
         intersHandler.InteractionsForData(setup)
-        intersHandler.calc_interaction_values()
+        intersHandler.calc_descriptor_info()
         return
     
     @staticmethod
@@ -906,7 +906,7 @@ class al_help():
             classified_models = dict()
             for name,model in models.items():
                 lc = model.lammps_class
-                if model.type not in data_point['values'][model.feature]:
+                if model.type not in data_point['descriptor_info'][model.feature]:
                     continue
                 if model.type[0] not in types_map or model.type[1] not in types_map:
                     continue
@@ -4250,21 +4250,21 @@ class Interactions():
         self.data['values'] = all_Values
         #self.calc_neibs_lists()
         #self.calc_rhats()
-        self.calc_force_info()
+        self.calc_descriptor_info()
         return
     
-    def calc_force_info(self):
+    def calc_descriptor_info(self):
         
         n = len(self.data)
         
-        all_force_info = np.empty(n ,dtype=object)
+        all_descriptor_info = np.empty(n ,dtype=object)
         
         atom_confs = np.array(self.data['coords'])
         interactions = np.array(self.data['interactions'])
         
         for m, ac, inters in zip(range(n), atom_confs, interactions):
             
-            force_info = dict(keys=inters.keys())
+            descriptor_info = dict(keys=inters.keys())
             
             
             for intertype,vals in inters.items():
@@ -4404,10 +4404,10 @@ class Interactions():
                     
                     d[t] = temp.copy()
                            
-                force_info[intertype] = d.copy()
+                descriptor_info[intertype] = d.copy()
     
-            all_force_info[m] = force_info
-        self.data['forces_info'] = all_force_info 
+            all_descriptor_info[m] = descriptor_info
+        self.data['descriptor_info'] = all_descriptor_info 
         return
 
 class Data_Manager():
@@ -5048,10 +5048,10 @@ class Data_Manager():
         #key = tuple(np.sort([t for t in ty]))
         for j,d in data.iterrows():
             try:
-                d['values'][inter_type][ty]
+                x = d['descriptor_info'][inter_type][ty]['values']
             except KeyError:
                 continue        
-            pair_dists.extend(d['values'][inter_type][ty])
+            pair_dists.extend(x)
         return np.array(pair_dists)
     
 
@@ -5112,7 +5112,7 @@ class FF_Optimizer(Optimizer):
         
         #serialize parameters and bounds
         
-        fid = self.get_dataDict(dataset,'forces_info')
+        dinfo = self.get_dataDict(dataset,'descriptor_info')
         
         natoms_dict =self.get_dataDict(dataset,'natoms')
         
@@ -5123,7 +5123,7 @@ class FF_Optimizer(Optimizer):
             if self.check_excess_models(model.category,model.num):
                 continue
             
-            model_attributes = self.serialize_values(fid, natoms_dict, model)
+            model_attributes = self.serialize_values(dinfo, natoms_dict, model)
             
             minfo = self.Model_Info(model, model_attributes)
 
@@ -5537,7 +5537,7 @@ class FF_Optimizer(Optimizer):
         
         
         
-        self.data.drop(columns=['forces_info', 'interactions' ], inplace=True)
+        self.data.drop(columns=['descriptor_info', 'interactions' ], inplace=True)
         
         
         coords_copy = copy.deepcopy(self.data['coords'].to_numpy())
@@ -5563,7 +5563,7 @@ class FF_Optimizer(Optimizer):
                 models_list_info = self.get_list_of_model_information(models, dataset)    
                 up1 = self.computeUclass(params, ndata, models_list_info)
                 
-                self.data.drop(columns=['forces_info', 'interactions','coords' ], inplace=True)
+                self.data.drop(columns=['descriptor_info', 'interactions','coords' ], inplace=True)
                 self.data['coords'] = copy.deepcopy(coords_copy)
                 
                 #um1
@@ -5576,7 +5576,7 @@ class FF_Optimizer(Optimizer):
                
                 um1 = self.computeUclass(params, ndata, models_list_info)
                 
-                self.data.drop(columns=['forces_info', 'interactions','coords' ], inplace=True)
+                self.data.drop(columns=['descriptor_info', 'interactions','coords' ], inplace=True)
                 self.data['coords'] = copy.deepcopy(coords_copy)
                 
                 
@@ -5590,7 +5590,7 @@ class FF_Optimizer(Optimizer):
                     models_list_info = self.get_list_of_model_information(models, dataset)    
                     up2 = self.computeUclass(params, ndata, models_list_info)
                     
-                    self.data.drop(columns=['forces_info', 'interactions','coords' ], inplace=True)
+                    self.data.drop(columns=['descriptor_info', 'interactions','coords' ], inplace=True)
                     self.data['coords'] = copy.deepcopy(coords_copy)
                     
                     for m,idx in enumerate(self.data.index):
@@ -5601,7 +5601,7 @@ class FF_Optimizer(Optimizer):
                     models_list_info = self.get_list_of_model_information(models, dataset)    
                     um2 = self.computeUclass(params, ndata, models_list_info)
                     
-                    self.data.drop(columns=['forces_info', 'interactions','coords' ], inplace=True)
+                    self.data.drop(columns=['descriptor_info', 'interactions','coords' ], inplace=True)
                     self.data['coords'] = copy.deepcopy(coords_copy)
 
                 if order==4:
