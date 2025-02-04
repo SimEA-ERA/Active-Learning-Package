@@ -11,6 +11,7 @@ import os.path
 import os
 import sys
 import numpy as np
+np.seterr(invalid='ignore')
 import pandas as pd
 import matplotlib
 import copy
@@ -164,6 +165,7 @@ class al_help():
         kB = 0.0019872037514523
         beta_target = 1.0/(kB*parsed_args.Ttarget)
         
+
         tsample = round(1.0/ (beta_sampling*kB), 2) 
         def update_main_file_temperature(tsample):
             with open(lammps_main_file,'r') as fil:
@@ -238,7 +240,7 @@ class al_help():
                  
                     ut = new_data['Uclass'].to_numpy()
                     shifted_energies = ut - ut.min()
-                    tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
+                    tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, beta_target, nbins = 200 )
                     
                     al_help.plot_candidate_distribution(shifted_energies, (beta_eff, alpha, weights, l_minima), 200,
                             title = f'MD iter {md_iter}' + r': Candidate distribution \n $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
@@ -402,7 +404,7 @@ class al_help():
 
                 u = candidate_data_sys['Uclass'].to_numpy()
 
-                tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u, nbins = 200) 
+                tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u, beta_target, nbins = 200) 
                 
                 print('MC trial = {:d} beta_target = {:5.4f} ,  beta_eff = {:5.4f}  ,  beta_sampling = {:5.4f}'.format (times_scaled_beta, beta_target, beta_eff, beta_sampling) )
                 
@@ -415,7 +417,7 @@ class al_help():
                     beta_sampling = al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
                     times_scaled_beta += 1
                     continue
-                if np.abs ((beta_target - beta_eff)/beta_target) < 0.05 :
+                if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
                     print(f'MC trial = {times_scaled_beta}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
                     break
 
@@ -510,7 +512,7 @@ class al_help():
         return P/I2
 
     @staticmethod
-    def find_distribution_parameters(u, nminima=0,nbins=200):
+    def find_distribution_parameters(u, beta_target, nminima=0,nbins=200):
         u = u - u.min()
         mu = np.mean(u)
         
@@ -546,7 +548,7 @@ class al_help():
         def reg_cost(params, n_l):
             c2 = 0.0 
             c1 = 0.0
-            
+           
             if n_l >0:
                 w_l = params[2:3+n_l]
                 w = w_l/w_l.sum()
@@ -562,6 +564,9 @@ class al_help():
                     c1 /= math.perm(nw,3)
             return 0.2*(c2 + c1)
 
+        def beta_cost(beta_eff):
+            return 0.1*((beta_eff-beta_target)/beta_target)**2
+
         def weights_to_one(params, n_l):
             w = params[2:3+n_l]
             return w.sum() -1
@@ -569,7 +574,7 @@ class al_help():
         def cost_BG(params, dens ,bc, n_l):
             c = cost_distribution_fit(params, dens, bc, n_l) 
             creg = reg_cost(params,n_l)
-            return c + creg
+            return c + creg + beta_cost(params[0])
         
         def cost_distribution_fit(params, dens, bc, n_l):
             beta, alpha, w_l, min_u_l = get_params( params, n_l)
@@ -608,7 +613,7 @@ class al_help():
         return (beta, alpha, w_l, min_u_l), cfit
 
     @staticmethod
-    def estimate_Teff_Beff(u, nbins = 200):
+    def estimate_Teff_Beff(u, beta_target, nbins = 200):
         u = u -u.min()
         dens, bin_edges = np.histogram(u, bins=nbins, density=True)
         std = np.sqrt(dens/u.shape[0]).sum()/nbins*100
@@ -623,7 +628,7 @@ class al_help():
             return
 
         while( n_l<10 ):
-            p,  new_err  = al_help.find_distribution_parameters(u, nminima=n_l, nbins = nbins)
+            p,  new_err  = al_help.find_distribution_parameters(u, beta_target, nminima=n_l, nbins = nbins)
             beta, alpha, weights, l_minima = p
             rel_err = (old_err - new_err)/old_err
             fail = old_err > std*100
