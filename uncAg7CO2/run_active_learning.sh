@@ -23,8 +23,8 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 inff="$script_dir/AgCO2.in"
 bsize=200
 Niters=20
-iexist=1
-contin=1
+iexist=2
+contin=2
 sigma=0.02
 Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"

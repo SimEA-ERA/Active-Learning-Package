@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
-
+import matplotlib.ticker as ticker
 import re
 from collections import defaultdict
 
@@ -72,7 +72,7 @@ def plot_csv_columns(file_path, col_x, col_y, xlabel, ylabel,title):
     y_values, labels, nums, cols = get_columns( data, col_y) 
     # Plot the dat
     size = 3.3
-    plt.figure(figsize=(size, size))
+    plt.figure(figsize=(size, size), dpi = 300)
     plt.minorticks_on()
     plt.tick_params(direction='in', which='minor',length=size)
     plt.tick_params(direction='in', which='major',length=2*size)
@@ -104,8 +104,13 @@ def plot_csv_columns(file_path, col_x, col_y, xlabel, ylabel,title):
         plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
+    ax = plt.gca()  # Get the current axes
+
+    # Set minor ticks at every even number
+    ax.xaxis.set_minor_locator(ticker.MultipleLocator(2))
     plt.yscale('log')
     plt.grid(True)
+    plt.xticks([int(x) for x in x_values if (x-1)%2==0])
     plt.legend(frameon=False, fontsize=2*size)
     plt.savefig(f'PREDICTION.png', bbox_inches='tight')
 
