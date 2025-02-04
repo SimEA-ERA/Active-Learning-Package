@@ -451,7 +451,7 @@ class al_help():
         if fname is not None:
             plt.savefig(fname, bbox_inches='tight')
         plt.close()
-        #plt.show()
+        #plt.close()
         return
     
     @staticmethod
@@ -1351,10 +1351,61 @@ class al_help():
                 vec.extend(v)
         return np.array(vec)
 
+
     @staticmethod
-    def random_selection(data , setup,candidate_data,batchsize, method='random'):
+    def find_histogram_uncertainty( candidate_data, setup):
+        t0 = perf_counter()
+        def overlap(hist,x,v):
+            return np.trapz( hist * np.exp(- (v-x)**2), x ) 
+
+        ndata = len (candidate_data)
+        uncertainty = np.zeros((ndata,) , dtype = np.float64)
+
+        descriptor_info = candidate_data[ 'descriptor_info' ]
+
+        manager = Data_Manager(candidate_data,setup)
+        
+        histograms = dict()
+        for model in setup.opt_models.values():
+            ty = model.type
+            fe = model.feature
+            dd = manager.get_distribution(ty, fe)
+
+            hist, bin_edges =  np.histogram (dd , density= True, bins=200)
+            bin_centers = bin_edges[:-1] + 0.5 * ( bin_edges[1] - bin_edges[0] )
+            histograms[(ty,fe)] = (hist, bin_centers, dd.std() )
+        
+        p = 3
+        unce_vals = [ [] for _ in range(ndata) ]
+        for (ty, fe),(hist, x, std) in histograms.items():
+            ran = x[-1] - x[0] 
+            dr = ran/20000
+            r = np.arange(x[0], x[-1], dr)
+            max_overlap = np.max([ overlap(hist,x,v) for v in r] )
+            for j, dinfo in enumerate(descriptor_info):
+                try:
+                    vals = dinfo[fe][ty]['values']
+                except KeyError:
+                    continue
+                unc = 0
+                dx = x[1] - x[0]
+                for v in vals:
+                    unc =  1.0 - overlap(hist,x,v)/max_overlap
+                    unce_vals[j].append( unc )
+            
+        for j in range(ndata):
+            unc = np.array(unce_vals[j])
+            uncertainty[j] = np.mean(unc**p )**(1/p)
+        uncertainty = (uncertainty - uncertainty.min() ) / ( uncertainty.max() - uncertainty.min())
+        print(' Uncertainty quantification took {:.3e} sec'.format(perf_counter() - t0 ))
+        return uncertainty
+
+
+    @staticmethod
+    def random_selection(data , setup,candidate_data,batchsize, method='histogram_uncertainty'):
         al_help.make_interactions(candidate_data,setup) 
-        candidate_data = al_help.clean_well_separated_nanostructures(candidate_data,setup)
+        #candidate_data = al_help.clean_well_separated_nanostructures(candidate_data,setup)
+        
         Ucls = candidate_data['Uclass'].to_numpy()
         n = len(candidate_data)
         indx = np.arange(0,n,1,dtype=int)
@@ -1369,10 +1420,12 @@ class al_help():
         nums = {name: np.count_nonzero(names==name) for name in colvals} 
         selected_data = pd.DataFrame()
         ix = candidate_data.index
+
         for name,num in nums.items():
             
             fsystem = candidate_data['sys_name'] == name 
             ix_f = ix [fsystem]
+            i_map = {x: i for i,x in enumerate(ix_f) }
             if method == 'random':
                 psel = None
             elif method =='control_energy':
@@ -1380,10 +1433,32 @@ class al_help():
                 psel = np.exp (- (u_f - u_f.min())/setup.bS)
                 psel /= psel.sum()
             elif method == 'histogram_uncertainty':
-                psel = al_help.find_histogran_uncertainty(candidate_data [fsystem] )
-
+                uncertainty = al_help.find_histogram_uncertainty(candidate_data [fsystem], setup )
+                psel = uncertainty/ uncertainty.sum()
+            
             nx = len(ix_f)
             ix_sel = np.random.choice (ix_f, size=min(num, nx),replace=False, p = psel)
+
+            if method =='histogram_uncertainty':
+                i_sel = np.array( [ i_map[x] for x in ix_sel ] )
+                sel_un = uncertainty[i_sel]
+                mean_unc, std_unc, max_unc, min_unc = sel_un.mean(), sel_un.std(), sel_un.max(), sel_un.min()
+                print(f'{name} --> '+ 'Selected data uncertainty for statistics: mean = {:5.4f}, std = {:5.4f}, max = {:5.4f}, min {:5.4f}'.format(mean_unc, std_unc, max_unc, min_unc) )
+                
+                u = candidate_data.loc[ix_f]['Uclass'].to_numpy()
+                args_sorted = np.argsort(u)
+                u_sorted = np.sort(u-u.min())
+                unc = uncertainty[args_sorted]
+                u_sel = u[i_sel]
+                _ = plt.figure(figsize = (3.3,3.3), dpi=300)
+                plt.title(f'{name} --> Energy vs Uncertainty', fontsize = 5.5)
+                plt.hist(u_sorted, bins=200,density = True,label = 'energy distribution', color='blue')
+                plt.plot(u_sorted, unc, marker='.',linestyle='none', markersize=0.2*3.3, color='red',label='uncertainty')
+                plt.plot(u_sel, sel_un, marker='.', linestyle='none', markersize=0.4*3.3, color='k',label='selected')
+                plt.legend(frameon=False, fontsize=5)
+                plt.savefig(f'{setup.runpath}/EvsUnc-{name}.png', bbox_inches='tight')
+                plt.close()
+
 
             selected_data = selected_data.append( candidate_data.loc[ix_sel] , ignore_index=True)
         return selected_data
@@ -2658,7 +2733,7 @@ class TestPotentials:
             filt = self.filt
             plt.plot(self.vals[filt],self.u[filt])
             plt.legend(fontsize=6,frameon=False)
-            plt.show()
+            plt.close()
         return
     
     def derivative_check(self,tol=1,plot=False,verbose=False):
@@ -2689,7 +2764,7 @@ class TestPotentials:
             plt.plot(self.vals[filt], dudx_num[filt], label='numerical')
             plt.plot(self.vals[filt], dudx[filt], label='analytical',ls='--')
             plt.legend(fontsize=6,frameon=False)
-            plt.show()
+            plt.close()
         if diff_max > tol*dv:
             print("max difference {:4.3e}".format(diff_max))
             print('Derivative Test not passed')
@@ -2786,7 +2861,7 @@ class TestPotentials:
             plt.plot(Npoints, grads_dydx/Npoints,marker='*', 
                      label='grads_dydx',ls='-.')
             plt.legend(fontsize=6,frameon=False)
-            plt.show()
+            plt.close()
         return 
     
     def derivative_gradient_check(self, epsilon=1e-4,tol=1,plot=False,verbose=False):
@@ -2828,7 +2903,7 @@ class TestPotentials:
                 plt.plot(vals[filt], g_num[filt], label='numerical')
                 plt.plot(vals[filt], g[i][filt], label='analytical',ls='--')
                 plt.legend(fontsize=6,frameon=False)
-                plt.show()
+                plt.close()
             if diff > tol:
                 
                 print('Derivative Gradient Test not passed')
@@ -2876,7 +2951,7 @@ class TestPotentials:
                 plt.plot(vals[filt], g_num[filt], label='numerical')
                 plt.plot(vals[filt], g[i][filt], label='analytical',ls='--')
                 plt.legend(fontsize=6,frameon=False)
-                plt.show()
+                plt.close()
             if diff > tol:
                 passed =False
                 print('Gradient Test not passed')
@@ -2944,7 +3019,7 @@ class TestPotentials:
             ax[i].legend(frameon=False,fontsize=2.5*size)
         if fname is not None:
              plt.savefig(fname,bbox_inches='tight')
-        #plt.show()
+        #plt.close()
         
         return
         
@@ -3217,7 +3292,7 @@ class Setup_Interfacial_Optimization():
             ncol = 1 if nlab < 4 else 2
             ax[j].legend(frameon=False,fontsize=1.3*size,loc='upper center', bbox_to_anchor=(0.5, 1.15), shadow=True, ncol=ncol)
         plt.savefig('{:s}/potential.png'.format(path),bbox_inches='tight')
-        plt.show()
+        plt.close()
 
 
     class model_interaction():
@@ -4081,7 +4156,7 @@ class Interactions():
             r,phi = get_rphi(r0,rc)
             plt.plot(r,phi)
         plt.savefig('activation.png',bbox_inches='tight')
-        #plt.show()
+        #plt.close()
     @staticmethod
     def compute_coeff(r0,rc):
         c = np.empty(4,dtype=float)
@@ -4433,7 +4508,7 @@ class Data_Manager():
             plt.title('System {:s}'.format(s))
             plt.hist(self.data[col][f], bins=200, density=True, color='magenta')
             plt.savefig('{:s}/{:s}_{:s}_distribution.png'.format(path,s,col), bbox_inches='tight')
-        #plt.show()   
+        #plt.close()   
         return
     
     @staticmethod
@@ -5040,7 +5115,7 @@ class Data_Manager():
         else:
             plt.xlabel(r'{:s}({:s}) \ '.format(inter_type,'-'.join(ty)))
         plt.hist(dists,bins=bins,density=True,color='magenta')
-        #plt.show()
+        #plt.close()
         plt.savefig(f'{self.setup.runpath}/discriptor_distribution_{inter_type}_{ty}.png',bbox_inches='tight') 
         if ret:
             return dists
@@ -5051,9 +5126,9 @@ class Data_Manager():
         #data = self.get_systems_data(self.data,sys_name)
         pair_dists = []
         #key = tuple(np.sort([t for t in ty]))
-        for j,d in data.iterrows():
+        for d in data['descriptor_info'].to_numpy():
             try:
-                x = d['descriptor_info'][inter_type][ty]['values']
+                x = d[inter_type][ty]['values']
             except KeyError:
                 continue        
             pair_dists.extend(x)
@@ -6168,7 +6243,7 @@ class FF_Optimizer(Optimizer):
             plt.plot(energy_costs[0], force_costs[0], marker='*', ls='none',color='k')
             plt.plot(energy_costs[best_iter],force_costs[best_iter],marker='o',ls='none',color='red')
             plt.savefig(f'{self.setup.runpath}/pareto_scan.png', bbox_inches='tight')
-            plt.show()
+            plt.close()
             return     
 
     def pareto_via_constrain(self,setfrom='init'):
@@ -6287,7 +6362,7 @@ class FF_Optimizer(Optimizer):
             plt.plot([ce_init], [cf_init], marker='*', ls='none',color='k')
             plt.plot([best_ce],[best_cf],marker='o',ls='none',color='red')
             plt.savefig(f'{self.setup.runpath}/pareto_constrain.png', bbox_inches='tight')
-            plt.show()
+            plt.close()
             return 
     @staticmethod
     def costEnergy(params,Energy, models_list_info, 
@@ -6859,7 +6934,7 @@ class Interfacial_Evaluator(Evaluator):
              plt.legend(frameon=False,fontsize=3.0*size)
         if fname is not None:
             plt.savefig('{:s}/{:s}'.format(path,fname),bbox_inches='tight')
-        #plt.show()
+        #plt.close()
         if compare is not None:
             for i,c in enumerate(uncol):
                 _ = plt.figure(figsize=(size,size),dpi=dpi)
@@ -6882,7 +6957,7 @@ class Interfacial_Evaluator(Evaluator):
                     pre,po = fname.split('.')
                     fn = f'{pre}_{c}.{po}'
                     plt.savefig('{:s}/{:s}'.format(path,fn),bbox_inches='tight')
-                #plt.show()
+                #plt.close()
         
         
         return
@@ -6933,7 +7008,7 @@ class Interfacial_Evaluator(Evaluator):
         if fname is not None:
             plt.savefig(fname,bbox_inches='tight')
         plt.ylabel(r'$U_{'+'{:s}'.format(model)+'}$ / kcal/mol')
-        #plt.show()
+        #plt.close()
         return 
     
     
@@ -7022,7 +7097,7 @@ class Interfacial_Evaluator(Evaluator):
                 plt.savefig('{}/spths{}.png'.format(path,nfig),bbox_inches='tight')
             else:
                 plt.savefig('{:s}/{:s}'.format(path,fname),bbox_inches='tight')
-            #plt.show()
+            #plt.close()
     
     def plot_eners(self,figsize=(3.3,3.3),dpi=300,
                    xlabel=r'$\AA$', ylabel=r'$kcal/mol$',
@@ -7081,7 +7156,7 @@ class Interfacial_Evaluator(Evaluator):
         plt.legend(frameon=False,fontsize=5,ncol=max(1,int(n/3)))
         if fname is not None:
             plt.savefig('{:s}/{:s}'.format(path,fname),bbox_inches='tight')
-        #plt.show()
+        plt.close()
 
  ####
 ##### ##### ##
