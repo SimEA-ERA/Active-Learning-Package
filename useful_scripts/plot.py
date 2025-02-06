@@ -69,6 +69,7 @@ def plot_csv_columns(file_path, col_x, col_y, xlabel, ylabel,title):
     
     if col_y == 'find_which_contain_numbers':
         col_y =  find_MAE_per_system(data.columns)
+    print(col_y)
     y_values, labels, nums, cols = get_columns( data, col_y) 
     # Plot the dat
     size = 3.3

@@ -1261,7 +1261,7 @@ class al_help():
         train_eval.plot_predict_vs_target(np.array(forces_true),np.array(forces_class),
                                         path = setup.runpath,title='Training dataset Forces',
                                           fname='trainingForce.png',size=2.35,
-                                          xlabel=r'$F^{dft}$',ylabel=r'$F^{class}$')
+                                          xlabel=r'$F^{dft}$ (kcal/mol/$\AA$)',ylabel=r'$F^{class}$ (kcal/mol/$\AA$)')
         
         ddev = data.loc[dev_indexes]
         Edev = ddev['Energy'].to_numpy()
@@ -1360,8 +1360,8 @@ class al_help():
     @staticmethod
     def find_histogram_uncertainty( candidate_data, existing_data,  setup):
         t0 = perf_counter()
-        def overlap(hist,x,v):
-            return np.trapz( hist * np.exp(- (v-x)**2), x ) 
+        def overlap(hist,x,v, a):
+            return np.trapz( hist * np.exp(- a*(v-x)**2), x ) 
 
         ndata = len (candidate_data)
         uncertainty = np.zeros((ndata,) , dtype = np.float64)
@@ -1378,19 +1378,21 @@ class al_help():
 
             hist, bin_edges =  np.histogram (dd , density= True, bins=200)
             bin_centers = bin_edges[:-1] + 0.5 * ( bin_edges[1] - bin_edges[0] )
-            histograms[(ty,fe)] = (hist, bin_centers, dd.std() )
+            histograms[(ty,fe)] = (hist, bin_centers, bin_edges[-1] - bin_edges[0] )
         
         p = 3
         unce_vals = [ [] for _ in range(ndata) ]
 
-        for (ty, fe),(hist, x, std) in histograms.items():
+        for (ty, fe),(hist, x, ran) in histograms.items():
             
-            ran = x[-1] - x[0] 
-            
+             
+            scale = ran/2.0
             dr = ran/20000
             
             r = np.arange(x[0], x[-1], dr)
-            max_overlap = np.max([ overlap(hist,x,v) for v in r] )
+            ov = np.array([ overlap(hist,x,v, scale) for v in r])
+            max_overlap = ov.max()
+            min_overlap = ov.min()
             
             for j, dinfo in enumerate(descriptor_info_candidates):
                 try:
@@ -1399,7 +1401,7 @@ class al_help():
                     continue
                 unc = 0
                 for v in vals:
-                    unc =  1.0 - overlap(hist,x,v)/max_overlap
+                    unc =  1.0 - (overlap( hist, x, v , scale ) - min_overlap) / (max_overlap - min_overlap)
                     unce_vals[j].append( unc )
             
         for j in range(ndata):
@@ -1450,7 +1452,7 @@ class al_help():
             
             fex = existing_data['sys_name'] == name
 
-            zu = 1.0/np.sqrt(np.count_nonzero(fex) )
+            #zu = 1.0/np.sqrt(np.count_nonzero(fex) )
 
             if method == 'random':
                 psel = None
@@ -1460,7 +1462,8 @@ class al_help():
                 psel /= psel.sum()
             elif method == 'histogram_uncertainty':
                 uncertainty = al_help.find_histogram_uncertainty(candidate_data [fsystem], existing_data[fex]  , setup )
-                psel = (1.0-zu) * uncertainty + zu * np.random.uniform(0,1, size=uncertainty.shape[0])
+                #psel = (1.0-zu) * uncertainty + zu * np.random.uniform(0,1, size=uncertainty.shape[0])
+                psel = uncertainty.copy()
                 psel /= psel.sum()
         
             ix_sel = np.random.choice (ix_f, size=min(num, nx),replace=False, p = psel)
@@ -1614,7 +1617,7 @@ class al_help():
         return
 
     @staticmethod
-    def write_array_batch(path,size,num, ntasks=8):
+    def write_array_batch(path,size,num, ntasks=4):
         bash_script_lines = [
         "#!/bin/bash  ",
         "#SBATCH --job-name=R{:d}  ".format(num),
@@ -1624,7 +1627,7 @@ class al_help():
         "#SBATCH --nodes=1  ",
         "#SBATCH --ntasks-per-node={:d}  ".format(ntasks),
         "#SBATCH --partition=milan  ",
-        "#SBATCH --time=2:00:00  ",
+        "#SBATCH --time=3:50:00  ",
         "",
         "module load Gaussian/16.C.01-AVX2  ",
         "source $g16root/g16/bsd/g16.profile  ",
