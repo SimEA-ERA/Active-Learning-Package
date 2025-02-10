@@ -2,8 +2,8 @@ import numpy as np
 import sys
 import FF_Develop as ff
 import os
-path = 'SO2_log'
-num = 10001
+path = 'gases'
+num = 3
 path_log = '{:s}/L{:d}'.format(path,num)
 
 os.system('bash extract_logfiles.sh {:d} {:s}'.format(num,path))

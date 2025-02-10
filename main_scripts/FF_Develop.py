@@ -220,7 +220,7 @@ class al_help():
 
                 beta_eff = 1e8
                 md_iter = 0
-                while md_iter < 10:
+                while md_iter < 1:
                     print(f'md_iter = {md_iter} ,  beta_sampling = {beta_sampling} , tsampling = {tsample} K')
                     os.system(command)
 
@@ -246,18 +246,18 @@ class al_help():
                             title = f'MD iter {md_iter}' + r': Candidate distribution \n $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
                             fname=f'{setup.runpath}/CD{md_iter}_{sname}.png')
                     
-                    if fail:
-                        print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
-                        beta_sampling = al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
-                        sys.stdout.flush()
-                    if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
-                        print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
-                        break
-                    beta_sampling *= np.sqrt(beta_target/beta_eff)
+                    #if fail:
+                    #    print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
+                    #    beta_sampling = al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
+                    #    sys.stdout.flush()
+                    #if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
+                    #    print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
+                    #    break
+                    #beta_sampling *= np.sqrt(beta_target/beta_eff)
                     
-                    tsample = round(1.0/ (beta_sampling*kB), 5) 
+                    #tsample = round(1.0/ (beta_sampling*kB), 5) 
                     
-                    update_main_file_temperature(tsample)
+                    #update_main_file_temperature(tsample)
                     
                     print(f'md_iter = {md_iter} , beta_eff = {beta_eff}')
                     md_iter += 1
@@ -300,7 +300,7 @@ class al_help():
     @staticmethod
     def MC_sample(data, setup, parsed_args, beta_sampling):
         
-        max_mc_steps = 100000
+        max_mc_steps = 40000
         max_candidates_per_system = 40000
         
         kB = 0.0019872037514523
@@ -347,7 +347,7 @@ class al_help():
             
             times_scaled_beta = 0
             
-            while times_scaled_beta < 10:
+            while times_scaled_beta < 1:
                 
                 print('MC trial = {:d} beta_sampling = {:4.6f} , system = {:s}'.format(times_scaled_beta, beta_sampling, sysname) )
                 
@@ -386,7 +386,7 @@ class al_help():
                     step += 1
                     AR = avg_accept_ratio/step
                     if AR < 0.2:
-                         sigma*=0.97
+                         sigma/=0.99
                     elif AR > 0.5:
                          sigma/=0.97
                     sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
@@ -417,16 +417,16 @@ class al_help():
                             title = f'MC trial {times_scaled_beta}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
                             fname=f'{setup.runpath}/CD{times_scaled_beta}_{sysname}.png')
                 
-                if fail:        
-                    print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}\n Following empirical strategy')
-                    beta_sampling = al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
-                    times_scaled_beta += 1
-                    continue
-                if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
-                    print(f'MC trial = {times_scaled_beta}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
-                    break
+                #if fail:        
+                  #  print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}\n Following empirical strategy')
+                  #  beta_sampling = al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
+                  #  times_scaled_beta += 1
+                 #   continue
+                #if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
+                #    print(f'MC trial = {times_scaled_beta}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
+                 #   break
 
-                beta_sampling *= np.sqrt( beta_target/beta_eff)
+                #beta_sampling *= np.sqrt( beta_target/beta_eff)
                 times_scaled_beta += 1
             
             candidate_data = candidate_data.append(candidate_data_sys,ignore_index=True)
@@ -1409,6 +1409,7 @@ class al_help():
             uncertainty[j] = np.mean(unc**p )**(1/p)
         
         uncertainty = (uncertainty - uncertainty.min() ) / ( uncertainty.max() - uncertainty.min())
+        uncertainty = np.nan_to_num(uncertainty, 1e-8)
         print(' Uncertainty quantification took {:.3e} sec'.format(perf_counter() - t0 ))
         return uncertainty
 
@@ -1452,7 +1453,7 @@ class al_help():
             
             fex = existing_data['sys_name'] == name
 
-            #zu = 1.0/np.sqrt(np.count_nonzero(fex) )
+            zu = 1.0/np.sqrt(np.count_nonzero(fex) )
 
             if method == 'random':
                 psel = None
@@ -1462,8 +1463,8 @@ class al_help():
                 psel /= psel.sum()
             elif method == 'histogram_uncertainty':
                 uncertainty = al_help.find_histogram_uncertainty(candidate_data [fsystem], existing_data[fex]  , setup )
-                #psel = (1.0-zu) * uncertainty + zu * np.random.uniform(0,1, size=uncertainty.shape[0])
-                psel = uncertainty.copy()
+                psel = (1.0-zu) * uncertainty + zu * np.random.uniform(0,1, size=uncertainty.shape[0])
+                #psel = uncertainty.copy()
                 psel /= psel.sum()
         
             ix_sel = np.random.choice (ix_f, size=min(num, nx),replace=False, p = psel)
@@ -1491,8 +1492,8 @@ class al_help():
                 plt.close()
 
                 _ = plt.figure(figsize = (3.3,3.3), dpi=300)
-                plt.title(f'{name} :  Uncertainty Density' , fontsize = 5.5)
-                plt.hist(unc, bins=50,label = 'uncertainty density', color='red')
+                plt.title(f'{name} :  Uncertainty Histogram' , fontsize = 5.5)
+                plt.hist(unc, bins=50,label = 'uncertainty histogram', color='red')
                 plt.hist(sel_un, bins=50,label = 'selected', color='k')
                 plt.yscale('log')
                 plt.xlabel('Normalized Uncertainty' )
@@ -3076,10 +3077,11 @@ class Setup_Interfacial_Optimization():
         'runpath_attributes':['run'],
         
         'max_ener':1.0,
+        'Force_Importance':1.0,
         'rclean':6.0,
         'max_force':0.003,
         'clean_perc':0.8,
-        'bC':30.0,
+        'bC':50.0,
         'bS':20.0,
         
         'optimization_method':'SLSQP',
@@ -5003,7 +5005,7 @@ class Data_Manager():
         
         data = self.data
         
-        if len(data) < 20:
+        if len(data) < 100:
             i = data.index
             return i,i
         train_perc = self.setup.train_perc
@@ -6199,7 +6201,7 @@ class FF_Optimizer(Optimizer):
         
         args = (E,Forces,self.setup.lambda_force,
                 models_list_info, 
-                self.setup.reg_par, reguls,
+                max(self.setup.reg_par,1.e-2/E.shape[0] ), reguls,
                 self.setup.costf,
                 self.setup.regularization_method)
         
@@ -6234,12 +6236,14 @@ class FF_Optimizer(Optimizer):
                 args = list(args)
                 args[2] = lf
                 args = tuple(args)
-              
-                best_params, best_fun, success = params, 1e17 , False
                 
+                best_params, best_fun, success = params, 1e17 , False
                 for rand_sol in range(nrandom+1):
                     if rand_sol !=0:
                         params = self.randomize_initial_params(best_params.copy(),bounds)
+                    else:
+                        params = best_params.copy()
+
                     res = minimize(self.CostFunction, params,
                                args = args,
                                jac = self.gradCost,
@@ -6248,27 +6252,26 @@ class FF_Optimizer(Optimizer):
                                         'maxiter':self.setup.maxiter,
                                         'ftol': self.setup.tolerance},
                                method = 'SLSQP')
-                    if res.success:
-                        success = True
-                        if res.fun < best_fun:
-                            best_fun ,best_params  = res.fun, res.x.copy()
-                    else:
-                        break
-                params = best_params
+                    if res.fun < best_fun:
+                        best_fun ,best_params  = res.fun, res.x.copy()
+                
                         
-                if not success:
-                    break
                 self.current_res = res
-                self.set_models('init','opt',params,isnot_fixed,fixed_parameters)
+                self.set_models('init','opt',best_params,isnot_fixed,fixed_parameters)
                 self.set_results()
+
                 se = self.current_costs.selection_metric
+                
                 ce, cf = self.current_costs.selection_energy, self.current_costs.selection_forces
+                
                 energy_costs.append( ce )
                 force_costs.append( cf )
+
                 if se < best_se:
                     best_se , best_iter = se, iteration
                     self.set_models('opt','best_opt')
-                    params = res.x
+                    params = best_params
+
                 print('Iteration {:d}, Energy Cost = {:4.5f} Force Cost = {:4.5f}'.format(
                     iteration, ce, cf))
                 print('Iteration {:d},  best iter = {:d}, best_metric = {:4.5f}'.format(
@@ -6368,16 +6371,12 @@ class FF_Optimizer(Optimizer):
                                         'maxiter':self.setup.maxiter,
                                         'ftol': self.setup.tolerance},
                                method = 'SLSQP')
-                    if res.success:
-                        success = True
-                        if res.fun < best_fun:
-                            best_fun ,best_params  = res.fun, res.x
+                    if res.fun < best_fun:
+                        best_fun ,best_params  = res.fun, res.x
                     else:
                         break
                 params = best_params
                         
-                if not success:
-                    break
                 self.current_res = res
                 self.set_models('init','opt',params,isnot_fixed,fixed_parameters)
                 self.set_results()
@@ -6385,15 +6384,20 @@ class FF_Optimizer(Optimizer):
                 ce, cf = self.current_costs.selection_energy, self.current_costs.selection_forces
                 energy_costs.append( ce )
                 force_costs.append( cf )
+                
                 print('Iteration {:d}, Energy Cost = {:4.5f} Force Cost = {:4.5f}'.format(
                     iteration, ce, cf))
+                
                 print('Iteration {:d}, force desired error {:4.5f} best iter = {:d}, best_metric = {:4.5f}'.format(
                     iteration,fv,best_iter,best_se))
+                
                 sys.stdout.flush()
+                
                 if se < best_se:
                     best_se , best_ce, best_cf, best_iter = se, ce, cf, iteration
                     self.set_models('opt','best_opt')
                     params = res.x
+            
             self.set_models('best_opt','opt')
             self.set_results()        
             _ = plt.figure(figsize=(3.3,3.3),dpi=300)
@@ -6707,7 +6711,7 @@ class FF_Optimizer(Optimizer):
                             setattr(costs,prefix + 'reg_scaled', reg_par*creg) 
                     setattr(costs,prefix + 'cost', ce + lambda_force*cf) 
                     if dataname == 'dev' and meas == measure and norm =='norm_':
-                        costs.selection_metric = (ce*ce + cf*cf)**0.5
+                        costs.selection_metric = (ce*ce + self.setup.Force_Importance*cf*cf)**0.5
                         costs.selection_energy = ce
                         costs.selection_forces = cf
         self.current_costs = costs
@@ -6733,8 +6737,8 @@ class FF_Optimizer(Optimizer):
                         model.pinfo[k].value = fixed_parameters[k2]
                         k2+=1
         name = setto+'_models'
-        setattr(self,name,models_copy)
-        setattr(self.setup,name,models_copy)
+        setattr(self, name, models_copy)
+        setattr(self.setup, name, models_copy)
         return 
     
     def report(self):

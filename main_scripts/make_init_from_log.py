@@ -2,8 +2,8 @@ import numpy as np
 import sys
 import FF_Develop as ff
 import os
-path = 'not_finished'
-num = 7
+path = 'gases'
+num = 3
 path_log = '{:s}'.format(path)
 
 al = ff.al_help

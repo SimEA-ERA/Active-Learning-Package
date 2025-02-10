@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import argparse
 import matplotlib.ticker as ticker
 import re
+import numpy as np
 from collections import defaultdict
 
 def identify_name(c):
@@ -66,7 +67,8 @@ def plot_csv_columns(file_path, col_x, col_y, xlabel, ylabel,title):
     # Extract the x and y values
     x_values, dumb, dumb, dumb = get_columns( data,  col_x)
     x_values = x_values[0] 
-    
+    if col_x =='0':
+        x_values = np.array(x_values) - 1
     if col_y == 'find_which_contain_numbers':
         col_y =  find_MAE_per_system(data.columns)
     print(col_y)

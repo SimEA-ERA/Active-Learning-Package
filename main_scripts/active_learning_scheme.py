@@ -90,9 +90,10 @@ def main():
         al.make_absolute_Energy_to_interaction(df,setup)
         data = data.append(df , ignore_index=True)
         #ff.Data_Manager.distribution(data['Energy'],'distr/data{:d}.png'.format(n))
-
-    data = al.clean_data(data,setup)
+    if len(data) > 300:
+        data = al.clean_data(data,setup)
     ff.Data_Manager(data,setup).distribution('Energy')
+    
     setup.run = num
 
     
