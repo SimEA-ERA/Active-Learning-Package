@@ -220,7 +220,7 @@ class al_help():
 
                 beta_eff = 1e8
                 md_iter = 0
-                while md_iter < 1:
+                while md_iter < 5:
                     print(f'md_iter = {md_iter} ,  beta_sampling = {beta_sampling} , tsampling = {tsample} K')
                     os.system(command)
 
@@ -246,18 +246,18 @@ class al_help():
                             title = f'MD iter {md_iter}' + r': Candidate distribution \n $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
                             fname=f'{setup.runpath}/CD{md_iter}_{sname}.png')
                     
-                    #if fail:
-                    #    print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
-                    #    beta_sampling = al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
-                    #    sys.stdout.flush()
-                    #if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
-                    #    print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
-                    #    break
-                    #beta_sampling *= np.sqrt(beta_target/beta_eff)
+                    if fail:
+                        print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
+                        beta_sampling = al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
+                        sys.stdout.flush()
+                    if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
+                        print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
+                        break
+                    beta_sampling *= np.sqrt(beta_target/beta_eff)
                     
-                    #tsample = round(1.0/ (beta_sampling*kB), 5) 
+                    tsample = round(1.0/ (beta_sampling*kB), 5) 
                     
-                    #update_main_file_temperature(tsample)
+                    update_main_file_temperature(tsample)
                     
                     print(f'md_iter = {md_iter} , beta_eff = {beta_eff}')
                     md_iter += 1
@@ -347,7 +347,7 @@ class al_help():
             
             times_scaled_beta = 0
             
-            while times_scaled_beta < 1:
+            while times_scaled_beta < 5:
                 
                 print('MC trial = {:d} beta_sampling = {:4.6f} , system = {:s}'.format(times_scaled_beta, beta_sampling, sysname) )
                 
@@ -417,16 +417,16 @@ class al_help():
                             title = f'MC trial {times_scaled_beta}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
                             fname=f'{setup.runpath}/CD{times_scaled_beta}_{sysname}.png')
                 
-                #if fail:        
-                  #  print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}\n Following empirical strategy')
-                  #  beta_sampling = al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
-                  #  times_scaled_beta += 1
-                 #   continue
-                #if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
-                #    print(f'MC trial = {times_scaled_beta}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
-                 #   break
+                if fail:        
+                    print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}\n Following empirical strategy')
+                    beta_sampling = al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
+                    times_scaled_beta += 1
+                    continue
+                if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
+                    print(f'MC trial = {times_scaled_beta}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
+                    break
 
-                #beta_sampling *= np.sqrt( beta_target/beta_eff)
+                beta_sampling *= np.sqrt( beta_target/beta_eff)
                 times_scaled_beta += 1
             
             candidate_data = candidate_data.append(candidate_data_sys,ignore_index=True)
