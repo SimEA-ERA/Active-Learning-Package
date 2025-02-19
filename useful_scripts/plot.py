@@ -68,7 +68,7 @@ def plot_csv_columns(file_path, col_x, col_y, xlabel, ylabel,title):
     x_values, dumb, dumb, dumb = get_columns( data,  col_x)
     x_values = x_values[0] 
     if col_x =='0':
-        x_values = np.array(x_values) - 1
+        x_values = np.array(x_values)
     if col_y == 'find_which_contain_numbers':
         col_y =  find_MAE_per_system(data.columns)
     print(col_y)

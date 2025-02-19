@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=CO
+#SBATCH --job-name=Ag9
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
 #SBATCH --partition=milan
-#SBATCH --time=0:59:00
+#SBATCH --time=23:59:00
 
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
@@ -20,15 +20,15 @@ mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
 cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
-inff="$script_dir/AgCO.in"
-bsize=50
-Niters=5
-iexist=5
-contin=5
+inff="$script_dir/Ag.in"
+bsize=200
+Niters=20
+iexist=0
+contin=0
 sigma=0.02
 Ttarget=500
-charge_map="C:-0.0203,O:0.0203,Ag:0"
-mass_map="C:12.011,O:15.999,Ag:107.8682"
+charge_map="N:0.146,O:-0.073,Ag:0"
+mass_map="N:14.0067,O:15.999,Ag:107.8682"
 sampling_method="md"
 kB=0.00198720375145233
 beta_sampling=$(awk "BEGIN {print 1/($kB * $Ttarget)}")
@@ -43,7 +43,7 @@ for ((num=$contin; num<=$Niters; num++)); do
    if [ "$num" -eq 0 ]; then
 	   sampling_method="perturbation"
       echo "Sampling method is set to perturbation"
-   elif [ "$num" -le 2 ]; then
+   elif [ "$num" -le 9 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"

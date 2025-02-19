@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=Ag7
+#SBATCH --job-name=Agsmall
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
@@ -10,17 +10,9 @@
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
 #### Variables
-#!/bin/bash
-
-# Get the absolute path of the script
 SCRIPT_PATH=$(realpath "$0")
 script_dir=$(dirname "$SCRIPT_PATH")
-SUBMIT_DIR=$SLURM_SUBMIT_DIR
-
-script_dir=$SUBMIT_DIR
-
-echo "Script is running from: $script_dir"
-
+script_dir="$SLURM_SUBMIT_DIR"
 cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
@@ -28,17 +20,17 @@ mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
 cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
-inff="$script_dir/Ag.in"
-bsize=100
+inff="$script_dir/Agsmall.in"
+bsize=200
 Niters=20
-iexist=2
-contin=2
+iexist=0
+contin=0
 sigma=0.02
 Ttarget=500
-charge_map="C:0.8,O:-0.4,Ag:0"
-mass_map="C:12.011,O:15.999,Ag:107.8682"
+charge_map="N:0.146,O:-0.073,Ag:0"
+mass_map="N:14.0067,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=3.28
+kB=0.00198720375145233
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
@@ -50,13 +42,15 @@ for ((num=$contin; num<=$Niters; num++)); do
    if [ "$num" -eq 0 ]; then
 	   sampling_method="perturbation"
       echo "Sampling method is set to perturbation"
-   elif [ "$num" -le 5 ]; then
+   elif [ "$num" -le 9 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"
       sampling_method="md"
    fi
 
+   beta_sampling=$(awk "BEGIN {print $Niters/($kB * $Ttarget * ($num+1) )}")
+   echo " beta_sampling = $beta_sampling "
    # Run Python scripts from the same directory as this Bash script
    python "$main_set_of_files_path/active_learning_scheme.py" \
           -n $num -dp $datapath -f $inff -b $bsize -s $sigma -exd $iexist \
@@ -106,6 +100,6 @@ for ((num=$contin; num<=$Niters; num++)); do
    fi
 
    inff="$results_path/$num/runned.in"
-   beta_sampling=$(head -n 1 beta_sampling_value)
+   #beta_sampling=$(head -n 1 beta_sampling_value)
 done
 

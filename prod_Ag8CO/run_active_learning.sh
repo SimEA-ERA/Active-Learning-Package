@@ -4,7 +4,7 @@
 #SBATCH --error=err
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
-#SBATCH --partition=milan
+#SBATCH --partition=a100
 #SBATCH --time=23:59:00
 
 module load matplotlib/3.4.3-foss-2021b
@@ -22,15 +22,16 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/AgCO.in"
 bsize=200
-Niters=20
-iexist=1
-contin=1
+Niters=25
+iexist=19
+contin=19
 sigma=0.02
-Ttarget=500
+Ttarget=250
 charge_map="C:-0.0203,O:0.0203,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=1.0
+kB=0.00198720375145233
+beta_sampling=$(awk "BEGIN {print 1/($kB * $Ttarget)}")
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
