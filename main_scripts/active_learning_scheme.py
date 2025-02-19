@@ -13,7 +13,25 @@ import FF_Develop as ff
 import numpy as np
 import argparse
 import math
+import pandas as pd
 
+def print_column_stats(column: pd.Series):
+    """
+    Prints the name, max, min, std, and mean of a Pandas DataFrame column.
+    
+    Parameters:
+    column (pd.Series): The DataFrame column to analyze.
+    """
+    if not isinstance(column, pd.Series):
+        print("Input is not a valid Pandas Series.")
+        return
+    
+    print(f"Column Name: {column.name}")
+    print(f"Max Value: {column.max()}")
+    print(f"Min Value: {column.min()}")
+    print(f"Standard Deviation: {column.std()}")
+    print(f"Mean Value: {column.mean()}")
+    return
 
 
 def main():
@@ -90,10 +108,11 @@ def main():
         al.make_absolute_Energy_to_interaction(df,setup)
         data = data.append(df , ignore_index=True)
         #ff.Data_Manager.distribution(data['Energy'],'distr/data{:d}.png'.format(n))
-    if len(data) > 300:
-        data = al.clean_data(data,setup)
+    print_column_stats(data['Energy'])
+    data = al.clean_data(data,setup, beta_sampling)
+    print('After cleaning')
+    print_column_stats(data['Energy'])
     ff.Data_Manager(data,setup).distribution('Energy')
-    
     setup.run = num
 
     

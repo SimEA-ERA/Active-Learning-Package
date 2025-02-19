@@ -1,24 +1,18 @@
 #!/bin/bash
-#SBATCH --job-name=Ag7
+#SBATCH --job-name=Ag9
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
-#SBATCH --partition=a100
+#SBATCH --partition=milan
 #SBATCH --time=23:59:00
 
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
 #### Variables
-#!/bin/bash
-
-# Get the absolute path of the script
 SCRIPT_PATH=$(realpath "$0")
 script_dir=$(dirname "$SCRIPT_PATH")
 script_dir="$SLURM_SUBMIT_DIR"
-
-echo "Script is running from: $script_dir"
-
 cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
@@ -27,16 +21,17 @@ cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_workin
 cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/Ag.in"
-bsize=100
+bsize=200
 Niters=20
-iexist=1
-contin=1
+iexist=0
+contin=0
 sigma=0.02
-Ttarget=1000
-charge_map="C:0.8,O:-0.4,Ag:0"
-mass_map="C:12.011,O:15.999,Ag:107.8682"
+Ttarget=500
+charge_map="N:0.146,O:-0.073,Ag:0"
+mass_map="N:14.0067,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=0.5
+kB=0.00198720375145233
+beta_sampling=$(awk "BEGIN {print 1/($kB * $Ttarget)}")
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
@@ -48,7 +43,7 @@ for ((num=$contin; num<=$Niters; num++)); do
    if [ "$num" -eq 0 ]; then
 	   sampling_method="perturbation"
       echo "Sampling method is set to perturbation"
-   elif [ "$num" -le 5 ]; then
+   elif [ "$num" -le 9 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"

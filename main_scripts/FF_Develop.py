@@ -218,49 +218,35 @@ class al_help():
                 c5 = ' cd - '
                 command  = '  ;  '.join([c1,c2])
 
-                beta_eff = 1e8
+                well_defined_structures = False
                 md_iter = 0
-                while md_iter < 5:
-                    print(f'md_iter = {md_iter} ,  beta_sampling = {beta_sampling} , tsampling = {tsample} K')
+                while well_defined_structures == False and md_iter < 100:
                     os.system(command)
 
                     new_data = al_help.read_lammps_structs('lammps_working/samples.lammpstrj',inv_types)
                     ne = len(new_data)
                     new_data = al_help.clean_well_separated_nanostructures(new_data, setup)
-                    if len(new_data) < 0.01*ne:
-                        print('More than 99% of the structures were well separated! rescaling beta by 1.5 to avoid desorption or dissolution')
-                        beta_sampling *= 1.5
+                    if len(new_data) < 0.1*ne:
+                        print(f'MD iter {md_iter}: More than 90% of the structures were well separated! rescaling beta by 1.1 to avoid desorption or dissolution')
+                        beta_sampling *= 1.1
                         tsample = round(1.0/ (beta_sampling*kB), 5) 
                         update_main_file_temperature(tsample)
                         md_iter += 1
                         sys.stdout.flush()
                         continue
+                    else:
+                        well_defined_structures = True
 
-                    al_help.evaluate_potential(new_data, setup,'opt')
-                 
-                    ut = new_data['Uclass'].to_numpy()
-                    shifted_energies = ut - ut.min()
-                    tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, beta_target, nbins = 200 )
-                    
-                    al_help.plot_candidate_distribution(shifted_energies, (beta_eff, alpha, weights, l_minima), 200,
-                            title = f'MD iter {md_iter}' + r': Candidate distribution \n $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
-                            fname=f'{setup.runpath}/CD{md_iter}_{sname}.png')
-                    
-                    if fail:
-                        print(f'md iter = {md_iter}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}')
-                        beta_sampling = al_help.beta_distribution_fit_fail_strategy(shifted_energies , setup, beta_sampling )
-                        sys.stdout.flush()
-                    if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
-                        print(f'md iter = {md_iter}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
-                        break
-                    beta_sampling *= np.sqrt(beta_target/beta_eff)
-                    
-                    tsample = round(1.0/ (beta_sampling*kB), 5) 
-                    
-                    update_main_file_temperature(tsample)
-                    
-                    print(f'md_iter = {md_iter} , beta_eff = {beta_eff}')
-                    md_iter += 1
+                al_help.evaluate_potential(new_data, setup,'opt')
+                
+                ut = new_data['Uclass'].to_numpy()
+                shifted_energies = ut - ut.min()
+                tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, beta_target, nbins = 200 )
+                
+                al_help.plot_candidate_distribution(shifted_energies, (beta_eff, alpha, weights, l_minima), 200,
+                        title = f'MD:' + r' Candidate distribution \n $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
+                        fname=f'{setup.runpath}/CD{md_iter}_{sname}.png')
+                
                 
                 os.system('  ;  '.join([c1, c3,c4,c5]) )
                 new_data['sys_name'] = sname
@@ -269,6 +255,7 @@ class al_help():
         print('Lammps Simulations complete')
         sys.stdout.flush()
         return candidate_data, beta_sampling
+
     @staticmethod
     def coordinate_simulated_annealing(data, r_setup):
         synames = np.unique(data['sys_name'])
@@ -335,7 +322,6 @@ class al_help():
             try:
                 idx_chosen = np.random.choice(all_indexes, size= min(len(step_data),100) , replace=False, p = prop_sel)
             except ValueError:
-
                 idx_chosen = np.random.choice(all_indexes, size= min(len(step_data),100) , replace=False, p = None)
             
             step_data = step_data.loc[idx_chosen]
@@ -345,89 +331,71 @@ class al_help():
             
             n = len(step_data)
             
-            times_scaled_beta = 0
+            step, c_size ,  sigma, avg_accept_ratio = 0, 0 , sigma_init, 0.0
+            candidate_data_sys = pd.DataFrame()
             
-            while times_scaled_beta < 5:
-                
-                print('MC trial = {:d} beta_sampling = {:4.6f} , system = {:s}'.format(times_scaled_beta, beta_sampling, sysname) )
-                
-                
-                step, c_size ,  sigma, avg_accept_ratio = 0, 0 , sigma_init, 0.0
-                candidate_data_sys = pd.DataFrame()
-                
-                while(step <= max_mc_steps and c_size <= max_candidates_per_system):
-             
-                    all_new_coords = []
-                    old_coords = copy.deepcopy(step_data['coords'].to_numpy())
-                    for j,dat in step_data.iterrows():
-                        new_coords = al_help.petrube_coords(np.array(dat['coords']) ,sigma, 'random_walk', dat['bodies'])
-                        all_new_coords.append(new_coords)
-                    step_data.loc[step_data.index,'coords'] = all_new_coords
-                     
-                    al_help.evaluate_potential(step_data, setup,'opt')
-                     
-                    Uclass_new = step_data['Uclass'].to_numpy()
-                     
-                    dubt = (Uclass_new  - Uclass_prev )*beta_sampling
-                     
-                    pe =  np.exp( - dubt ) 
-                    accepted_filter = pe > np.random.uniform(0,1,n) 
-             
+            while(step <= max_mc_steps and c_size <= max_candidates_per_system):
+            
+                all_new_coords = []
+                old_coords = copy.deepcopy(step_data['coords'].to_numpy())
+                for j,dat in step_data.iterrows():
+                    new_coords = al_help.petrube_coords(np.array(dat['coords']) ,sigma, 'random_walk', dat['bodies'])
+                    all_new_coords.append(new_coords)
+                step_data.loc[step_data.index,'coords'] = all_new_coords
                  
-                    not_accepted_filter = np.logical_not(accepted_filter)
-                    step_data.loc[ not_accepted_filter, 'coords']  = old_coords[not_accepted_filter]
-                     
-                    Uclass_prev [ accepted_filter ] = Uclass_new [accepted_filter].copy()
-                    Uclass_prev [ not_accepted_filter ] =  Uclass_prev [ not_accepted_filter].copy()
-                    
-                    accept_ratio = np.count_nonzero(accepted_filter)/n
-                    avg_accept_ratio += accept_ratio
-             
-                    step += 1
-                    AR = avg_accept_ratio/step
-                    if AR < 0.2:
-                         sigma/=0.99
-                    elif AR > 0.5:
-                         sigma/=0.97
-                    sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
-                    if step %500 ==0:
-                        print( 'MC step {:d},   sigma = {:.4e} A ,  accept_ratio = {:5.4f}  ,  current_accept = {:5.4f} candidate size = {:d}'.format(step,  sigma, AR, accept_ratio, c_size) )
-                        sys.stdout.flush()
+                al_help.evaluate_potential(step_data, setup,'opt')
+                 
+                Uclass_new = step_data['Uclass'].to_numpy()
+                 
+                dubt = (Uclass_new  - Uclass_prev )*beta_sampling
+                 
+                pe =  np.exp( - dubt ) 
+                accepted_filter = pe > np.random.uniform(0,1,n) 
             
-                    if step < asymptotic_steps:
-                        continue
-                    
-                    filtered_step_data = step_data[ accepted_filter ]
-                    
-                    candidate_data_sys = pd.concat( (candidate_data_sys, filtered_step_data), ignore_index=True)
-                    
-                    c_size = len(candidate_data_sys)
-                    ########
-
-
-                print('Metropolis Hastings completed! Average acceptance {:5.4f}'.format( AR ) ) 
-
-                u = candidate_data_sys['Uclass'].to_numpy()
-
-                tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u, beta_target, nbins = 200) 
+             
+                not_accepted_filter = np.logical_not(accepted_filter)
+                step_data.loc[ not_accepted_filter, 'coords']  = old_coords[not_accepted_filter]
+                 
+                Uclass_prev [ accepted_filter ] = Uclass_new [accepted_filter].copy()
+                Uclass_prev [ not_accepted_filter ] =  Uclass_prev [ not_accepted_filter].copy()
                 
-                print('MC trial = {:d} beta_target = {:5.4f} ,  beta_eff = {:5.4f}  ,  beta_sampling = {:5.4f}'.format (times_scaled_beta, beta_target, beta_eff, beta_sampling) )
-                
-                al_help.plot_candidate_distribution(u - u.min(), (beta_eff, alpha, weights, l_minima), 200,
-                            title = f'MC trial {times_scaled_beta}' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
-                            fname=f'{setup.runpath}/CD{times_scaled_beta}_{sysname}.png')
-                
-                if fail:        
-                    print(f'MC trial = {times_scaled_beta}: BETA SCALING FAILED! beta_eff = {beta_eff}   beta_target = {beta_target}    beta_sampling = {beta_sampling}\n Following empirical strategy')
-                    beta_sampling = al_help.beta_distribution_fit_fail_strategy(u , setup, beta_sampling )
-                    times_scaled_beta += 1
+                accept_ratio = np.count_nonzero(accepted_filter)/n
+                avg_accept_ratio += accept_ratio
+            
+                step += 1
+                AR = avg_accept_ratio/step
+                if AR < 0.2:
+                     sigma*=0.99
+                elif AR > 0.5:
+                     sigma/=0.99
+                sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
+                if step %500 ==0:
+                    print( 'MC step {:d},   sigma = {:.4e} A ,  accept_ratio = {:5.4f}  ,  current_accept = {:5.4f} candidate size = {:d}'.format(step,  sigma, AR, accept_ratio, c_size) )
+                    sys.stdout.flush()
+            
+                if step < asymptotic_steps:
                     continue
-                if np.abs ((beta_target - beta_eff)/beta_target) < 0.1 :
-                    print(f'MC trial = {times_scaled_beta}: BETA SCALING CONVERGED! beta_eff = {beta_eff}   beta_target = {beta_target}   beta_sampling = {beta_sampling}')
-                    break
+                
+                filtered_step_data = step_data[ accepted_filter ]
+                
+                candidate_data_sys = pd.concat( (candidate_data_sys, filtered_step_data), ignore_index=True)
+                
+                c_size = len(candidate_data_sys)
+                ########
 
-                beta_sampling *= np.sqrt( beta_target/beta_eff)
-                times_scaled_beta += 1
+
+            print('Metropolis Hastings completed! Average acceptance {:5.4f}'.format( AR ) ) 
+
+            u = candidate_data_sys['Uclass'].to_numpy()
+
+            tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u, beta_target, nbins = 200) 
+            
+            print('MC:  beta_target = {:5.4f} ,  beta_eff = {:5.4f}  ,  beta_sampling = {:5.4f}'.format ( beta_target, beta_eff, beta_sampling) )
+            
+            al_help.plot_candidate_distribution(u - u.min(), (beta_eff, alpha, weights, l_minima), 200,
+                        title = f'MC trial' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
+                        fname=f'{setup.runpath}/CD_{sysname}.png')
+            
             
             candidate_data = candidate_data.append(candidate_data_sys,ignore_index=True)
 
@@ -1628,7 +1596,7 @@ class al_help():
         "#SBATCH --nodes=1  ",
         "#SBATCH --ntasks-per-node={:d}  ".format(ntasks),
         "#SBATCH --partition=milan  ",
-        "#SBATCH --time=3:50:00  ",
+        "#SBATCH --time=1:59:00  ",
         "",
         "module load Gaussian/16.C.01-AVX2  ",
         "source $g16root/g16/bsd/g16.profile  ",
@@ -1894,7 +1862,7 @@ class al_help():
         return data.loc[keep_index]
 
     @staticmethod
-    def clean_data(data,setup,prefix=''):
+    def clean_data(data,setup,beta_sampling=1.0, prefix=''):
         n = len(data)
         sysnames = data['sys_name'].to_numpy()
         
@@ -1906,10 +1874,10 @@ class al_help():
         for i in range(n):
             mineners[i] = me[ sysnames[i] ]
         
-        re = np.abs(mineners - ener)
         e_range = setup.bC
-        pe = np.exp(-re/(e_range))
-        if n > 20:
+        re = np.abs(mineners - ener) - e_range
+        pe = np.exp(-re / beta_sampling)
+        if n > 200:
             indexes = data.index
             #ix = np.random.choice(data.index,int(setup.clean_perc*n),replace=False,p=ps)
             ix = []
@@ -6201,7 +6169,7 @@ class FF_Optimizer(Optimizer):
         
         args = (E,Forces,self.setup.lambda_force,
                 models_list_info, 
-                max(self.setup.reg_par,1.e-2/E.shape[0] ), reguls,
+                max(self.setup.reg_par,1.e-4/E.shape[0] ), reguls,
                 self.setup.costf,
                 self.setup.regularization_method)
         
@@ -6373,8 +6341,12 @@ class FF_Optimizer(Optimizer):
                                method = 'SLSQP')
                     if res.fun < best_fun:
                         best_fun ,best_params  = res.fun, res.x
-                    else:
-                        break
+                    if res.success:
+                        success = True
+                if not success:
+                    break
+                
+                
                 params = best_params
                         
                 self.current_res = res
@@ -6385,11 +6357,6 @@ class FF_Optimizer(Optimizer):
                 energy_costs.append( ce )
                 force_costs.append( cf )
                 
-                print('Iteration {:d}, Energy Cost = {:4.5f} Force Cost = {:4.5f}'.format(
-                    iteration, ce, cf))
-                
-                print('Iteration {:d}, force desired error {:4.5f} best iter = {:d}, best_metric = {:4.5f}'.format(
-                    iteration,fv,best_iter,best_se))
                 
                 sys.stdout.flush()
                 
@@ -6397,6 +6364,12 @@ class FF_Optimizer(Optimizer):
                     best_se , best_ce, best_cf, best_iter = se, ce, cf, iteration
                     self.set_models('opt','best_opt')
                     params = res.x
+                
+                print('Iteration {:d}, Energy Cost = {:4.5f} Force Cost = {:4.5f}'.format(
+                    iteration, ce, cf))
+                
+                print('Iteration {:d}, force desired error {:4.5f} best iter = {:d}, best_metric = {:4.5f}'.format(
+                    iteration,fv,best_iter,best_se))
             
             self.set_models('best_opt','opt')
             self.set_results()        

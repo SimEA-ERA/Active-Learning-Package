@@ -23,14 +23,16 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 inff="$script_dir/AgCO2.in"
 bsize=200
 Niters=20
-iexist=1
-contin=1
+iexist=6
+contin=6
 sigma=0.02
 Ttarget=500
 charge_map="C:0.8,O:-0.4,Ag:0"
 mass_map="C:12.011,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=1.0
+kB=0.00198720375145233
+beta_sampling=$(awk "BEGIN {print 1/($kB * $Ttarget)}")
+
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"

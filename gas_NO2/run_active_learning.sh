@@ -12,7 +12,7 @@ module load numba/0.54.1-foss-2021b
 #### Variables
 SCRIPT_PATH=$(realpath "$0")
 script_dir=$(dirname "$SCRIPT_PATH")
-#script_dir="$SLURM_SUBMIT_DIR"
+script_dir="$SLURM_SUBMIT_DIR"
 cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
@@ -22,15 +22,15 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
 inff="$script_dir/NO2.in"
 bsize=50
-Niters=5
-iexist=1
-contin=1
+Niters=25
+iexist=18
+contin=18
 sigma=0.01
 Ttarget=500
 charge_map="N:0.146,O:-0.073,Ag:0"
 mass_map="N:14.0067,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=0.72
+beta_sampling=0.1
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
@@ -39,10 +39,10 @@ mkdir -p $eval_dir
 
 for ((num=$contin; num<=$Niters; num++)); do
    
-   if [ "$num" -eq 0 ]; then
+   if [ "$num" -le 1 ]; then
 	   sampling_method="perturbation"
       echo "Sampling method is set to perturbation"
-   elif [ "$num" -le 2 ]; then
+   elif [ "$num" -le 14 ]; then
       sampling_method="mc"
    else
       echo "Sampling method is set to md"
