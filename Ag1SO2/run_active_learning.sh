@@ -5,14 +5,14 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
 #SBATCH --partition=a100
-#SBATCH --time=0:59:00
+#SBATCH --time=23:59:00
 
 module load matplotlib/3.4.3-foss-2021b
 module load numba/0.54.1-foss-2021b
 #### Variables
 SCRIPT_PATH=$(realpath "$0")
 script_dir=$(dirname "$SCRIPT_PATH")
-script_dir="$SLURM_SUBMIT_DIR"
+#script_dir="$SLURM_SUBMIT_DIR"
 cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
 
@@ -23,8 +23,8 @@ cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 inff="$script_dir/Ag1SO2.in"
 bsize=200
 Niters=15
-iexist=0
-contin=0
+iexist=12
+contin=12
 sigma=0.02
 Ttarget=500
 charge_map="S:0.4702,O:-0.2351,Ag:0"

@@ -905,6 +905,8 @@ class al_help():
             f.write('\n')
 
             added_ld =' '
+            all_types = []
+            pair_coeffs = []
             if 'pair' in classified_models:
                 # 1.2 add ld to hybrid style if you find even one LD potential
                 ##### The function writing the LD potential will handle multiple LDs 
@@ -918,21 +920,25 @@ class al_help():
                     m = model.model
                     c = model.category
                     n = model.num
-                    tyl = (types_map[ty[0]], types_map[ty[1]])
+                    t1, t2 = types_map[ty[0]], types_map[ty[1]]
+                    tyl = (t1,t2)
+                    
                     if int(tyl[0]) > int(tyl[1]):
                         tyl = (tyl[1],tyl[0])
                     if n>= getattr(setup,'n'+c):
                         continue
-                    if m =='Morse':
+                    if m == 'Morse':
                         pars = [ model.pinfo['De'].value, model.pinfo['alpha'].value, model.pinfo['re'].value]
                         args = (*tyl, *pars)
                         s = 'pair_coeff {:} {:} morse {:.16e}  {:.16e}  {:.16e} \n'.format(*args)
                         f.write(s)
-                    if m =='Bezier' and c =='PW' :
+                    if m == 'Bezier' and c == 'PW' :
                         args = (*tyl,)
                         s = 'pair_coeff {:} {:}  table tablePW.tab {:}-{:} \n'.format(args[0],args[1],ty[0],ty[1])
                         f.write(s)
                 
+                    pair_coeffs.append(tyl)
+                    all_types.extend(tyl)
                 setup.write_PWtable(types_map,50000,which=which)
             elif write_extra_pairs:
                 f.write('pair_style hybrid/overlay {:s} {:s} \n'.format(added_extra,added_ld))
@@ -941,11 +947,28 @@ class al_help():
                 if ty[0] in types_map and ty[1] in types_map:
                     t0 = str(types_map[ty[0]])
                     t1 = str(types_map[ty[1]])
+                    
+                    all_types.append(int(t0)) 
+                    all_types.append(int(t1)) 
+
+                    pair_coeffs.append( (int(t0) , int(t1) ) )
+
                     t = ' '.join([t0,t1]) if  int(t0) <= int(t1) else ' '.join([t1,t0])
                     va = ' '.join(v)
                     s = 'pair_coeff {:s} {:s} \n'.format(t,va)
                     f.write(s)
-            if setup.nLD > 0 and 'pair' in classified_models:
+            temp = np.unique( all_types)
+            combs = [ (t1,t2) for t1 in temp for t2 in temp ]
+            for c in combs:
+                if (c in pair_coeffs or (c[1],c[0])  in pair_coeffs) == False:
+                    s = f'pair_coeff {c[0]} {c[1]} none \n'
+                    pair_coeffs.append(c)
+                    f.write(s)
+            
+            
+            LD_in_models = np.any([model.category == 'LD' for model in models.values()])
+            
+            if setup.nLD > 0 and 'pair' in classified_models and LD_in_models:
                 s = 'pair_coeff * * local/density frhos.ld \n'
                 f.write(s)
                 setup.write_LDtable(types_map,50000,which=which)
