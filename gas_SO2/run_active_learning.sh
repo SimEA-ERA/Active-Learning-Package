@@ -12,6 +12,7 @@ module load numba/0.54.1-foss-2021b
 #### Variables
 SCRIPT_PATH=$(realpath "$0")
 script_dir=$(dirname "$SCRIPT_PATH")
+
 script_dir="$SLURM_SUBMIT_DIR"
 cd "$script_dir"  # Ensure we are in the correct directory
 main_set_of_files_path="../main_scripts"  # Assuming Python scripts are in the same directory as this script
@@ -29,8 +30,6 @@ sigma=0.02
 Ttarget=500
 charge_map="S:0.4702,O:-0.2351,Ag:0"
 mass_map="S:32.065,O:15.999,Ag:107.8682"
-sampling_method="md"
-beta_sampling=0.72
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"

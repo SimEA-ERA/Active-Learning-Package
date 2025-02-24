@@ -30,7 +30,8 @@ Ttarget=500
 charge_map="S:0.4702,O:-0.2351,Ag:0"
 mass_map="S:32.065,O:15.999,Ag:107.8682"
 sampling_method="md"
-beta_sampling=1.064
+kB=0.00198720375145233
+beta_sampling=$(awk "BEGIN {print 1/($kB * $Ttarget)}")
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"

@@ -1,5 +1,13 @@
 #!/bin/bash
+<<<<<<< HEAD
 #SBATCH --job-name=Ag-mainy
+=======
+<<<<<<<< HEAD:Ag1SO2/run_active_learning.sh
+#SBATCH --job-name=Ag1SO2
+========
+#SBATCH --job-name=Ag-mainy
+>>>>>>>> fa0b3fed5142b6b074f36780411c8ddc41590350:Agmainy/run_active_learning.sh
+>>>>>>> fa0b3fed5142b6b074f36780411c8ddc41590350
 #SBATCH --output=out
 #SBATCH --error=err
 #SBATCH --nodes=1
@@ -20,11 +28,32 @@ mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
 cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
+<<<<<<< HEAD
 inff="$script_dir/Ag.in"
 bsize=200
 Niters=20
 iexist=8
 contin=8
+=======
+<<<<<<<< HEAD:Ag1SO2/run_active_learning.sh
+inff="$script_dir/Ag1SO2.in"
+bsize=200
+Niters=25
+iexist=16
+contin=16
+sigma=0.02
+Ttarget=500
+charge_map="S:0.4702,O:-0.2351,Ag:0"
+mass_map="S:32.065,O:15.999,Ag:107.8682"
+sampling_method="md"
+beta_sampling=1.064
+========
+inff="$script_dir/Ag.in"
+bsize=200
+Niters=20
+iexist=1
+contin=1
+>>>>>>> fa0b3fed5142b6b074f36780411c8ddc41590350
 sigma=0.02
 Ttarget=500
 charge_map="N:0.146,O:-0.073,Ag:0"
@@ -32,6 +61,10 @@ mass_map="N:14.0067,O:15.999,Ag:107.8682"
 sampling_method="md"
 kB=0.00198720375145233
 beta_sampling=$(awk "BEGIN {print 1/($kB * $Ttarget)}")
+<<<<<<< HEAD
+=======
+>>>>>>>> fa0b3fed5142b6b074f36780411c8ddc41590350:Agmainy/run_active_learning.sh
+>>>>>>> fa0b3fed5142b6b074f36780411c8ddc41590350
 #hardcoded
 datapath="$script_dir/data"
 results_path="$script_dir/Results"
@@ -80,6 +113,10 @@ for ((num=$contin; num<=$Niters; num++)); do
            sleep 10
        done
 
+<<<<<<< HEAD
+=======
+       bash "$main_set_of_files_path/extract_logfiles.sh" $nextnum $datapath
+>>>>>>> fa0b3fed5142b6b074f36780411c8ddc41590350
        rm report_of_run
    else
        echo "Iteration $nextnum not performing DFT since data already exist"

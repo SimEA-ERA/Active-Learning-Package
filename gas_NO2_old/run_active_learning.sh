@@ -20,13 +20,6 @@ mkdir -p lammps_working
 cp "${main_set_of_files_path}/lammps_sample_run.sh" "${script_dir}/lammps_working"
 cp "${main_set_of_files_path}/sample_run.lmscr" "${script_dir}/lammps_working"
 
-inff="$script_dir/NO2.in"
-bsize=50
-Niters=5
-iexist=5
-contin=5
-sigma=0.01
-Ttarget=500
 charge_map="N:0.146,O:-0.073,Ag:0"
 mass_map="N:14.0067,O:15.999,Ag:107.8682"
 sampling_method="md"

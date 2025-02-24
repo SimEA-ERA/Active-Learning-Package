@@ -31,4 +31,5 @@
 *report_of_run*
 *out*
 *err*
-beta_sampling_value
+*run_active_learning*
+*beta_sampling_value*
