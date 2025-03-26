@@ -5,8 +5,12 @@
 !/main_scripts/
 !/useful_scripts/
 
+!/Ag7CO2_example/*.sh
+!/Ag7CO2_example/*.in
+!/Ag7CO2_example/*.py
+
 # Optionally, you can choose to only keep certain files inside these directories
 main_scripts/__pycache__*
-
+main_scripts/*.log
 useful_scripts/__pycache__*
 

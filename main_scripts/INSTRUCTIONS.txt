@@ -1,0 +1,7 @@
+To run the AL algorithm follow these steps
+1) copy the run_active_learning.sh to a new directory
+2) Modify the nessesary paths for the main_scripts directory here
+3) Setup the input such as the input file .in (see Ag7CO2_example)  and the hyperparameters in run_active_learning.sh
+4) Configure SLURM settings in FF_Develep.py (look for keyowrd SLURM. The code automatically creates SLURM files and sbatches them)
+5) bash or sbatch run_active_learning.sh
+
