@@ -13,3 +13,8 @@ Ag7CO2_example/data
 Ag7CO2_example/lammps_working
 Ag7CO2_example/distr*
 
+Ag7CO2_example/Results
+Ag7CO2_example/lammps_working
+Ag7CO2_example/distr*
+Ag7CO2_example/data/*
+!/Ag7CO2_example/data/L0
