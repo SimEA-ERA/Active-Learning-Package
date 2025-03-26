@@ -80,6 +80,7 @@ def plot_csv_columns(file_path, col_x, col_y, xlabel, ylabel,title):
     plt.tick_params(direction='in', which='minor',length=size)
     plt.tick_params(direction='in', which='major',length=2*size)
     labeled = False
+    
     for j, (y_v,lab, n, col) in enumerate (zip(y_values,labels,nums, cols) ):
         if 'MAE' in col :
             units = 'meV'
@@ -95,14 +96,14 @@ def plot_csv_columns(file_path, col_x, col_y, xlabel, ylabel,title):
         if n ==0:
             lab = ' '
             n=1
-            y = y_v*mult
+            y = np.arry(y_v)*mult
         else:
-            y = y_v*mult/n
+            y = np.array(y_v)*mult/n
             if not labeled:
                 ylabel+='/atom'
         labeled= True
         plt.plot(x_values, y, marker='o', linestyle='-', label = lab)
-    
+        print( 'System {:s} --> Last Point Error = {:4.3f} meV/atom --> last 5 points average = {:4.3f} meV/atom'.format(lab,y[-1],y[-5:].mean() ) )
     if title !='':
         plt.title(title)
     plt.xlabel(xlabel)

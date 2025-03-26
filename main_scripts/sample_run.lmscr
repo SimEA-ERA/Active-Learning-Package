@@ -12,7 +12,7 @@ include potential.inc
 #fix Agf Ag  rigid/small molecule
 
 timestep  0.1
-variable e equal 1000
+variable e equal 500
 thermo_style custom step time etotal pe ke  press temp density
 thermo_modify lost error
 thermo $e
@@ -20,16 +20,35 @@ thermo $e
 dump nvt_dump all custom $e samples.lammpstrj id type x y z vx vy vz  fx fy fz
 dump_modify nvt_dump sort id
 
-#minimize 1.0e-4 1.0e-6 100 1000
+minimize 1.0e-4 1.0e-6 100 1000
 
 
-
+variable teff equal 500
 
 velocity all create 1 4238 rot yes dist gaussian
-#fix 1  all langevin  300.0 300 100 48291
-fix 1 all temp/berendsen 1.0 500.0 $(100.0*dt)
-fix 2 all nve
+fix anneal  all langevin  1.0 ${teff} $(10.0*dt) 111
+#fix anneal all temp/berendsen 1.0 ${teff} $(100.0*dt)
+fix anneal_2 all nve
+fix anneal_3 all momentum 1000 linear 1 1 1  angular rescale
 include  rigid_fixes.inc
+run 10000000
 
-run 1000000
+unfix anneal
+unfix anneal_2
+unfix anneal_3
+print "Done  Annealing"
+
+#dump nvt_const all custom $e samples.lammpstrj id type x y z vx vy vz  fx fy fz
+#dump_modify nvt_const sort id
+
+#fix 1 all nvt temp ${teff}  ${teff} $(100.0*dt)
+#fix 1 all temp/rescale 100 ${teff} ${teff} 0.02 0.5
+fix anneal  all langevin  ${teff} ${teff} $(10.0*dt)  11
+
+#fix 1 all temp/berendsen ${teff} ${teff} $(10.0*dt)
+fix a_nve all nve
+fix anneal_3 all momentum 1000 linear 1 1 1  angular rescale
+#include  rigid_fixes.inc
+run 10000000
+ 
 print "Done simulation"

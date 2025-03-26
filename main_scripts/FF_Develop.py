@@ -163,7 +163,7 @@ class al_help():
         lammps_main_file = "lammps_working/sample_run.lmscr"
 
         kB = 0.0019872037514523
-        beta_target = 1.0/(kB*parsed_args.Ttarget)
+       
         
 
         tsample = round(1.0/ (beta_sampling*kB), 2) 
@@ -241,10 +241,10 @@ class al_help():
                 
                 ut = new_data['Uclass'].to_numpy()
                 shifted_energies = ut - ut.min()
-                tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, beta_target, nbins = 200 )
+                tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(shifted_energies, nbins = 200 )
                 
                 al_help.plot_candidate_distribution(shifted_energies, (beta_eff, alpha, weights, l_minima), 200,
-                        title = f'MD:' + r' Candidate distribution \n $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
+                        title = f'MD:' + r' Candidate distribution $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
                         fname=f'{setup.runpath}/CD{md_iter}_{sname}.png')
                 
                 
@@ -291,7 +291,6 @@ class al_help():
         max_candidates_per_system = 40000
         
         kB = 0.0019872037514523
-        beta_target = 1.0/(kB*parsed_args.Ttarget)
         
         sigma_init = parsed_args.sigma
         
@@ -331,7 +330,7 @@ class al_help():
             
             n = len(step_data)
             
-            step, c_size ,  sigma, avg_accept_ratio = 0, 0 , sigma_init, 0.0
+            step, c_size ,  sigma, avg_accept_ratio, AR = 0, 0 , sigma_init, 0.0, 0.0
             candidate_data_sys = pd.DataFrame()
             
             while(step <= max_mc_steps and c_size <= max_candidates_per_system):
@@ -346,8 +345,9 @@ class al_help():
                 al_help.evaluate_potential(step_data, setup,'opt')
                  
                 Uclass_new = step_data['Uclass'].to_numpy()
-                 
-                dubt = (Uclass_new  - Uclass_prev )*beta_sampling
+                
+                beta_anneal = max( beta_sampling, max_candidates_per_system/(2*(c_size+n)) * beta_sampling )
+                dubt = (Uclass_new  - Uclass_prev )*beta_anneal
                  
                 pe =  np.exp( - dubt ) 
                 accepted_filter = pe > np.random.uniform(0,1,n) 
@@ -362,19 +362,21 @@ class al_help():
                 accept_ratio = np.count_nonzero(accepted_filter)/n
                 avg_accept_ratio += accept_ratio
             
+
+                if step %200  ==0:
+                    print( 'MC step {:d}, beta_anneal = {:.4e} ,   sigma = {:.4e} A ,  accept_ratio = {:5.4f}  ,  current_accept = {:5.4f} candidate size = {:d}'.format(step, beta_anneal,  sigma, AR, accept_ratio, c_size) )
+                    sys.stdout.flush()
+            
                 step += 1
+                
+                if step < asymptotic_steps:
+                    continue
                 AR = avg_accept_ratio/step
                 if AR < 0.2:
                      sigma*=0.99
                 elif AR > 0.5:
                      sigma/=0.99
                 sigma  = min( max(sigma,sigma_init*1e-1) , sigma_init*1e1)
-                if step %500 ==0:
-                    print( 'MC step {:d},   sigma = {:.4e} A ,  accept_ratio = {:5.4f}  ,  current_accept = {:5.4f} candidate size = {:d}'.format(step,  sigma, AR, accept_ratio, c_size) )
-                    sys.stdout.flush()
-            
-                if step < asymptotic_steps:
-                    continue
                 
                 filtered_step_data = step_data[ accepted_filter ]
                 
@@ -388,12 +390,12 @@ class al_help():
 
             u = candidate_data_sys['Uclass'].to_numpy()
 
-            tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u, beta_target, nbins = 200) 
+            tfit, beta_eff, alpha, weights, l_minima, fail = al_help.estimate_Teff_Beff(u,  nbins = 200) 
             
-            print('MC:  beta_target = {:5.4f} ,  beta_eff = {:5.4f}  ,  beta_sampling = {:5.4f}'.format ( beta_target, beta_eff, beta_sampling) )
+            print('Candidate distribution MC:    beta_eff = {:5.4f}  ,  beta_sampling = {:5.4f}'.format ( beta_eff, beta_sampling) )
             
             al_help.plot_candidate_distribution(u - u.min(), (beta_eff, alpha, weights, l_minima), 200,
-                        title = f'MC trial' + r': Candidate distribution $\beta_{target}$' + '= {:5.4f},'.format(beta_target)+ r' $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
+                        title = f'MC trial' + r': Candidate distribution $\beta_{eff}$' + ' = {:5.4f}'.format( beta_eff) + r' $\beta_{sampling}$' + ' = {:5.4f}'.format( beta_sampling),
                         fname=f'{setup.runpath}/CD_{sysname}.png')
             
             
@@ -485,7 +487,7 @@ class al_help():
         return P/I2
 
     @staticmethod
-    def find_distribution_parameters(u, beta_target, nminima=0,nbins=200):
+    def find_distribution_parameters(u,  nminima=0,nbins=200):
         u = u - u.min()
         mu = np.mean(u)
         
@@ -537,8 +539,6 @@ class al_help():
                     c1 /= math.perm(nw,3)
             return 0.2*(c2 + c1)
 
-        def beta_cost(beta_eff):
-            return 0.1*((beta_eff-beta_target)/beta_target)**2
 
         def weights_to_one(params, n_l):
             w = params[2:3+n_l]
@@ -547,7 +547,7 @@ class al_help():
         def cost_BG(params, dens ,bc, n_l):
             c = cost_distribution_fit(params, dens, bc, n_l) 
             creg = reg_cost(params,n_l)
-            return c + creg + beta_cost(params[0])
+            return c + creg 
         
         def cost_distribution_fit(params, dens, bc, n_l):
             beta, alpha, w_l, min_u_l = get_params( params, n_l)
@@ -586,7 +586,7 @@ class al_help():
         return (beta, alpha, w_l, min_u_l), cfit
 
     @staticmethod
-    def estimate_Teff_Beff(u, beta_target, nbins = 200):
+    def estimate_Teff_Beff(u,  nbins = 200):
         u = u -u.min()
         dens, bin_edges = np.histogram(u, bins=nbins, density=True)
         std = np.sqrt(dens/u.shape[0]).sum()/nbins*100
@@ -601,7 +601,7 @@ class al_help():
             return
 
         while( n_l<10 ):
-            p,  new_err  = al_help.find_distribution_parameters(u, beta_target, nminima=n_l, nbins = nbins)
+            p,  new_err  = al_help.find_distribution_parameters(u, nminima=n_l, nbins = nbins)
             beta, alpha, weights, l_minima = p
             rel_err = (old_err - new_err)/old_err
             fail = old_err > std*100
@@ -1392,17 +1392,18 @@ class al_help():
                     continue
                 unc = 0
                 for v in vals:
-                    unc =  1.0 - (overlap( hist, x, v , scale ) - min_overlap) / (max_overlap - min_overlap)
+                    ovr = overlap( hist, x, v , scale )
+                    unc =  1.0 - ( ovr - min_overlap) / (max_overlap - min_overlap)
                     unce_vals[j].append( unc )
             
         for j in range(ndata):
             unc = np.array(unce_vals[j])
             uncertainty[j] = np.mean(unc**p )**(1/p)
         
-        uncertainty = (uncertainty - uncertainty.min() ) / ( uncertainty.max() - uncertainty.min())
         uncertainty = np.nan_to_num(uncertainty, 1e-8)
+        uncertainty_norm = (uncertainty - uncertainty.min() ) / ( uncertainty.max() - uncertainty.min())
         print(' Uncertainty quantification took {:.3e} sec'.format(perf_counter() - t0 ))
-        return uncertainty
+        return uncertainty_norm, uncertainty
 
 
     @staticmethod
@@ -1453,8 +1454,8 @@ class al_help():
                 psel = np.exp (- (u_f - u_f.min())/setup.bS)
                 psel /= psel.sum()
             elif method == 'histogram_uncertainty':
-                uncertainty = al_help.find_histogram_uncertainty(candidate_data [fsystem], existing_data[fex]  , setup )
-                psel = (1.0-zu) * uncertainty + zu * np.random.uniform(0,1, size=uncertainty.shape[0])
+                uncertainty_norm, uncertainty = al_help.find_histogram_uncertainty(candidate_data [fsystem], existing_data[fex]  , setup )
+                psel = (1.0-zu) * uncertainty_norm + zu * np.random.uniform(0,1, size=uncertainty_norm.shape[0])
                 #psel = uncertainty.copy()
                 psel /= psel.sum()
         
@@ -1595,7 +1596,7 @@ class al_help():
                   multiplicity=1):
         file = '{:s}/{:s}'.format(path,fname)
         #lines = ['%nprocshared=16\n%mem=16000MB\n#p wb97xd/def2TZVP scf=xqc scfcyc=999\n\nTemplate file\n\n']    
-        lines = ['%nprocshared=4\n%mem=16000MB\n#p wb97xd/def2TZVP scf(xqc) scfcyc=999 force\n\nTemplate file\n\n']    
+        lines = ['%nprocshared=4\n%mem=16000MB\n#p wb97xd/def2SVP scf(xqc) scfcyc=999 force\n\nTemplate file\n\n']    
         lines.append(' 0 {:1d}\n'.format(multiplicity))
         for i in range(len(atom_types)):
             at = atom_types[i]
@@ -3251,7 +3252,7 @@ class Setup_Interfacial_Optimization():
         unique_types = set([model.type for k,model in models.items() if not self.excess_model(model.category,model.num) ] )
         figsize = (len(unique_categories)*size,size) 
         fig,ax = plt.subplots(1,len(unique_categories),figsize=figsize,dpi=300)
-        fig.suptitle( r'Potential Function',fontsize=3*size, y=1.18+0.02/(size/2))
+        fig.suptitle( r'Potential Function',fontsize=3*size )
         colors = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999']
         
         cmap = {t:colors[j] for j,t in enumerate(unique_types) }
@@ -3325,7 +3326,7 @@ class Setup_Interfacial_Optimization():
             ax[j].tick_params(axis='both', labelsize=size*1.7)
             nlab = len(ax[j].get_legend_handles_labels()[1])
             ncol = 1 if nlab < 4 else 2
-            ax[j].legend(frameon=False,fontsize=1.3*size,loc='upper center', bbox_to_anchor=(0.5, 1.15), shadow=True, ncol=ncol)
+            ax[j].legend(frameon=False,fontsize=1.3*size, shadow=True, ncol=ncol)
         plt.savefig('{:s}/potential.png'.format(path),bbox_inches='tight')
         plt.close()
 
@@ -6272,8 +6273,8 @@ class FF_Optimizer(Optimizer):
             self.set_models('best_opt','opt')
             self.set_results()        
             _ = plt.figure(figsize=(3.3,3.3),dpi=300)
-            plt.xlabel('Energy costs')
-            plt.ylabel('Force costs')
+            plt.xlabel('Energy cost')
+            plt.ylabel('Force cost')
             
             plt.plot(energy_costs,force_costs,marker='s',ls='none',color='blue')
             plt.plot(energy_costs[0], force_costs[0], marker='*', ls='none',color='k')
@@ -6397,8 +6398,8 @@ class FF_Optimizer(Optimizer):
             self.set_models('best_opt','opt')
             self.set_results()        
             _ = plt.figure(figsize=(3.3,3.3),dpi=300)
-            plt.xlabel('Energy costs')
-            plt.ylabel('Force costs')
+            plt.xlabel('Energy cost')
+            plt.ylabel('Force cost')
             
             plt.plot(energy_costs,force_costs,marker='s',ls='none',color='blue')
             plt.plot([ce_init], [cf_init], marker='*', ls='none',color='k')
@@ -6645,7 +6646,6 @@ class FF_Optimizer(Optimizer):
                 mu_e[ids] = Energy[itr].mean()
                 std_e[ids] = Energy[itr].std()
             std_e[ std_e == 0 ] = 1.0
-        
         mu_f = Forces.mean()
         std_f = Forces.std()
  
@@ -7245,7 +7245,6 @@ class CostFunctions():
         
         func = getattr(measures,measure)
         ce = func(  (Uclass-mu)/std, (Energy-mu)/std )
-        
         return ce
     
     def gradEnergy(params, Energy, models_list_info, measure, mu=0.0, std=1.0):

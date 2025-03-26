@@ -27,8 +27,8 @@ def print_column_stats(column: pd.Series):
         return
     
     print(f"Column Name: {column.name}")
-    print(f"Max Value: {column.max()}")
-    print(f"Min Value: {column.min()}")
+    print(f"Max Value: {column.max()}  ")
+    print(f"Min Value: {column.min()}  ")
     print(f"Standard Deviation: {column.std()}")
     print(f"Mean Value: {column.mean()}")
     return
@@ -72,9 +72,7 @@ def main():
     
     argparser.add_argument('-mm',"--mass_map",metavar=None,
             type=str, required=True, help=hm)
-    argparser.add_argument('-t',"--Ttarget",metavar=None,
-            type=float, required=False,default=300.0, help=htt)
-    
+   
     argparser.add_argument('-bs',"--beta_sampling",metavar=None,
             type=float, required=False,default=1.67, help=htt)
     
@@ -83,7 +81,6 @@ def main():
     beta_sampling = parsed_args.beta_sampling
 
     kB = 0.00198720375145233 # kcal/mol
-    beta_target = 1.0/(kB*parsed_args.Ttarget)
 
     setup = ff.Setup_Interfacial_Optimization(parsed_args.inputfile)
     al = ff.al_help()
